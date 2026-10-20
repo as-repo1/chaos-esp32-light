@@ -1,6 +1,6 @@
-# 🔌 WLED Ambient Studio — API & Protocol Specification
+# 🔌 Chaos Lights — API & Protocol Specification
 
-This document provides the complete API specification for interfacing with WLED via WebSockets, HTTP REST endpoints, and UDP broadcast synchronization.
+This document provides the complete API specification for interfacing with ESP32 controllers running WLED via Chaos Lights using WebSockets, HTTP REST endpoints, and UDP broadcast synchronization.
 
 ---
 
@@ -166,3 +166,12 @@ WLED listens and broadcasts real-time sync packets on UDP port **21324**.
 - **Header**: 2 bytes (`0x02` or `0x04` notification packet).
 - **Data Payload**: Contains segment indices, brightness values, and color triples.
 - **Broadcast Address**: `255.255.255.255:21324`
+
+---
+
+## 6. Acknowledgments & Credits
+
+Chaos Lights interfaces with the open-source **[WLED Project](https://github.com/Aircoookie/WLED)** created by Christian Schwinne (Aircoookie).
+All JSON API schemas, WebSocket frame specifications, and UDP sync protocols are defined and maintained by WLED.
+- Repository: [github.com/Aircoookie/WLED](https://github.com/Aircoookie/WLED)
+- JSON API Documentation: [kno.wled.ge/interfaces/json-api/](https://kno.wled.ge/interfaces/json-api/)

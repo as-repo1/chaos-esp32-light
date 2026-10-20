@@ -1,7 +1,6 @@
 /* ====================================================================
-   WLED Ambient Studio — Core Controller
-   Engine: WebSocket / REST API, Canvas Color Wheel,
-           Screen Ambilight Capture & Advanced Multi-Mode Audio FFT Analyzer
+   Chaos Lights — Smart Cinema & Music Reactive Studio
+   Powered by WLED (Christian Schwinne / Aircoookie)
    ==================================================================== */
 
 // Configuration & Default State
@@ -4126,6 +4125,11 @@ window._musicSync = musicSync;
 window.setAmbilightMode = (m) => movieSync.setMode(m);
 
 function bootApp() {
+  console.log(
+    '%c Chaos Lights %c Powered by WLED (Aircoookie) ',
+    'background:#6366f1;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px 0 0 4px;',
+    'background:#10b981;color:#fff;font-weight:bold;padding:4px 8px;border-radius:0 4px 4px 0;'
+  );
   try { colorWheel.init(); } catch (e) { console.error('colorWheel init error:', e); }
   try { virtualStrip.init(); } catch (e) { console.error('virtualStrip init error:', e); }
   try { movieSync.init(); } catch (e) { console.error('movieSync init error:', e); }

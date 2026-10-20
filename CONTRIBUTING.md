@@ -1,6 +1,6 @@
-# 🤝 Contributing to WLED Ambient Studio
+# 🤝 Contributing to Chaos Lights
 
-Thank you for your interest in contributing to **WLED Ambient Studio**! We welcome contributions from developers, makers, and lighting enthusiasts worldwide.
+Thank you for your interest in contributing to **Chaos Lights**! We welcome contributions from developers, makers, and lighting enthusiasts worldwide.
 
 ---
 
@@ -37,8 +37,8 @@ We are committed to providing a welcoming, inclusive, and harassment-free enviro
 
 1. **Fork & Clone**:
    ```bash
-   git clone git@github.com:as-repo1/wled-ambient-studio.git
-   cd wled-ambient-studio
+   git clone git@github.com:as-repo1/chaos-lights.git
+   cd chaos-lights
    ```
 
 2. **Install Dependencies**:

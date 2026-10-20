@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WLED Ambient Studio — Documentation & Manual</title>
+  <title>Chaos Lights — Documentation & Manual</title>
   <style>
     :root {
       --bg-dark: #070913;
@@ -268,7 +268,7 @@
   <!-- Navigation Sidebar -->
   <aside class="sidebar">
     <div class="brand-title">
-      <span>⚡</span> WLED Studio Docs
+      <span>⚡</span> Chaos Lights Docs
     </div>
     <ul class="nav-list">
       <li><a href="#quickstart" class="nav-link active">🚀 Plug & Play Quickstart</a></li>
@@ -291,9 +291,9 @@
 
     <!-- Section 1: Quickstart -->
     <section id="quickstart" class="doc-section">
-      <h1>WLED Ambient Studio Manual</h1>
+      <h1>Chaos Lights Manual</h1>
       <p>
-        Welcome to the technical manual for <strong>WLED Ambient Studio</strong>. This project turns your standard ESP32 running WLED into a zero-latency, high-performance ambilight screen visualizer and real-time audio FFT equalizer.
+        Welcome to the technical manual for <strong>Chaos Lights</strong> (Powered by WLED). This project turns your standard ESP32 running WLED into a zero-latency, high-performance ambilight screen visualizer and real-time audio FFT equalizer.
       </p>
 
       <div class="card">
@@ -311,7 +311,7 @@
     <!-- Section 2: Base Pipelines Architecture -->
     <section id="architecture" class="doc-section">
       <h2>🏗️ Base Pipelines Architecture: How It Works</h2>
-      <p>WLED Ambient Studio operates on two zero-latency base pipelines built directly on modern browser web standards (Web Audio API & Screen Capture DisplayMedia).</p>
+      <p>Chaos Lights operates on two zero-latency base pipelines built directly on modern browser web standards (Web Audio API & Screen Capture DisplayMedia).</p>
 
       <h3>Pipeline 1: Screen Ambilight Cinema Pipeline</h3>
       <div class="pipeline-diagram">
@@ -407,7 +407,7 @@
     <section id="ambilight" class="doc-section">
       <h2>🖥️ 3-Zone Monitor Setup & Section Division (3-4-2)</h2>
       <p>
-        Standard ambilight tools assume a 4-sided TV frame. For desktop monitors, the stand blocks the bottom edge. WLED Ambient Studio introduces dedicated <strong>3-Side Monitor</strong> geometry and proportional section division.
+        Standard ambilight tools assume a 4-sided TV frame. For desktop monitors, the stand blocks the bottom edge. Chaos Lights introduces dedicated <strong>3-Side Monitor</strong> geometry and proportional section division.
       </p>
 
       <div class="card">
@@ -496,7 +496,7 @@
         <p>Hardware-accelerated Widevine DRM in Google Chrome obscures video frames for privacy. To sync ambilight with DRM content, go to <code>chrome://settings/system</code> and toggle off <em>"Use graphics acceleration when available"</em>, or view video in VLC, Firefox, or media players.</p>
 
         <h3>Q: How does the engine achieve 60 FPS without crashing the ESP32?</h3>
-        <p>WLED Ambient Studio compiles all edge colors into a single compact range packet (<code>seg.i = [start1, stop1, col1, start2, stop2, col2]</code>). This is only ~70 bytes per WebSocket frame, keeping CPU utilization on the ESP32 under 8%.</p>
+        <p>Chaos Lights compiles all edge colors into a single compact range packet (<code>seg.i = [start1, stop1, col1, start2, stop2, col2]</code>). This is only ~70 bytes per WebSocket frame, keeping CPU utilization on the ESP32 under 8%.</p>
 
         <h3>Q: Do I need an external microphone connected to the ESP32 for music sync?</h3>
         <p>No! The Web Audio API runs the 256-point Fast Fourier Transform (FFT) directly in your browser on your computer or phone. Your ESP32 only receives the clean, calculated per-LED color data.</p>

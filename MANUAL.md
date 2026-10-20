@@ -1,6 +1,6 @@
-# 📖 WLED Ambient Studio — Complete User Manual & Operation Guide
+# 📖 Chaos Lights — Complete User Manual & Operation Guide
 
-Welcome to the comprehensive user manual for **WLED Ambient Studio**. This guide walks you through every feature of the web studio, from initial Wi-Fi setup to advanced cinema calibration, audio tuning, and hardware preset creation.
+Welcome to the comprehensive user manual for **Chaos Lights** (Powered by WLED). This guide walks you through every feature of the web studio, from initial Wi-Fi setup to advanced cinema calibration, audio tuning, and hardware preset creation.
 
 ---
 
@@ -22,6 +22,7 @@ Welcome to the comprehensive user manual for **WLED Ambient Studio**. This guide
 6. [Multi-Theme Engine](#6-multi-theme-engine)
 7. [Multi-Device Hub & UDP Sync](#7-multi-device-hub--udp-sync)
 8. [Settings & Network Diagnostics](#8-settings--network-diagnostics)
+9. [Acknowledgments & Credits](#9-acknowledgments--credits)
 
 ---
 
@@ -175,3 +176,12 @@ Synchronize multiple WLED devices across your local network:
 - **Wi-Fi Credentials**: Change SSID and Wi-Fi password and save them directly to ESP32 EEPROM.
 - **Hardware Diagnostics**: View live firmware version, Wi-Fi RSSI signal strength, estimated current draw (mA), and refresh rates (FPS).
 - **LED Count Configuration**: Change total strip length dynamically.
+
+---
+
+## 9. Acknowledgments & Credits
+
+Chaos Lights is powered by the open-source **[WLED Project](https://github.com/Aircoookie/WLED)** created by Christian Schwinne (Aircoookie).
+All low-level hardware communication, FastLED integration, LittleFS web server, and Wi-Fi drivers rely on the rock-solid WLED firmware.
+- Official Repository: [github.com/Aircoookie/WLED](https://github.com/Aircoookie/WLED)
+- Documentation: [kno.wled.ge](https://kno.wled.ge/)

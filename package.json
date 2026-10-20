@@ -1,7 +1,8 @@
 {
-  "name": "wled-ambient-studio",
+  "name": "chaos-lights",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.3.0",
+  "description": "Chaos Lights — Smart Cinema Ambilight & Music Reactive Studio for ESP32 & WLED",
   "type": "module",
   "scripts": {
     "dev": "vite --host --port 5173",

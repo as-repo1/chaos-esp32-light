@@ -1,6 +1,6 @@
-# 🔌 WLED Ambient Studio — Complete Hardware & Wiring Guide
+# 🔌 Chaos Lights — Complete Hardware & Wiring Guide
 
-This guide provides exhaustive schematics, electrical calculations, logic level shifting instructions, and physical installation procedures for building an addressable LED setup powered by ESP32 and WLED Ambient Studio.
+This guide provides exhaustive schematics, electrical calculations, logic level shifting instructions, and physical installation procedures for building an addressable LED setup powered by ESP32, WLED firmware, and Chaos Lights.
 
 ---
 
@@ -157,3 +157,12 @@ For desktop monitors mounted on arms or stands, the bottom edge is blocked. Foll
 2. **Capacitor Polarity**: Verify capacitor polarity before powering on (+ to 5V, - to GND). Reversed electrolytic capacitors will burst.
 3. **Fuse Protection**: Install a 5A–10A inline automotive blade fuse on the positive (+5V) DC output line directly after the power supply.
 4. **Heat Management**: Do not operate high-density (60 or 144 LEDs/m) strips coiled inside their reels, as heat buildup can melt the silicone coating.
+
+---
+
+## 8. Acknowledgments & Credits
+
+Chaos Lights is designed to pair directly with the open-source **[WLED Project](https://github.com/Aircoookie/WLED)** created by Christian Schwinne (Aircoookie).
+All GPIO pin assignments, PWM timings, and hardware protocol handling are managed by WLED.
+- WLED Repository: [github.com/Aircoookie/WLED](https://github.com/Aircoookie/WLED)
+- WLED Hardware Wiki: [kno.wled.ge/basics/compatible-hardware/](https://kno.wled.ge/basics/compatible-hardware/)
