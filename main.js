@@ -747,6 +747,16 @@ class MovieSyncEngine {
     this.saturation = 1.5;
     this.blackFloor = 0;
     this.letterboxFilter = true;
+    this.letterboxSensitivity = parseInt(localStorage.getItem('ambilight_letterbox_sens') || '25', 10);
+    this.dangerStrobeEnabled = localStorage.getItem('ambilight_danger_strobe') !== 'false';
+    this.dangerSensitivity = parseFloat(localStorage.getItem('ambilight_danger_sens') || '1.7');
+    this.dangerHz = parseInt(localStorage.getItem('ambilight_danger_hz') || '8', 10);
+    this.fastEdgeBoost = localStorage.getItem('ambilight_fast_edge') === 'true';
+    this.dangerTriggerUntil = 0;
+    this.activeProfile = localStorage.getItem('ambilight_profile') || 'cinema';
+    this.lastFrameAvgRGB = [0, 0, 0];
+    this.effectiveSmoothing = 0.35;
+    this.effectiveSaturation = 1.5;
     this.wiringDirection = localStorage.getItem('ambilight_wiring') || 'cw';
 
     // Safe parsing helper to protect against corrupted localStorage
@@ -834,9 +844,133 @@ class MovieSyncEngine {
       });
     }
 
+    // One-Touch Cinema & Gaming Profiles
+    document.querySelectorAll('.profile-chip-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.applyProfile(btn.dataset.profile);
+      });
+      if (btn.dataset.profile === this.activeProfile) {
+        btn.classList.add('active');
+      }
+    });
+
+    // Test Danger Strobe Button
+    const testDangerBtn = document.getElementById('btnTestDangerStrobe');
+    if (testDangerBtn) {
+      testDangerBtn.addEventListener('click', () => this.triggerTestDangerStrobe());
+    }
+
+    // Restore saved settings values into UI elements
+    const letterboxSensSlider = document.getElementById('sliderLetterboxSens');
+    if (letterboxSensSlider) letterboxSensSlider.value = this.letterboxSensitivity;
+    const dangerSensSlider = document.getElementById('sliderDangerSens');
+    if (dangerSensSlider) dangerSensSlider.value = this.dangerSensitivity;
+    const dangerHzSlider = document.getElementById('sliderDangerHz');
+    if (dangerHzSlider) dangerHzSlider.value = this.dangerHz;
+    const fastEdgeCheck = document.getElementById('checkFastEdgeBoost');
+    if (fastEdgeCheck) fastEdgeCheck.checked = this.fastEdgeBoost;
+    const dangerCheck = document.getElementById('checkDangerStrobe');
+    if (dangerCheck) dangerCheck.checked = this.dangerStrobeEnabled;
+
     this.updateWiringOptions();
     this.renderDivisionControls();
     this.updateVisibilityForMode();
+  }
+
+  triggerTestDangerStrobe() {
+    this.dangerTriggerUntil = performance.now() + 2500;
+    showToast('🚨 Testing Tactical Danger Strobe (2.5s)...');
+  }
+
+  applyProfile(name) {
+    if (!name) return;
+    this.activeProfile = name;
+    try { localStorage.setItem('ambilight_profile', name); } catch (e) {}
+
+    document.querySelectorAll('.profile-chip-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.profile === name);
+    });
+
+    const setSlider = (id, val, textId, textVal) => {
+      const s = document.getElementById(id);
+      if (s) { s.value = val; }
+      const t = document.getElementById(textId);
+      if (t) { t.textContent = textVal; }
+    };
+
+    if (name === 'cinema') {
+      this.smoothing = 0.25;
+      this.saturation = 1.6;
+      this.blackFloor = 5;
+      this.letterboxFilter = true;
+      this.fastEdgeBoost = false;
+      this.dangerStrobeEnabled = false;
+
+      setSlider('sliderMovieSmoothing', 0.25, 'smoothingValText', 'Cinematic (0.25)');
+      setSlider('sliderMovieSaturation', 1.6, 'saturationValText', '1.6x (Vivid)');
+      setSlider('sliderBlackFloor', 5, 'blackFloorValText', '5 (Ambient Floor)');
+      const chkLetter = document.getElementById('checkLetterboxFilter');
+      if (chkLetter) chkLetter.checked = true;
+      const chkFast = document.getElementById('checkFastEdgeBoost');
+      if (chkFast) chkFast.checked = false;
+      const chkDanger = document.getElementById('checkDangerStrobe');
+      if (chkDanger) chkDanger.checked = false;
+      showToast('Profile: Cinema 21:9 Widescreen');
+    } else if (name === 'fps') {
+      this.smoothing = 0.75;
+      this.saturation = 1.8;
+      this.blackFloor = 0;
+      this.letterboxFilter = true;
+      this.fastEdgeBoost = true;
+      this.dangerStrobeEnabled = true;
+
+      setSlider('sliderMovieSmoothing', 0.75, 'smoothingValText', 'Fast Esports (0.75)');
+      setSlider('sliderMovieSaturation', 1.8, 'saturationValText', '1.8x (Vivid)');
+      setSlider('sliderBlackFloor', 0, 'blackFloorValText', '0 (True Black)');
+      const chkLetter = document.getElementById('checkLetterboxFilter');
+      if (chkLetter) chkLetter.checked = true;
+      const chkFast = document.getElementById('checkFastEdgeBoost');
+      if (chkFast) chkFast.checked = true;
+      const chkDanger = document.getElementById('checkDangerStrobe');
+      if (chkDanger) chkDanger.checked = true;
+      showToast('Profile: Fast FPS Esports & Twitch Motion');
+    } else if (name === 'cyberpunk') {
+      this.smoothing = 0.45;
+      this.saturation = 2.2;
+      this.blackFloor = 8;
+      this.letterboxFilter = true;
+      this.fastEdgeBoost = true;
+      this.dangerStrobeEnabled = true;
+
+      setSlider('sliderMovieSmoothing', 0.45, 'smoothingValText', 'Responsive (0.45)');
+      setSlider('sliderMovieSaturation', 2.2, 'saturationValText', '2.2x (Hyper-Saturated)');
+      setSlider('sliderBlackFloor', 8, 'blackFloorValText', '8 (Ambient Floor)');
+      const chkLetter = document.getElementById('checkLetterboxFilter');
+      if (chkLetter) chkLetter.checked = true;
+      const chkFast = document.getElementById('checkFastEdgeBoost');
+      if (chkFast) chkFast.checked = true;
+      const chkDanger = document.getElementById('checkDangerStrobe');
+      if (chkDanger) chkDanger.checked = true;
+      showToast('Profile: Cyberpunk Neon & High Saturation');
+    } else if (name === 'horror') {
+      this.smoothing = 0.30;
+      this.saturation = 1.3;
+      this.blackFloor = 2;
+      this.letterboxFilter = true;
+      this.fastEdgeBoost = false;
+      this.dangerStrobeEnabled = true;
+
+      setSlider('sliderMovieSmoothing', 0.30, 'smoothingValText', 'Cinematic (0.30)');
+      setSlider('sliderMovieSaturation', 1.3, 'saturationValText', '1.3x (Enhanced)');
+      setSlider('sliderBlackFloor', 2, 'blackFloorValText', '2 (Faint Ambient)');
+      const chkLetter = document.getElementById('checkLetterboxFilter');
+      if (chkLetter) chkLetter.checked = true;
+      const chkFast = document.getElementById('checkFastEdgeBoost');
+      if (chkFast) chkFast.checked = false;
+      const chkDanger = document.getElementById('checkDangerStrobe');
+      if (chkDanger) chkDanger.checked = true;
+      showToast('Profile: Horror & Stealth Ambience');
+    }
   }
 
   getZoneNames() {
@@ -1308,7 +1442,11 @@ class MovieSyncEngine {
     if (monitor) {
       monitor.style.boxShadow = '0 0 30px rgba(0, 0, 0, 0.8)';
       monitor.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+      monitor.classList.remove('danger-strobe-active');
     }
+    document.getElementById('dangerHudAlert')?.classList.add('hide');
+    document.getElementById('cropGuideTop')?.classList.add('hide');
+    document.getElementById('cropGuideBottom')?.classList.add('hide');
 
     ['edgeTop', 'edgeRight', 'edgeBottom', 'edgeLeft'].forEach(id => {
       const el = document.getElementById(id);
@@ -1357,52 +1495,179 @@ class MovieSyncEngine {
 
     this.sampleCtx.drawImage(this.video, 0, 0, sw, sh);
 
-    // Dynamic Letterbox black-bar detection
+    // Dynamic Letterbox black-bar detection with interactive visual guides
     let startY = 0;
     let endY = sh;
     if (this.letterboxFilter) {
+      const sens = this.letterboxSensitivity;
       const topRow = this.sampleCtx.getImageData(0, 0, sw, 1).data;
       let topHasContent = false;
       for (let x = 0; x < topRow.length; x += 16) {
-        if (Math.max(topRow[x], topRow[x + 1], topRow[x + 2]) > 25) {
+        if (Math.max(topRow[x], topRow[x + 1], topRow[x + 2]) > sens) {
           topHasContent = true;
           break;
         }
       }
       if (!topHasContent) {
-        for (let y = 1; y < Math.floor(sh * 0.30); y += 2) {
+        for (let y = 1; y < Math.floor(sh * 0.35); y += 2) {
           const row = this.sampleCtx.getImageData(0, y, sw, 1).data;
           let maxBri = 0;
           for (let x = 0; x < row.length; x += 16) {
             maxBri = Math.max(maxBri, row[x], row[x + 1], row[x + 2]);
           }
-          if (maxBri > 25) { startY = y; break; }
+          if (maxBri > sens) { startY = y; break; }
         }
       }
 
       const botRow = this.sampleCtx.getImageData(0, sh - 1, sw, 1).data;
       let botHasContent = false;
       for (let x = 0; x < botRow.length; x += 16) {
-        if (Math.max(botRow[x], botRow[x + 1], botRow[x + 2]) > 25) {
+        if (Math.max(botRow[x], botRow[x + 1], botRow[x + 2]) > sens) {
           botHasContent = true;
           break;
         }
       }
       if (!botHasContent) {
-        for (let y = sh - 2; y > Math.floor(sh * 0.70); y -= 2) {
+        for (let y = sh - 2; y > Math.floor(sh * 0.65); y -= 2) {
           const row = this.sampleCtx.getImageData(0, y, sw, 1).data;
           let maxBri = 0;
           for (let x = 0; x < row.length; x += 16) {
             maxBri = Math.max(maxBri, row[x], row[x + 1], row[x + 2]);
           }
-          if (maxBri > 25) { endY = y + 1; break; }
+          if (maxBri > sens) { endY = y + 1; break; }
         }
       }
+
+      // Update interactive visual crop overlay guides
+      const topCropRatio = startY / sh;
+      const botCropRatio = (sh - endY) / sh;
+      const cropGuideTop = document.getElementById('cropGuideTop');
+      const cropGuideBottom = document.getElementById('cropGuideBottom');
+      const aspectBadge = document.getElementById('detectedAspectBadge');
+
+      if (topCropRatio > 0.05) {
+        if (cropGuideTop) {
+          cropGuideTop.classList.remove('hide');
+          cropGuideTop.style.height = `${Math.round(topCropRatio * 100)}%`;
+        }
+      } else {
+        cropGuideTop?.classList.add('hide');
+      }
+
+      if (botCropRatio > 0.05) {
+        if (cropGuideBottom) {
+          cropGuideBottom.classList.remove('hide');
+          cropGuideBottom.style.height = `${Math.round(botCropRatio * 100)}%`;
+        }
+      } else {
+        cropGuideBottom?.classList.add('hide');
+      }
+
+      if (aspectBadge) {
+        if (topCropRatio > 0.05 || botCropRatio > 0.05) {
+          aspectBadge.textContent = `2.39:1 CinemaScope (${Math.round((1 - topCropRatio - botCropRatio) * 100)}% Picture)`;
+          aspectBadge.style.color = '#22d3ee';
+          aspectBadge.style.borderColor = 'rgba(6, 182, 212, 0.4)';
+        } else {
+          aspectBadge.textContent = '16:9 Full Frame';
+          aspectBadge.style.color = '#94a3b8';
+          aspectBadge.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        }
+      }
+    } else {
+      document.getElementById('cropGuideTop')?.classList.add('hide');
+      document.getElementById('cropGuideBottom')?.classList.add('hide');
     }
 
     const activeHeight = Math.max(10, endY - startY);
     const ledCount = APP_STATE.ledCount || 60;
     const masterBriFactor = APP_STATE.brightness / 255;
+
+    // 2. Gaming Low HP / Danger Strobe Analyzer
+    const monitorBox = document.getElementById('screenMonitorBox');
+    const dangerHudAlert = document.getElementById('dangerHudAlert');
+    const now = performance.now();
+
+    if (this.dangerStrobeEnabled) {
+      // Sample perimeter border pixels where gaming damage/blood flashes occur
+      const borderSample = this.sampleCtx.getImageData(0, startY, sw, Math.max(3, Math.floor(activeHeight * 0.22))).data;
+      let redCount = 0;
+      let sampledPixels = 0;
+
+      for (let i = 0; i < borderSample.length; i += 16) {
+        const r = borderSample[i];
+        const g = borderSample[i + 1];
+        const b = borderSample[i + 2];
+        sampledPixels++;
+        if (r > 75) {
+          const maxGB = Math.max(g, b) + 1;
+          if (r / maxGB >= this.dangerSensitivity) {
+            redCount++;
+          }
+        }
+      }
+
+      if (sampledPixels > 0 && (redCount / sampledPixels) >= 0.14) {
+        // Red Danger trigger!
+        this.dangerTriggerUntil = now + 900;
+      }
+    }
+
+    if (now < this.dangerTriggerUntil) {
+      // Active Tactical Danger Strobe Phase
+      if (monitorBox) monitorBox.classList.add('danger-strobe-active');
+      if (dangerHudAlert) dangerHudAlert.classList.remove('hide');
+
+      const phase = Math.sin((now * 0.001 * this.dangerHz) * Math.PI * 2) > 0;
+      const flashR = phase ? 255 : 35;
+      const flashG = 0;
+      const flashB = phase ? 15 : 4;
+      const dangerColor = [flashR, flashG, flashB];
+
+      const ledColors = new Array(ledCount).fill(dangerColor);
+      virtualStrip.setMultiLed(ledColors);
+
+      const ambientBg = document.getElementById('ambientBg');
+      if (ambientBg) {
+        ambientBg.style.background = phase
+          ? `radial-gradient(circle at 50% 30%, rgba(255, 0, 20, 0.5) 0%, transparent 70%), linear-gradient(135deg, #1a0508, #05070e)`
+          : '';
+      }
+
+      wled.send({
+        transition: 0,
+        v: false,
+        on: true,
+        bri: APP_STATE.brightness,
+        seg: {
+          frz: true,
+          i: [0, ledCount, dangerColor],
+          fx: 0
+        }
+      });
+      return;
+    } else {
+      if (monitorBox) monitorBox.classList.remove('danger-strobe-active');
+      if (dangerHudAlert) dangerHudAlert.classList.add('hide');
+    }
+
+    // 3. Fast Edge FPS Motion Velocity Boost
+    let effectiveSmoothing = this.smoothing;
+    let effectiveSaturation = this.saturation;
+
+    if (this.fastEdgeBoost) {
+      const frameDelta = Math.abs(this.currentRGB[0] - this.lastFrameAvgRGB[0]) +
+                         Math.abs(this.currentRGB[1] - this.lastFrameAvgRGB[1]) +
+                         Math.abs(this.currentRGB[2] - this.lastFrameAvgRGB[2]);
+
+      if (frameDelta > 30) {
+        effectiveSmoothing = Math.min(0.95, this.smoothing * 2.1);
+        effectiveSaturation = Math.min(2.5, this.saturation * 1.25);
+      }
+      this.lastFrameAvgRGB = [...this.currentRGB];
+    }
+    this.effectiveSmoothing = effectiveSmoothing;
+    this.effectiveSaturation = effectiveSaturation;
 
     if (this.mode === '3-edges') {
       // 1. 3-SIDE MONITOR (Left • Top • Right, e.g. 3-4-2 or 1-2-1)
@@ -1415,9 +1680,9 @@ class MovieSyncEngine {
       const rawRight = this._sampleZone(rightData);
 
       for (let c = 0; c < 3; c++) {
-        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.smoothing));
-        this.zoneColors.top[c] = Math.round(lerp(this.zoneColors.top[c], rawTop[c], this.smoothing));
-        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.smoothing));
+        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.effectiveSmoothing));
+        this.zoneColors.top[c] = Math.round(lerp(this.zoneColors.top[c], rawTop[c], this.effectiveSmoothing));
+        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.effectiveSmoothing));
       }
 
       // Update Monitor Edge Indicators
@@ -1507,9 +1772,9 @@ class MovieSyncEngine {
       const rawCol3 = this._sampleZone(col3Data);
 
       for (let c = 0; c < 3; c++) {
-        this.zoneColors.colLeft[c] = Math.round(lerp(this.zoneColors.colLeft[c], rawCol1[c], this.smoothing));
-        this.zoneColors.colCenter[c] = Math.round(lerp(this.zoneColors.colCenter[c], rawCol2[c], this.smoothing));
-        this.zoneColors.colRight[c] = Math.round(lerp(this.zoneColors.colRight[c], rawCol3[c], this.smoothing));
+        this.zoneColors.colLeft[c] = Math.round(lerp(this.zoneColors.colLeft[c], rawCol1[c], this.effectiveSmoothing));
+        this.zoneColors.colCenter[c] = Math.round(lerp(this.zoneColors.colCenter[c], rawCol2[c], this.effectiveSmoothing));
+        this.zoneColors.colRight[c] = Math.round(lerp(this.zoneColors.colRight[c], rawCol3[c], this.effectiveSmoothing));
       }
 
       // Update Column Overlays inside Monitor Box
@@ -1604,10 +1869,10 @@ class MovieSyncEngine {
       const rawLeft = this._sampleZone(leftData);
 
       for (let c = 0; c < 3; c++) {
-        this.zoneColors.top[c] = Math.round(lerp(this.zoneColors.top[c], rawTop[c], this.smoothing));
-        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.smoothing));
-        this.zoneColors.bottom[c] = Math.round(lerp(this.zoneColors.bottom[c], rawBottom[c], this.smoothing));
-        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.smoothing));
+        this.zoneColors.top[c] = Math.round(lerp(this.zoneColors.top[c], rawTop[c], this.effectiveSmoothing));
+        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.effectiveSmoothing));
+        this.zoneColors.bottom[c] = Math.round(lerp(this.zoneColors.bottom[c], rawBottom[c], this.effectiveSmoothing));
+        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.effectiveSmoothing));
       }
 
       const setEdgeStyle = (id, rgb) => {
@@ -1685,8 +1950,8 @@ class MovieSyncEngine {
       const rawRight = this._sampleZone(rightData);
 
       for (let c = 0; c < 3; c++) {
-        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.smoothing));
-        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.smoothing));
+        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.effectiveSmoothing));
+        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.effectiveSmoothing));
       }
 
       const setEdgeStyle = (id, rgb) => {
@@ -1798,16 +2063,17 @@ class MovieSyncEngine {
         targetR = 0; targetG = 0; targetB = 0;
       }
 
-      if (this.saturation > 1.0 && (targetR > 0 || targetG > 0 || targetB > 0)) {
-        [targetR, targetG, targetB] = boostSaturation(targetR, targetG, targetB, this.saturation);
+      const satDom = this.effectiveSaturation || this.saturation;
+      if (satDom > 1.0 && (targetR > 0 || targetG > 0 || targetB > 0)) {
+        [targetR, targetG, targetB] = boostSaturation(targetR, targetG, targetB, satDom);
       }
       targetR = Math.max(this.blackFloor, Math.min(255, Math.round(targetR)));
       targetG = Math.max(this.blackFloor, Math.min(255, Math.round(targetG)));
       targetB = Math.max(this.blackFloor, Math.min(255, Math.round(targetB)));
 
-      this.currentRGB[0] = Math.round(lerp(this.currentRGB[0], targetR, this.smoothing));
-      this.currentRGB[1] = Math.round(lerp(this.currentRGB[1], targetG, this.smoothing));
-      this.currentRGB[2] = Math.round(lerp(this.currentRGB[2], targetB, this.smoothing));
+      this.currentRGB[0] = Math.round(lerp(this.currentRGB[0], targetR, this.effectiveSmoothing));
+      this.currentRGB[1] = Math.round(lerp(this.currentRGB[1], targetG, this.effectiveSmoothing));
+      this.currentRGB[2] = Math.round(lerp(this.currentRGB[2], targetB, this.effectiveSmoothing));
 
       const [finalR, finalG, finalB] = this.currentRGB;
       const hex = rgbToHex(finalR, finalG, finalB);
@@ -1870,16 +2136,17 @@ class MovieSyncEngine {
       let targetG = totalW ? gSum / totalW : 0;
       let targetB = totalW ? bSum / totalW : 0;
 
-      if (this.saturation > 1.0 && (targetR > 0 || targetG > 0 || targetB > 0)) {
-        [targetR, targetG, targetB] = boostSaturation(targetR, targetG, targetB, this.saturation);
+      const satAvg = this.effectiveSaturation || this.saturation;
+      if (satAvg > 1.0 && (targetR > 0 || targetG > 0 || targetB > 0)) {
+        [targetR, targetG, targetB] = boostSaturation(targetR, targetG, targetB, satAvg);
       }
       targetR = Math.max(this.blackFloor, Math.min(255, Math.round(targetR)));
       targetG = Math.max(this.blackFloor, Math.min(255, Math.round(targetG)));
       targetB = Math.max(this.blackFloor, Math.min(255, Math.round(targetB)));
 
-      this.currentRGB[0] = Math.round(lerp(this.currentRGB[0], targetR, this.smoothing));
-      this.currentRGB[1] = Math.round(lerp(this.currentRGB[1], targetG, this.smoothing));
-      this.currentRGB[2] = Math.round(lerp(this.currentRGB[2], targetB, this.smoothing));
+      this.currentRGB[0] = Math.round(lerp(this.currentRGB[0], targetR, this.effectiveSmoothing));
+      this.currentRGB[1] = Math.round(lerp(this.currentRGB[1], targetG, this.effectiveSmoothing));
+      this.currentRGB[2] = Math.round(lerp(this.currentRGB[2], targetB, this.effectiveSmoothing));
 
       const [finalR, finalG, finalB] = this.currentRGB;
       const hex = rgbToHex(finalR, finalG, finalB);
@@ -1921,7 +2188,6 @@ class MovieSyncEngine {
     }
 
     this.sampleCounter++;
-    const now = performance.now();
     if (now - this.lastSampleRateTime >= 1000) {
       const sampleText = document.getElementById('sampleRateText');
       if (sampleText) sampleText.textContent = `${this.sampleCounter} updates/sec`;
@@ -1973,8 +2239,9 @@ class MovieSyncEngine {
       targetB = totalB / count;
     }
 
-    if (this.saturation > 1.0 && (targetR > 0 || targetG > 0 || targetB > 0)) {
-      [targetR, targetG, targetB] = boostSaturation(targetR, targetG, targetB, this.saturation);
+    const sat = this.effectiveSaturation || this.saturation;
+    if (sat > 1.0 && (targetR > 0 || targetG > 0 || targetB > 0)) {
+      [targetR, targetG, targetB] = boostSaturation(targetR, targetG, targetB, sat);
     }
 
     return [
@@ -3659,6 +3926,48 @@ function initEventListeners() {
 
   document.getElementById('checkLetterboxFilter')?.addEventListener('change', (e) => {
     movieSync.letterboxFilter = e.target.checked;
+    if (!e.target.checked) {
+      document.getElementById('cropGuideTop')?.classList.add('hide');
+      document.getElementById('cropGuideBottom')?.classList.add('hide');
+    }
+  });
+
+  document.getElementById('sliderLetterboxSens')?.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    movieSync.letterboxSensitivity = val;
+    try { localStorage.setItem('ambilight_letterbox_sens', val.toString()); } catch (err) {}
+    const textEl = document.getElementById('letterboxSensValText');
+    if (textEl) textEl.textContent = `Adaptive (${val})`;
+  });
+
+  document.getElementById('checkDangerStrobe')?.addEventListener('change', (e) => {
+    movieSync.dangerStrobeEnabled = e.target.checked;
+    try { localStorage.setItem('ambilight_danger_strobe', e.target.checked ? 'true' : 'false'); } catch (err) {}
+  });
+
+  document.getElementById('sliderDangerSens')?.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    movieSync.dangerSensitivity = val;
+    try { localStorage.setItem('ambilight_danger_sens', val.toString()); } catch (err) {}
+    let label = 'Medium';
+    if (val <= 1.4) label = 'Sensitive';
+    else if (val >= 2.0) label = 'Strict';
+    const textEl = document.getElementById('dangerSensValText');
+    if (textEl) textEl.textContent = `${label} (${val.toFixed(1)}x)`;
+  });
+
+  document.getElementById('sliderDangerHz')?.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    movieSync.dangerHz = val;
+    try { localStorage.setItem('ambilight_danger_hz', val.toString()); } catch (err) {}
+    const textEl = document.getElementById('dangerHzValText');
+    if (textEl) textEl.textContent = `${val} Hz (Tactical Pulse)`;
+  });
+
+  document.getElementById('checkFastEdgeBoost')?.addEventListener('change', (e) => {
+    movieSync.fastEdgeBoost = e.target.checked;
+    try { localStorage.setItem('ambilight_fast_edge', e.target.checked ? 'true' : 'false'); } catch (err) {}
+    showToast(`Fast Edge FPS Boost: ${e.target.checked ? 'Enabled' : 'Disabled'}`);
   });
 
   // Music Reactive Sync

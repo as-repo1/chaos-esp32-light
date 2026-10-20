@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-nBELUnLu.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DmPQfhC8.css">
+  <script type="module" crossorigin src="/assets/index-DXTgmzeY.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-C5X9zc42.css">
 </head>
 <body>
   <!-- Ambient Aurora Glow Canvas / Background -->
@@ -411,6 +411,19 @@
                 <div class="column-indicator col-zone-left hide" id="colZoneLeft"></div>
                 <div class="column-indicator col-zone-center hide" id="colZoneCenter"></div>
                 <div class="column-indicator col-zone-right hide" id="colZoneRight"></div>
+
+                <!-- Cinema Letterbox Crop Guides -->
+                <div class="crop-guide crop-top hide" id="cropGuideTop">
+                  <span class="crop-guide-pill" id="cropPillTop">21:9 Widescreen Crop</span>
+                </div>
+                <div class="crop-guide crop-bottom hide" id="cropGuideBottom">
+                  <span class="crop-guide-pill" id="cropPillBottom">21:9 Widescreen Crop</span>
+                </div>
+
+                <!-- Gaming Low HP Danger Alert Banner -->
+                <div class="danger-hud-alert hide" id="dangerHudAlert">
+                  <span class="danger-hud-pill">🚨 LOW HEALTH / DANGER STROBE ACTIVE</span>
+                </div>
               </div>
 
               <!-- Multi-Zone Live Color Inspector -->
@@ -429,8 +442,38 @@
             <!-- Right: Movie Sync Fine-Tuning Controls -->
             <div class="glass-card movie-settings-card">
               <div class="card-header">
-                <h3>Ambilight Calibration</h3>
-                <span class="card-subtitle">Tune response curves and edge detection</span>
+                <h3>Ambilight & Gaming Calibration</h3>
+                <span class="card-subtitle">Tune response curves, cinema letterbox, and gaming strobe</span>
+              </div>
+
+              <!-- One-Touch Cinema & Gaming Profiles -->
+              <div class="setting-group" style="margin-bottom: 16px;">
+                <label class="setting-title" style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>One-Touch Cinema & Gaming Profiles</span>
+                  <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; font-size: 10px;">Quick Presets</span>
+                </label>
+                <div class="quick-profiles-grid" id="quickProfilesGrid">
+                  <button type="button" class="profile-chip-btn" data-profile="cinema" id="profileBtn_cinema">
+                    <span class="profile-chip-icon">🎬</span>
+                    <span class="profile-chip-name">Cinema 21:9</span>
+                    <span class="profile-chip-sub">Smooth & Wide</span>
+                  </button>
+                  <button type="button" class="profile-chip-btn" data-profile="fps" id="profileBtn_fps">
+                    <span class="profile-chip-icon">⚡</span>
+                    <span class="profile-chip-name">Fast FPS</span>
+                    <span class="profile-chip-sub">Snappy & Motion</span>
+                  </button>
+                  <button type="button" class="profile-chip-btn" data-profile="cyberpunk" id="profileBtn_cyberpunk">
+                    <span class="profile-chip-icon">🌆</span>
+                    <span class="profile-chip-name">Cyberpunk</span>
+                    <span class="profile-chip-sub">High Saturation</span>
+                  </button>
+                  <button type="button" class="profile-chip-btn" data-profile="horror" id="profileBtn_horror">
+                    <span class="profile-chip-icon">🧟</span>
+                    <span class="profile-chip-name">Horror/Danger</span>
+                    <span class="profile-chip-sub">Subtle & Strobe</span>
+                  </button>
+                </div>
               </div>
 
               <!-- Zone Layout & Mode Selection -->
@@ -547,16 +590,86 @@
                 <p class="setting-hint">Prevents total room darkness during pitch-black movie scenes by maintaining a faint ambient glow.</p>
               </div>
 
-              <!-- Cinema Letterbox Filter Toggle -->
-              <div class="setting-group toggle-row">
-                <div class="toggle-text">
-                  <span class="toggle-title">Letterbox Black-Bar Crop</span>
-                  <span class="toggle-sub">Ignores black bars on 2.39:1 widescreen films</span>
+              <!-- Cinema Letterbox Filter & Sensitivity -->
+              <div class="cinema-gaming-box" id="letterboxBox" style="margin-bottom: 12px;">
+                <div class="setting-group toggle-row" style="margin-bottom: 8px;">
+                  <div class="toggle-text">
+                    <span class="toggle-title" style="display: flex; align-items: center; gap: 6px;">
+                      <span>Letterbox Black-Bar Auto-Crop</span>
+                      <span class="badge" id="detectedAspectBadge" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.35); font-size: 10px;">16:9 Full</span>
+                    </span>
+                    <span class="toggle-sub">Auto-detects 2.39:1 widescreen bars and samples actual video picture</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="checkLetterboxFilter" checked />
+                    <span class="slider round"></span>
+                  </label>
                 </div>
-                <label class="switch">
-                  <input type="checkbox" id="checkLetterboxFilter" checked />
-                  <span class="slider round"></span>
-                </label>
+                <div class="setting-group" id="letterboxSensGroup" style="margin-bottom: 0;">
+                  <div class="setting-label-row">
+                    <span>Black-Bar Threshold Sensitivity</span>
+                    <span id="letterboxSensValText">Adaptive (25)</span>
+                  </div>
+                  <input type="range" min="8" max="50" step="1" value="25" id="sliderLetterboxSens" class="glass-slider" />
+                  <p class="setting-hint">Adjust for deep dark sci-fi or space scenes so starfields aren't mistaken for black bars.</p>
+                </div>
+              </div>
+
+              <!-- Gaming Mode & Low HP Tactical Strobe -->
+              <div class="cinema-gaming-box" id="gamingDangerBox" style="margin-bottom: 12px;">
+                <div class="setting-group toggle-row" style="margin-bottom: 8px;">
+                  <div class="toggle-text">
+                    <span class="toggle-title" style="display: flex; align-items: center; gap: 6px;">
+                      <span>🎮 Gaming Low HP Danger Strobe</span>
+                      <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 10px;">Tactical</span>
+                    </span>
+                    <span class="toggle-sub">Flashes room in urgent crimson when in-game health is critical</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="checkDangerStrobe" checked />
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="danger-strobe-controls" id="dangerStrobeControls">
+                  <div class="danger-row-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 12px; color: var(--text-dim);">Red Flash Threshold:</span>
+                    <button type="button" class="glass-btn btn-small" id="btnTestDangerStrobe" style="padding: 4px 10px; font-size: 11px; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.35); color: #fca5a5;">
+                      ⚡ Test Danger Strobe
+                    </button>
+                  </div>
+                  <div class="setting-group" style="margin-bottom: 10px;">
+                    <div class="setting-label-row">
+                      <span>Red Sensitivity</span>
+                      <span id="dangerSensValText">Medium (1.7x)</span>
+                    </div>
+                    <input type="range" min="1.2" max="2.4" step="0.1" value="1.7" id="sliderDangerSens" class="glass-slider" />
+                  </div>
+                  <div class="setting-group" style="margin-bottom: 0;">
+                    <div class="setting-label-row">
+                      <span>Strobe Flash Frequency</span>
+                      <span id="dangerHzValText">8 Hz (Tactical Pulse)</span>
+                    </div>
+                    <input type="range" min="4" max="14" step="1" value="8" id="sliderDangerHz" class="glass-slider" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fast Edge FPS Mode (Velocity Boost) -->
+              <div class="cinema-gaming-box" id="fastEdgeBox">
+                <div class="setting-group toggle-row" style="margin-bottom: 0;">
+                  <div class="toggle-text">
+                    <span class="toggle-title" style="display: flex; align-items: center; gap: 6px;">
+                      <span>⚡ Fast Edge FPS Boost</span>
+                      <span class="badge" style="background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.35); font-size: 10px;">Esports</span>
+                    </span>
+                    <span class="toggle-sub">Instant response & vibrancy burst during fast 360° turns and muzzle flashes</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="checkFastEdgeBoost" checked />
+                    <span class="slider round"></span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
