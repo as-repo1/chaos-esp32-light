@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-BogD5Rij.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-BoxJABz_.css">
+  <script type="module" crossorigin src="/assets/index-BjMGWcLR.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BClk2vtn.css">
 </head>
 <body>
   <!-- Ambient Aurora Glow Canvas / Background -->
@@ -49,6 +49,84 @@
           <svg class="sync-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.93 4.93a10 10 0 0 1 14.14 0M7.76 7.76a6 6 0 0 1 8.48 0M10.59 10.59a2 2 0 0 1 2.82 0M12 14v8M8 22h8"/></svg>
           <span id="headerSyncText">SYNC OFF</span>
         </button>
+
+        <!-- Theme Mode Quick Switcher Dropdown -->
+        <div class="theme-dropdown-wrapper">
+          <button class="glass-btn theme-toggle-btn" id="headerThemeBtn" title="Select Web Portal Theme Mode">
+            <span class="theme-btn-icon" id="headerThemeIcon">🌌</span>
+            <span class="theme-btn-text" id="headerThemeText">Aurora</span>
+            <svg class="theme-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="theme-dropdown-menu hide" id="themeDropdownMenu">
+            <div class="theme-dropdown-header">Portal Theme Mode</div>
+            <button class="theme-option-btn active" data-theme="aurora">
+              <span class="theme-opt-icon">🌌</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Cyberpunk Aurora</span>
+                <span class="theme-opt-desc">Deep indigo & cyan neon</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #6366f1;"></span>
+                <span class="swatch" style="background: #06b6d4;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="oled">
+              <span class="theme-opt-icon">⬛</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">OLED Void Black</span>
+                <span class="theme-opt-desc">True #000 cinema contrast</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #000000; border: 1px solid #555;"></span>
+                <span class="swatch" style="background: #38bdf8;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="synthwave">
+              <span class="theme-opt-icon">🌆</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Synthwave 80s</span>
+                <span class="theme-opt-desc">Retro magenta & sunset glow</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #f43f5e;"></span>
+                <span class="swatch" style="background: #c084fc;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="matrix">
+              <span class="theme-opt-icon">🟩</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Emerald Matrix</span>
+                <span class="theme-opt-desc">Cybernetic obsidian & mint</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #10b981;"></span>
+                <span class="swatch" style="background: #2dd4bf;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="ember">
+              <span class="theme-opt-icon">🔥</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Solar Ember</span>
+                <span class="theme-opt-desc">Molten lava & amber hearth</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #f97316;"></span>
+                <span class="swatch" style="background: #ef4444;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="nordic">
+              <span class="theme-opt-icon">❄️</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Nordic Frost</span>
+                <span class="theme-opt-desc">Glacial slate & polar blue</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #38bdf8;"></span>
+                <span class="swatch" style="background: #818cf8;"></span>
+              </span>
+            </button>
+          </div>
+        </div>
 
         <div class="connection-badge" id="connBadge" title="Click to view device info">
           <span class="status-dot disconnected" id="statusDot"></span>
@@ -1303,6 +1381,22 @@
                 </button>
               </div>
             </div>
+
+            <!-- Web Portal Appearance & Theme Studio -->
+            <div class="glass-card theme-studio-card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h2>Web Portal Appearance & Theme Studio</h2>
+                  <span class="badge" id="activeThemeBadge">🌌 Aurora (Active)</span>
+                </div>
+                <span class="card-subtitle">Choose your preferred visual aesthetic, contrast, and color palette for this portal</span>
+              </div>
+
+              <div class="theme-studio-grid" id="themeStudioCards">
+                <!-- Theme cards will be rendered here -->
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

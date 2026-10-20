@@ -3898,6 +3898,168 @@ function initEventListeners() {
   });
 }
 
+// ====================================================================
+// Web Portal Multi-Theme Engine
+// ====================================================================
+const PORTAL_THEMES = {
+  aurora: {
+    id: 'aurora',
+    name: 'Cyberpunk Aurora',
+    icon: '🌌',
+    desc: 'Deep cosmic indigo & cyan neon mesh with frosted acrylics',
+    palette: ['#070913', '#6366f1', '#06b6d4', '#ec4899']
+  },
+  oled: {
+    id: 'oled',
+    name: 'OLED Void Black',
+    icon: '⬛',
+    desc: 'True #000000 pitch black with ultra-deep cinema contrast',
+    palette: ['#000000', '#14151a', '#38bdf8', '#ffffff']
+  },
+  synthwave: {
+    id: 'synthwave',
+    name: 'Synthwave 80s',
+    icon: '🌆',
+    desc: 'Neon magenta, retro violet & warm glowing arcade sunset',
+    palette: ['#0d061c', '#f43f5e', '#c084fc', '#fbbf24']
+  },
+  matrix: {
+    id: 'matrix',
+    name: 'Emerald Matrix',
+    icon: '🟩',
+    desc: 'Cybernetic bio-hacker, obsidian black & electric mint',
+    palette: ['#030d08', '#0e3020', '#10b981', '#2dd4bf']
+  },
+  ember: {
+    id: 'ember',
+    name: 'Solar Ember',
+    icon: '🔥',
+    desc: 'Molten lava, warm dark charcoal & golden hearth embers',
+    palette: ['#120906', '#3a1c12', '#f97316', '#ef4444']
+  },
+  nordic: {
+    id: 'nordic',
+    name: 'Nordic Frost',
+    icon: '❄️',
+    desc: 'Crystalline polar slate, arctic blue & glacial glass highlights',
+    palette: ['#080f1a', '#1a2e4c', '#38bdf8', '#818cf8']
+  }
+};
+
+function applyPortalTheme(themeId, notify = true) {
+  const theme = PORTAL_THEMES[themeId] || PORTAL_THEMES.aurora;
+  document.documentElement.setAttribute('data-theme', theme.id);
+  localStorage.setItem('wled_ui_theme', theme.id);
+
+  // Update header button
+  const iconEl = document.getElementById('headerThemeIcon');
+  const textEl = document.getElementById('headerThemeText');
+  if (iconEl) iconEl.textContent = theme.icon;
+  if (textEl) textEl.textContent = theme.name.split(' ')[0] || theme.name;
+
+  // Update active state in dropdown
+  document.querySelectorAll('.theme-option-btn').forEach(btn => {
+    if (btn.dataset.theme === theme.id) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // Update active badge in Settings tab
+  const badgeEl = document.getElementById('activeThemeBadge');
+  if (badgeEl) badgeEl.textContent = `${theme.icon} ${theme.name} (Active)`;
+
+  // Update active class on studio cards
+  document.querySelectorAll('.theme-studio-card-item').forEach(card => {
+    if (card.dataset.theme === theme.id) {
+      card.classList.add('active');
+      const tag = card.querySelector('.theme-active-tag');
+      if (tag) tag.style.display = 'inline-block';
+    } else {
+      card.classList.remove('active');
+      const tag = card.querySelector('.theme-active-tag');
+      if (tag) tag.style.display = 'none';
+    }
+  });
+
+  if (notify) {
+    showToast(`Portal Theme: ${theme.icon} ${theme.name}`);
+  }
+}
+
+function renderThemeStudioCards() {
+  const container = document.getElementById('themeStudioCards');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const activeThemeId = localStorage.getItem('wled_ui_theme') || 'aurora';
+
+  Object.values(PORTAL_THEMES).forEach(theme => {
+    const card = document.createElement('div');
+    card.className = `theme-studio-card-item ${theme.id === activeThemeId ? 'active' : ''}`;
+    card.dataset.theme = theme.id;
+
+    const paletteHtml = theme.palette.map(c => `<span style="background: ${c};"></span>`).join('');
+
+    card.innerHTML = `
+      <div class="theme-card-top-row">
+        <div class="theme-card-title-box">
+          <span class="theme-card-icon">${theme.icon}</span>
+          <span class="theme-card-name">${theme.name}</span>
+        </div>
+        <span class="theme-active-tag" style="${theme.id === activeThemeId ? '' : 'display: none;'}">Active</span>
+      </div>
+      <p class="theme-card-desc">${theme.desc}</p>
+      <div class="theme-palette-preview">
+        ${paletteHtml}
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      applyPortalTheme(theme.id);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function initPortalTheme() {
+  const savedTheme = localStorage.getItem('wled_ui_theme') || 'aurora';
+  applyPortalTheme(savedTheme, false);
+  renderThemeStudioCards();
+
+  // Header Dropdown Toggle
+  const headerBtn = document.getElementById('headerThemeBtn');
+  const dropdownWrapper = document.querySelector('.theme-dropdown-wrapper');
+  const dropdownMenu = document.getElementById('themeDropdownMenu');
+
+  headerBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdownMenu?.classList.toggle('hide');
+    dropdownWrapper?.classList.toggle('open');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.theme-dropdown-wrapper')) {
+      dropdownMenu?.classList.add('hide');
+      dropdownWrapper?.classList.remove('open');
+    }
+  });
+
+  // Header Dropdown options
+  document.querySelectorAll('.theme-option-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const themeId = btn.dataset.theme;
+      applyPortalTheme(themeId);
+      dropdownMenu?.classList.add('hide');
+      dropdownWrapper?.classList.remove('open');
+    });
+  });
+}
+
 // Window globals for debugging & synchronization
 window._wled = wled;
 window._movieSync = movieSync;
@@ -3910,6 +4072,7 @@ document.addEventListener('DOMContentLoaded', () => {
   musicSync.init();
   initEventListeners();
   initPinnedScenes();
+  initPortalTheme();
   wled.connect();
   wled.fetchInitialData();
 });
