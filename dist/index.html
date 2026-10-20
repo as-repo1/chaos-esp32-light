@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chaos ESP32 Light — Smart Cinema & Music Reactive Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/index-nBELUnLu.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DmPQfhC8.css">
+</head>
+<body>
+  <!-- Ambient Aurora Glow Canvas / Background -->
+  <div class="ambient-glow-bg" id="ambientBg"></div>
+
+  <div class="app-container">
+    <!-- Top Floating Glass Navigation & Status Header -->
+    <header class="glass-header" id="mainHeader">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <span class="logo-sparkle">✦</span>
+          <div class="logo-text">
+            <h1>Chaos <span class="accent-text">ESP32 Light</span></h1>
+            <p class="tagline">Smart Cinema & Music Reactive Studio • Powered by WLED</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Virtual LED Strip Simulator Bar -->
+      <div class="virtual-strip-wrapper">
+        <div class="strip-header">
+          <span class="strip-label">LIVE HARDWARE MIRROR (<span id="ledCountBadge">60</span> LEDs)</span>
+          <span class="strip-fps" id="fpsDisplay">-- FPS</span>
+        </div>
+        <canvas id="virtualStripCanvas" width="600" height="18"></canvas>
+      </div>
+
+      <!-- Device Connection Status, Sync, Brightness & Master Power -->
+      <div class="header-controls">
+        <!-- Universal Master Brightness Slider (Accessible from any tab) -->
+        <div class="header-bri-pill" title="Master Brightness Control">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <input type="range" min="0" max="255" value="128" id="headerMasterBri" class="header-slider" />
+          <span id="headerBriText" class="header-bri-val">50%</span>
+        </div>
+
+        <button class="glass-btn sync-toggle-btn" id="headerSyncBtn" title="UDP Broadcast Sync: Synchronize all WLED devices on network">
+          <svg class="sync-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.93 4.93a10 10 0 0 1 14.14 0M7.76 7.76a6 6 0 0 1 8.48 0M10.59 10.59a2 2 0 0 1 2.82 0M12 14v8M8 22h8"/></svg>
+          <span id="headerSyncText">SYNC OFF</span>
+        </button>
+
+        <!-- Theme Mode Quick Switcher Dropdown -->
+        <div class="theme-dropdown-wrapper">
+          <button class="glass-btn theme-toggle-btn" id="headerThemeBtn" title="Select Web Portal Theme Mode">
+            <span class="theme-btn-icon" id="headerThemeIcon">🌌</span>
+            <span class="theme-btn-text" id="headerThemeText">Aurora</span>
+            <svg class="theme-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="theme-dropdown-menu hide" id="themeDropdownMenu">
+            <div class="theme-dropdown-header">Portal Theme Mode</div>
+            <button class="theme-option-btn active" data-theme="aurora">
+              <span class="theme-opt-icon">🌌</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Cyberpunk Aurora</span>
+                <span class="theme-opt-desc">Deep indigo & cyan neon</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #6366f1;"></span>
+                <span class="swatch" style="background: #06b6d4;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="oled">
+              <span class="theme-opt-icon">⬛</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">OLED Void Black</span>
+                <span class="theme-opt-desc">True #000 cinema contrast</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #000000; border: 1px solid #555;"></span>
+                <span class="swatch" style="background: #38bdf8;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="synthwave">
+              <span class="theme-opt-icon">🌆</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Synthwave 80s</span>
+                <span class="theme-opt-desc">Retro magenta & sunset glow</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #f43f5e;"></span>
+                <span class="swatch" style="background: #c084fc;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="matrix">
+              <span class="theme-opt-icon">🟩</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Emerald Matrix</span>
+                <span class="theme-opt-desc">Cybernetic obsidian & mint</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #10b981;"></span>
+                <span class="swatch" style="background: #2dd4bf;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="ember">
+              <span class="theme-opt-icon">🔥</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Solar Ember</span>
+                <span class="theme-opt-desc">Molten lava & amber hearth</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #f97316;"></span>
+                <span class="swatch" style="background: #ef4444;"></span>
+              </span>
+            </button>
+            <button class="theme-option-btn" data-theme="nordic">
+              <span class="theme-opt-icon">❄️</span>
+              <div class="theme-opt-info">
+                <span class="theme-opt-name">Nordic Frost</span>
+                <span class="theme-opt-desc">Glacial slate & polar blue</span>
+              </div>
+              <span class="theme-opt-swatches">
+                <span class="swatch" style="background: #38bdf8;"></span>
+                <span class="swatch" style="background: #818cf8;"></span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="connection-badge" id="connBadge" title="Click to view device info">
+          <span class="status-dot disconnected" id="statusDot"></span>
+          <span class="status-ip" id="displayIp">10.109.101.60</span>
+          <span class="status-ping" id="pingBadge">-- ms</span>
+        </div>
+
+        <button class="glass-btn power-toggle-btn" id="masterPowerBtn" title="Toggle WLED Power">
+          <svg class="power-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"></path>
+          </svg>
+          <span id="powerText">ON</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="glass-nav-tabs">
+      <button class="nav-tab-btn active" id="tabBtnLighting" data-tab="tabLighting">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span>Lighting Studio</span>
+      </button>
+
+      <button class="nav-tab-btn" id="tabBtnMovie" data-tab="tabMovie">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        <span>Movie Sync (Ambilight)</span>
+        <span class="live-pill hide" id="movieActiveBadge">LIVE</span>
+      </button>
+
+      <button class="nav-tab-btn" id="tabBtnMusic" data-tab="tabMusic">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span>Music Reactive Sync</span>
+        <span class="live-pill hide" id="musicActiveBadge">LIVE</span>
+      </button>
+
+      <button class="nav-tab-btn" id="tabBtnPresets" data-tab="tabPresets">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>Presets & Scenes</span>
+      </button>
+
+      <button class="nav-tab-btn" id="tabBtnNetwork" data-tab="tabNetwork">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span>Multi-Device Hub</span>
+        <span class="nodes-count-pill" id="nodesCountBadge">1 DEV</span>
+      </button>
+
+      <button class="nav-tab-btn" id="tabBtnSettings" data-tab="tabSettings">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings & Device</span>
+      </button>
+    </nav>
+
+    <!-- Main Content Panels -->
+    <main class="main-content">
+
+      <!-- ========================================================
+           TAB 1: LIGHTING STUDIO
+           ======================================================== -->
+      <section class="tab-panel active" id="tabLighting">
+        <div class="grid-layout-studio">
+
+          <!-- Left Column: Master Brightness & Color Wheel Card -->
+          <div class="glass-card color-studio-card">
+            <div class="card-header">
+              <h2>Color & Brightness Engine</h2>
+              <span class="card-subtitle">Real-time HSV & RGB Synthesis</span>
+            </div>
+
+            <!-- Master Brightness Capsule -->
+            <div class="brightness-capsule">
+              <div class="capsule-label-row">
+                <span class="label-with-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                  Master Brightness
+                </span>
+                <span class="capsule-value" id="briValueText">100% (255)</span>
+              </div>
+              <input type="range" min="0" max="255" value="128" id="sliderMasterBri" class="glass-slider" />
+            </div>
+
+            <!-- Quick Atmosphere Scene & Sleep Timer Bar -->
+            <div class="quick-atmosphere-strip">
+              <button class="quick-atmos-btn" id="btnAtmosNight" title="Night Dim 10%">
+                <span class="atmos-icon">🌙</span>
+                <span class="atmos-title">Night 10%</span>
+              </button>
+              <button class="quick-atmos-btn" id="btnAtmosWarm" title="Warm Candle Relax">
+                <span class="atmos-icon">🕯️</span>
+                <span class="atmos-title">Warm Relax</span>
+              </button>
+              <button class="quick-atmos-btn" id="btnAtmosStudio" title="Daylight 100%">
+                <span class="atmos-icon">☀️</span>
+                <span class="atmos-title">Daylight</span>
+              </button>
+              <button class="quick-atmos-btn" id="btnAtmosParty" title="Party Blitz Strobe">
+                <span class="atmos-icon">⚡</span>
+                <span class="atmos-title">Party Blitz</span>
+              </button>
+              <button class="quick-atmos-btn" id="btnSleepTimer" title="Set Sleep Timer">
+                <span class="atmos-icon">⏱️</span>
+                <span class="atmos-title" id="sleepTimerText">Sleep Timer</span>
+              </button>
+            </div>
+
+            <!-- 3 Color Slots (Primary, Secondary, Tertiary) -->
+            <div class="color-slots-section">
+              <span class="section-micro-label">ACTIVE COLOR SLOT</span>
+              <div class="color-slots-row" id="colorSlotsContainer">
+                <button class="color-slot-btn active" id="slot0Btn" data-slot="0">
+                  <span class="slot-swatch" id="slot0Swatch" style="background: #ff0055;"></span>
+                  <span class="slot-name">Primary</span>
+                </button>
+                <button class="color-slot-btn" id="slot1Btn" data-slot="1">
+                  <span class="slot-swatch" id="slot1Swatch" style="background: #000000;"></span>
+                  <span class="slot-name">Secondary</span>
+                </button>
+                <button class="color-slot-btn" id="slot2Btn" data-slot="2">
+                  <span class="slot-swatch" id="slot2Swatch" style="background: #000000;"></span>
+                  <span class="slot-name">Tertiary</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Interactive Canvas Color Wheel -->
+            <div class="color-wheel-wrapper">
+              <canvas id="colorWheelCanvas" width="260" height="260"></canvas>
+              <div class="wheel-center-preview" id="wheelCenterPreview"></div>
+            </div>
+
+            <!-- Sliders for RGB & Hex -->
+            <div class="rgb-hex-controls">
+              <div class="rgb-sliders">
+                <div class="rgb-slider-row">
+                  <span class="rgb-tag r-tag">R</span>
+                  <input type="range" min="0" max="255" value="255" id="sliderR" class="glass-slider r-slider" />
+                  <span class="rgb-val" id="valR">255</span>
+                </div>
+                <div class="rgb-slider-row">
+                  <span class="rgb-tag g-tag">G</span>
+                  <input type="range" min="0" max="255" value="0" id="sliderG" class="glass-slider g-slider" />
+                  <span class="rgb-val" id="valG">0</span>
+                </div>
+                <div class="rgb-slider-row">
+                  <span class="rgb-tag b-tag">B</span>
+                  <input type="range" min="0" max="255" value="100" id="sliderB" class="glass-slider b-slider" />
+                  <span class="rgb-val" id="valB">100</span>
+                </div>
+              </div>
+
+              <div class="hex-row">
+                <span class="hex-label">HEX</span>
+                <input type="text" id="hexInput" value="#FF0064" maxlength="7" class="glass-input hex-input" />
+                <button class="glass-btn btn-small" id="applyHexBtn">Set</button>
+              </div>
+
+              <!-- Quick Palette Swatches -->
+              <div class="quick-swatches-row">
+                <button class="swatch-btn" style="background: #ff0055;" data-hex="#ff0055" title="Neon Pink"></button>
+                <button class="swatch-btn" style="background: #ff5500;" data-hex="#ff5500" title="Warm Orange"></button>
+                <button class="swatch-btn" style="background: #ffbb00;" data-hex="#ffbb00" title="Gold Amber"></button>
+                <button class="swatch-btn" style="background: #00ff88;" data-hex="#00ff88" title="Emerald Green"></button>
+                <button class="swatch-btn" style="background: #00e5ff;" data-hex="#00e5ff" title="Cyber Cyan"></button>
+                <button class="swatch-btn" style="background: #3b82f6;" data-hex="#3b82f6" title="Electric Blue"></button>
+                <button class="swatch-btn" style="background: #a855f7;" data-hex="#a855f7" title="Deep Violet"></button>
+                <button class="swatch-btn" style="background: #ffffff;" data-hex="#ffffff" title="Warm White"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Effects & Palettes Grid -->
+          <div class="glass-card effects-palettes-card">
+            <!-- Effect Customization Sliders (Speed & Intensity) -->
+            <div class="fx-params-box">
+              <div class="card-header-compact">
+                <h3>Effect Dynamics & Speed</h3>
+              </div>
+              <div class="params-row">
+                <div class="param-slider-group">
+                  <div class="param-label-row">
+                    <span>Speed (SX)</span>
+                    <span id="speedValText">128</span>
+                  </div>
+                  <input type="range" min="0" max="255" value="128" id="sliderSpeed" class="glass-slider" />
+                </div>
+                <div class="param-slider-group">
+                  <div class="param-label-row">
+                    <span>Intensity (IX)</span>
+                    <span id="intensityValText">128</span>
+                  </div>
+                  <input type="range" min="0" max="255" value="128" id="sliderIntensity" class="glass-slider" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Effect Selection Section -->
+            <div class="fx-section">
+              <div class="section-title-search">
+                <div class="title-with-badge">
+                  <h3>Lighting Effects</h3>
+                  <span class="count-badge" id="effectCountBadge">220 effects</span>
+                </div>
+                <div class="search-box">
+                  <input type="text" id="searchEffectsInput" placeholder="Search effects (e.g. Fire, Rainbow)..." class="glass-input search-input" />
+                </div>
+              </div>
+
+              <div class="grid-scrollable effects-grid" id="effectsGrid">
+                <!-- Dynamically populated from WLED /json/eff -->
+                <div class="grid-loading">Loading effects from ESP32...</div>
+              </div>
+            </div>
+
+            <!-- Palette Selection Section -->
+            <div class="palette-section">
+              <div class="section-title-search">
+                <div class="title-with-badge">
+                  <h3>Color Palettes</h3>
+                  <span class="count-badge" id="paletteCountBadge">72 palettes</span>
+                </div>
+                <div class="search-box">
+                  <input type="text" id="searchPalettesInput" placeholder="Search palettes..." class="glass-input search-input" />
+                </div>
+              </div>
+
+              <div class="grid-scrollable palettes-grid" id="palettesGrid">
+                <!-- Dynamically populated from WLED /json/pal -->
+                <div class="grid-loading">Loading palettes from ESP32...</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           TAB 2: MOVIE SYNC (SCREEN AMBILIGHT)
+           ======================================================== -->
+      <section class="tab-panel" id="tabMovie">
+        <div class="movie-sync-container">
+          <div class="glass-card movie-banner-card">
+            <div class="banner-content">
+              <div class="banner-badge">CINEMA AMBILIGHT ENGINE</div>
+              <h2>Automatic Movie & Screen Color Sync</h2>
+              <p>
+                Synchronize your LED strip in real time with whatever is playing on your PC screen:
+                Netflix, YouTube, VLC, Prime Video, or PC games!
+              </p>
+            </div>
+            <div class="banner-actions">
+              <button class="glass-btn btn-prominent" id="btnStartMovieSync">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+                <span>Start Screen Capture</span>
+              </button>
+              <button class="glass-btn btn-danger hide" id="btnStopMovieSync">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" fill="currentColor"/></svg>
+                <span>Stop Screen Sync</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid-layout-movie">
+            <!-- Left: Video & Ambilight Edge Visualizer Monitor -->
+            <div class="glass-card monitor-card">
+              <div class="card-header">
+                <h3>Live Ambilight Monitor</h3>
+                <span class="badge-status-sync" id="screenSyncStatus">Awaiting Screen Selection</span>
+              </div>
+
+              <!-- Monitor with dynamic glowing border representing LED ambilight -->
+              <div class="screen-monitor-box" id="screenMonitorBox">
+                <video id="screenVideoElement" autoplay playsinline muted class="screen-video"></video>
+                <div class="monitor-overlay-placeholder" id="monitorPlaceholder">
+                  <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <p>Click <strong>Start Screen Capture</strong> above to choose a screen, window, or Chrome tab</p>
+                </div>
+                <!-- Edge color indicators -->
+                <div class="edge-indicator top-edge" id="edgeTop"></div>
+                <div class="edge-indicator right-edge" id="edgeRight"></div>
+                <div class="edge-indicator bottom-edge" id="edgeBottom"></div>
+                <div class="edge-indicator left-edge" id="edgeLeft"></div>
+                <!-- Column overlays for 3-col mode -->
+                <div class="column-indicator col-zone-left hide" id="colZoneLeft"></div>
+                <div class="column-indicator col-zone-center hide" id="colZoneCenter"></div>
+                <div class="column-indicator col-zone-right hide" id="colZoneRight"></div>
+              </div>
+
+              <!-- Multi-Zone Live Color Inspector -->
+              <div class="zone-chips-container" id="zoneChipsContainer">
+                <!-- Dynamically populated for multi-zone layouts -->
+              </div>
+
+              <div class="sampled-color-display" id="singleSampledDisplay">
+                <span class="color-chip-label">Current Streamed Color:</span>
+                <div class="live-color-chip" id="liveSampledChip"></div>
+                <span class="color-hex-val" id="liveSampledHex">#000000</span>
+                <span class="sample-rate-label" id="sampleRateText">0 updates/sec</span>
+              </div>
+            </div>
+
+            <!-- Right: Movie Sync Fine-Tuning Controls -->
+            <div class="glass-card movie-settings-card">
+              <div class="card-header">
+                <h3>Ambilight Calibration</h3>
+                <span class="card-subtitle">Tune response curves and edge detection</span>
+              </div>
+
+              <!-- Zone Layout & Mode Selection -->
+              <div class="setting-group">
+                <label class="setting-title">Monitor Zone Layout & Division</label>
+                <div class="zone-modes-grid" id="ambilightModeSelect">
+                  <button type="button" class="zone-mode-btn active" data-mode="3-edges" id="zoneModeBtn_3edges">
+                    <span class="zone-mode-icon">⎍</span>
+                    <span class="zone-mode-title">3-Side Monitor</span>
+                    <span class="zone-mode-sub">Left • Top • Right</span>
+                  </button>
+                  <button type="button" class="zone-mode-btn" data-mode="3-cols" id="zoneModeBtn_3cols">
+                    <span class="zone-mode-icon">▥</span>
+                    <span class="zone-mode-title">3 Columns</span>
+                    <span class="zone-mode-sub">Left • Center • Right</span>
+                  </button>
+                  <button type="button" class="zone-mode-btn" data-mode="4-edges" id="zoneModeBtn_4edges">
+                    <span class="zone-mode-icon">▢</span>
+                    <span class="zone-mode-title">4-Edge Frame</span>
+                    <span class="zone-mode-sub">Full 4 Sides</span>
+                  </button>
+                  <button type="button" class="zone-mode-btn" data-mode="2-sides" id="zoneModeBtn_2sides">
+                    <span class="zone-mode-icon">║</span>
+                    <span class="zone-mode-title">2 Lightbars</span>
+                    <span class="zone-mode-sub">Left & Right Pillars</span>
+                  </button>
+                  <button type="button" class="zone-mode-btn" data-mode="dominant" id="zoneModeBtn_dominant">
+                    <span class="zone-mode-icon">✦</span>
+                    <span class="zone-mode-title">Vibrant Dominant</span>
+                    <span class="zone-mode-sub">Unified Scene Pop</span>
+                  </button>
+                  <button type="button" class="zone-mode-btn" data-mode="average" id="zoneModeBtn_average">
+                    <span class="zone-mode-icon">◈</span>
+                    <span class="zone-mode-title">Screen Average</span>
+                    <span class="zone-mode-sub">Weighted Mean</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Section Division & LED Allocation Panel -->
+              <div class="section-division-card" id="sectionDivisionCard">
+                <div class="division-header-row">
+                  <div class="division-title">Section Division & LED Distribution</div>
+                  <span class="division-badge" id="divisionSummaryBadge">15 • 30 • 15 (60 LEDs)</span>
+                </div>
+
+                <!-- Division Presets -->
+                <div class="division-presets-row" id="divisionPresetsRow"></div>
+
+                <!-- Custom Division Ratio Input -->
+                <div class="custom-ratio-row" id="customRatioRow">
+                  <span class="custom-ratio-label">Custom Division Ratio / Proportion (e.g. 3-4-2):</span>
+                  <div class="custom-ratio-input-group">
+                    <input type="text" id="customRatioInput" class="custom-ratio-input" placeholder="e.g. 3-4-2 or 15-30-15" />
+                    <button type="button" id="btnApplyCustomRatio" class="glass-btn btn-sm">Apply 3-4-2</button>
+                  </div>
+                  <span class="custom-ratio-hint" id="customRatioHint">Type ratio (e.g. 3-4-2) or exact LED counts</span>
+                </div>
+
+                <!-- Sliders for each section -->
+                <div class="section-sliders-list" id="sectionSlidersList"></div>
+
+                <!-- Strip Wiring Sequence -->
+                <div class="wiring-order-row">
+                  <span class="section-name">Strip Wiring Sequence:</span>
+                  <select id="wiringSelect" class="wiring-select">
+                    <option value="cw">Bottom-Left ➔ Top ➔ Right (Default)</option>
+                    <option value="ccw">Bottom-Right ➔ Top ➔ Left</option>
+                    <option value="lr">Left ➔ Center ➔ Right</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Dedicated Ambilight Brightness Control -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span class="label-with-icon">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                    Ambilight LED Brightness
+                  </span>
+                  <span id="movieBriValText">50% (128)</span>
+                </div>
+                <input type="range" min="0" max="255" value="128" id="sliderMovieBri" class="glass-slider" />
+                <p class="setting-hint">Adjust LED intensity directly while watching movies.</p>
+              </div>
+
+              <!-- Smoothing (Linear Interpolation) -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span>Color Transition Smoothing</span>
+                  <span id="smoothingValText">Responsive (0.35)</span>
+                </div>
+                <input type="range" min="0.05" max="1.0" step="0.05" value="0.35" id="sliderMovieSmoothing" class="glass-slider" />
+                <p class="setting-hint">Higher values make color changes sharper; lower values make transitions cinematic and organic.</p>
+              </div>
+
+              <!-- Saturation & Vibrancy Boost -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span>Color Saturation Boost</span>
+                  <span id="saturationValText">1.5x (Vivid)</span>
+                </div>
+                <input type="range" min="1.0" max="2.5" step="0.1" value="1.5" id="sliderMovieSaturation" class="glass-slider" />
+                <p class="setting-hint">Amplifies vividness so LEDs deliver rich cinematic colors even in dimly lit scenes.</p>
+              </div>
+
+              <!-- Minimum Brightness (Black Scene Ambient) -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span>Minimum Black-Floor Brightness</span>
+                  <span id="blackFloorValText">0 (True Black)</span>
+                </div>
+                <input type="range" min="0" max="50" value="0" id="sliderBlackFloor" class="glass-slider" />
+                <p class="setting-hint">Prevents total room darkness during pitch-black movie scenes by maintaining a faint ambient glow.</p>
+              </div>
+
+              <!-- Cinema Letterbox Filter Toggle -->
+              <div class="setting-group toggle-row">
+                <div class="toggle-text">
+                  <span class="toggle-title">Letterbox Black-Bar Crop</span>
+                  <span class="toggle-sub">Ignores black bars on 2.39:1 widescreen films</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="checkLetterboxFilter" checked />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           TAB 3: MUSIC REACTIVE SYNC (EXPANDED SPECTRUM ENGINE)
+           ======================================================== -->
+      <section class="tab-panel" id="tabMusic">
+        <div class="music-sync-container">
+          <div class="glass-card music-banner-card">
+            <div class="banner-content">
+              <div class="banner-badge">NEXT-GEN AUDIO FFT SPECTRUM ENGINE</div>
+              <h2>Music & Audio Reactive Spectrum</h2>
+              <p>
+                Turns your ESP32 LEDs into a real-time frequency equalizer. Synchronize with your microphone,
+                Spotify/YouTube system audio, or the built-in test generator!
+              </p>
+            </div>
+            <div class="banner-actions music-banner-actions">
+              <!-- Audio Source Selector Buttons -->
+              <div class="audio-source-picker">
+                <button class="glass-btn btn-source active" id="btnSourceMic" data-source="mic">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                  <span>Microphone</span>
+                </button>
+                <button class="glass-btn btn-source" id="btnSourceSystem" data-source="system">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <span>System / Tab Audio</span>
+                </button>
+                <button class="glass-btn btn-source" id="btnSourceDemo" data-source="demo">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+                  <span>Demo Beat Loop</span>
+                </button>
+              </div>
+
+              <div class="action-buttons-group">
+                <button class="glass-btn btn-prominent" id="btnStartMusicSync">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
+                  <span>Start Audio Sync</span>
+                </button>
+                <button class="glass-btn btn-danger hide" id="btnStopMusicSync">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" fill="currentColor"/></svg>
+                  <span>Stop Audio Sync</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-layout-music">
+            <!-- Left: Visualizer Canvas (Spectrum, Waveform, Meters) -->
+            <div class="glass-card visualizer-card">
+              <div class="card-header-flex">
+                <div class="header-titles">
+                  <h3>Real-time Frequency Spectrum</h3>
+                  <span class="card-subtitle" id="audioSourceStatus">Source: Microphone</span>
+                </div>
+                <div class="beat-detected-pill" id="beatPill">BEAT DETECTED</div>
+              </div>
+
+              <!-- Spectrum Analyzer Canvas -->
+              <div class="canvas-box">
+                <canvas id="audioSpectrumCanvas" width="560" height="160"></canvas>
+              </div>
+
+              <!-- Oscilloscope Waveform Canvas -->
+              <div class="canvas-box waveform-box">
+                <canvas id="audioWaveformCanvas" width="560" height="70"></canvas>
+              </div>
+
+              <!-- Energy Levels: Bass, Mid, Treble -->
+              <div class="audio-energy-meters">
+                <div class="meter-col">
+                  <div class="meter-bar-track">
+                    <div class="meter-bar-fill bass-fill" id="meterBass" style="width: 0%;"></div>
+                  </div>
+                  <span class="meter-name">BASS (20-250Hz)</span>
+                </div>
+                <div class="meter-col">
+                  <div class="meter-bar-track">
+                    <div class="meter-bar-fill mid-fill" id="meterMid" style="width: 0%;"></div>
+                  </div>
+                  <span class="meter-name">MIDS (250-4kHz)</span>
+                </div>
+                <div class="meter-col">
+                  <div class="meter-bar-track">
+                    <div class="meter-bar-fill treble-fill" id="meterTreble" style="width: 0%;"></div>
+                  </div>
+                  <span class="meter-name">TREBLE (4-16kHz)</span>
+                </div>
+              </div>
+
+              <!-- Spectrum Color Palette Selector -->
+              <div class="spectrum-palettes-box">
+                <div class="palette-box-header">
+                  <span class="setting-title">Spectrum Color Themes (14 Curated & Custom)</span>
+                </div>
+                <div class="spectrum-palettes-grid" id="spectrumPalettesGrid">
+                  <button class="spec-pal-btn active" data-pal="cyberpunk">
+                    <span class="pal-preview cyberpunk-grad"></span>
+                    <span class="pal-name">Cyberpunk</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="classicVu">
+                    <span class="pal-preview classic-grad"></span>
+                    <span class="pal-name">Studio VU</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="fire">
+                    <span class="pal-preview fire-grad"></span>
+                    <span class="pal-name">Fire & Magma</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="ocean">
+                    <span class="pal-preview ocean-grad"></span>
+                    <span class="pal-name">Ocean Ice</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="synthwave">
+                    <span class="pal-preview synthwave-grad"></span>
+                    <span class="pal-name">Synthwave</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="rainbow">
+                    <span class="pal-preview rainbow-grad"></span>
+                    <span class="pal-name">Prism Rainbow</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="matrix">
+                    <span class="pal-preview matrix-grad"></span>
+                    <span class="pal-name">Matrix Green</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="aurora">
+                    <span class="pal-preview aurora-grad"></span>
+                    <span class="pal-name">Aurora Borealis</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="toxicSunset">
+                    <span class="pal-preview toxic-grad"></span>
+                    <span class="pal-name">Toxic Sunset</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="bloodMoon">
+                    <span class="pal-preview blood-grad"></span>
+                    <span class="pal-name">Blood Moon</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="vaporwave">
+                    <span class="pal-preview vapor-grad"></span>
+                    <span class="pal-name">Vaporwave</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="deepSpace">
+                    <span class="pal-preview space-grad"></span>
+                    <span class="pal-name">Deep Space</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="solarFlare">
+                    <span class="pal-preview solar-grad"></span>
+                    <span class="pal-name">Solar Flare</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="iceMint">
+                    <span class="pal-preview mint-grad"></span>
+                    <span class="pal-name">Arctic Mint</span>
+                  </button>
+                  <button class="spec-pal-btn" data-pal="custom" id="btnCustomPalSelect">
+                    <span class="pal-preview custom-grad" id="customPalPreviewSwatch"></span>
+                    <span class="pal-name">Custom Mix</span>
+                  </button>
+                </div>
+
+                <!-- Interactive Custom 3-Stop Palette Generator -->
+                <div class="custom-palette-builder-box">
+                  <div class="custom-pal-header">
+                    <span class="builder-title">Custom 3-Stop Palette Builder</span>
+                    <button class="glass-btn btn-xs" id="btnRandomCustomPal">🎲 Randomize</button>
+                  </div>
+                  <div class="custom-pal-controls">
+                    <div class="custom-stop-col">
+                      <span class="stop-label">Bass (Low)</span>
+                      <input type="color" id="customColor0" value="#ff0055" class="color-picker-input" />
+                    </div>
+                    <div class="custom-stop-col">
+                      <span class="stop-label">Mids</span>
+                      <input type="color" id="customColor1" value="#00f2fe" class="color-picker-input" />
+                    </div>
+                    <div class="custom-stop-col">
+                      <span class="stop-label">Treble (High)</span>
+                      <input type="color" id="customColor2" value="#a855f7" class="color-picker-input" />
+                    </div>
+                    <div class="custom-preview-col">
+                      <div class="custom-gradient-preview" id="customPalPreviewBar"></div>
+                      <button class="glass-btn btn-small" id="btnApplyCustomPal">Activate Custom Palette</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Music Reactive Mode Controls & Calibration -->
+            <div class="glass-card music-settings-card">
+              <div class="card-header">
+                <h3>Spectrum Modes & Tuning</h3>
+                <span class="card-subtitle">12 high-performance audio reactive visualizers</span>
+              </div>
+
+              <!-- Dedicated Visualizer Brightness Control -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span class="label-with-icon">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                    Audio Reactive LED Brightness
+                  </span>
+                  <span id="musicBriValText">50% (128)</span>
+                </div>
+                <input type="range" min="0" max="255" value="128" id="sliderMusicBri" class="glass-slider" />
+                <p class="setting-hint">Control brightness directly without leaving the visualizer tab.</p>
+              </div>
+
+              <!-- Reactive Mode Selector -->
+              <div class="setting-group">
+                <label class="setting-title">Audio Spectrum Mode (12 Modes)</label>
+                <div class="mode-cards-grid" id="musicModeGrid">
+                  <button class="mode-card active" data-mode="fullSpectrum">
+                    <span class="mode-icon">📊</span>
+                    <div class="mode-info">
+                      <strong>Full 60-LED Equalizer</strong>
+                      <p>Maps audio frequency bands from Bass to Treble across all 60 LEDs</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="symmetricalMirror">
+                    <span class="mode-icon">⚖️</span>
+                    <div class="mode-info">
+                      <strong>Symmetrical Dual EQ</strong>
+                      <p>Bass hits in center, audio frequencies mirror outward to strip edges</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="centerPulse">
+                    <span class="mode-icon">💥</span>
+                    <div class="mode-info">
+                      <strong>Center-Out Bass Explosion</strong>
+                      <p>Kicks expand outwards from the center of the strip to the edges</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="thermalHeatmap">
+                    <span class="mode-icon">🔥</span>
+                    <div class="mode-info">
+                      <strong>Dynamic Thermal Heatmap</strong>
+                      <p>Spectral energy density mapped to thermal infrared heat trails</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="frequencyWave">
+                    <span class="mode-icon">〰️</span>
+                    <div class="mode-info">
+                      <strong>Traveling Wave Ripple</strong>
+                      <p>Beat strikes launch acoustic wave ripples that traverse down the strip</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="vuMeter">
+                    <span class="mode-icon">📈</span>
+                    <div class="mode-info">
+                      <strong>Studio Peak VU Meter</strong>
+                      <p>Volume bar fills the strip with green, yellow, and red peak hold</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="kineticPulse">
+                    <span class="mode-icon">⚡</span>
+                    <div class="mode-info">
+                      <strong>Kinetic Dance Blitz</strong>
+                      <p>Club strobe bursts that dynamically shift hues on every beat drop</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="starfield">
+                    <span class="mode-icon">✨</span>
+                    <div class="mode-info">
+                      <strong>Audio Starfield Sparkle</strong>
+                      <p>Crisp percussion lights up random starry constellations of LEDs</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="bpmChase">
+                    <span class="mode-icon">💫</span>
+                    <div class="mode-info">
+                      <strong>Tempo Chase Comet</strong>
+                      <p>Neon comet runner that accelerates velocity & length with rhythm</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="beatStrobe">
+                    <span class="mode-icon">💥</span>
+                    <div class="mode-info">
+                      <strong>Bass Drop + Sparkle</strong>
+                      <p>Heavy bass pulse combined with random white high-hat sparkles</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="freqRainbow">
+                    <span class="mode-icon">🌈</span>
+                    <div class="mode-info">
+                      <strong>Melody Pitch Chromagram</strong>
+                      <p>Shifts overall color and hue to track musical pitch and melody</p>
+                    </div>
+                  </button>
+
+                  <button class="mode-card" data-mode="chillFlow">
+                    <span class="mode-icon">🌊</span>
+                    <div class="mode-info">
+                      <strong>Ambient Lo-Fi Breathe</strong>
+                      <p>Gentle organic breathing glow following musical energy</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Audio Sensitivity Slider -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span>Audio Gain / Sensitivity</span>
+                  <span id="micGainValText">1.8x</span>
+                </div>
+                <input type="range" min="0.5" max="5.0" step="0.1" value="1.8" id="sliderMicGain" class="glass-slider" />
+                <p class="setting-hint">Boost for quiet music or lower if background audio is already loud.</p>
+              </div>
+
+              <!-- Noise Gate / Floor Threshold -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span>Noise Gate / Silence Filter</span>
+                  <span id="noiseGateValText">15</span>
+                </div>
+                <input type="range" min="0" max="60" value="15" id="sliderNoiseGate" class="glass-slider" />
+                <p class="setting-hint">Ignores quiet room fan or background noise so lights stay dark during pauses.</p>
+              </div>
+
+              <!-- Beat Detection Threshold -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span>Bass Beat Threshold</span>
+                  <span id="beatThresholdValText">1.25x</span>
+                </div>
+                <input type="range" min="1.05" max="2.0" step="0.05" value="1.25" id="sliderBeatThreshold" class="glass-slider" />
+              </div>
+
+              <!-- Peak Decay Speed -->
+              <div class="setting-group">
+                <div class="setting-label-row">
+                  <span>Equalizer Decay Speed</span>
+                  <span id="decaySpeedValText">Smooth (0.84)</span>
+                </div>
+                <input type="range" min="0.65" max="0.96" step="0.02" value="0.84" id="sliderDecaySpeed" class="glass-slider" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           TAB 4: PRESETS & SCENES
+           ======================================================== -->
+      <!-- ========================================================
+           TAB 4: PRESETS & SCENES
+           ======================================================== -->
+      <section class="tab-panel" id="tabPresets">
+        <div class="presets-container">
+          <div class="glass-card presets-card">
+            
+            <!-- Main Header with Action Buttons -->
+            <div class="card-header presets-main-header">
+              <div class="presets-header-title-box">
+                <h2>WLED Presets & Ambient Scenes</h2>
+                <span class="card-subtitle">Customized & saved directly in your ESP32's non-volatile LittleFS storage</span>
+              </div>
+              <div class="presets-header-actions">
+                <button class="primary-btn glow-btn btn-small" id="btnOpenSavePresetModal" title="Save current live lighting look to an ESP32 preset slot">
+                  <span class="btn-icon">💾</span>
+                  <span>Save Live Look as Preset</span>
+                </button>
+                <button class="glass-btn btn-small" id="btnPinCurrentScene" title="Pin current lighting look to quick scenes grid">
+                  <span class="btn-icon">📌</span>
+                  <span>Pin Look to Quick Scenes</span>
+                </button>
+                <button class="glass-btn btn-small" id="refreshPresetsBtn" title="Reload presets from ESP32">
+                  <span class="btn-icon">🔄</span>
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Built-in & Pinned Quick Atmosphere Scenes -->
+            <div class="quick-scenes-wrapper">
+              <div class="quick-scenes-section-header">
+                <h4>Atmospheric Quick Scenes</h4>
+                <span class="sub-badge">1-Click Live Ambient Lighting</span>
+              </div>
+              <div class="quick-scenes-grid" id="quickScenesGrid">
+                <!-- Built-in scenes -->
+                <button class="scene-card" data-fx="0" data-col="#ff6a00" data-pal="0" data-bri="255">
+                  <span class="scene-icon">🌅</span>
+                  <span class="scene-name">Sunset Glow</span>
+                  <span class="scene-desc">Warm amber peaceful light</span>
+                </button>
+
+                <button class="scene-card" data-fx="42" data-col="#00f2fe" data-pal="3" data-bri="220">
+                  <span class="scene-icon">🌌</span>
+                  <span class="scene-name">Cyberpunk Neon</span>
+                  <span class="scene-desc">Electric cyan & magenta flow</span>
+                </button>
+
+                <button class="scene-card" data-fx="75" data-col="#ff2200" data-pal="4" data-bri="240">
+                  <span class="scene-icon">🔥</span>
+                  <span class="scene-name">Campfire Ember</span>
+                  <span class="scene-desc">Flickering flame fireplace</span>
+                </button>
+
+                <button class="scene-card" data-fx="15" data-col="#00d2ff" data-pal="5" data-bri="180">
+                  <span class="scene-icon">🌊</span>
+                  <span class="scene-name">Deep Ocean</span>
+                  <span class="scene-desc">Subtle blue wave dynamics</span>
+                </button>
+
+                <button class="scene-card" data-fx="10" data-col="#ffffff" data-pal="0" data-bri="255">
+                  <span class="scene-icon">💡</span>
+                  <span class="scene-name">Studio Daylight</span>
+                  <span class="scene-desc">Pure crisp 6500K task light</span>
+                </button>
+
+                <button class="scene-card" data-fx="8" data-col="#ff9944" data-pal="0" data-bri="60">
+                  <span class="scene-icon">🌙</span>
+                  <span class="scene-name">Nightlight Relax</span>
+                  <span class="scene-desc">Ultra-dim cozy nightglow</span>
+                </button>
+                <!-- Pinned custom scenes rendered dynamically here -->
+              </div>
+            </div>
+
+            <!-- Expandable Preset Customization Studio / Creator Panel -->
+            <div class="preset-creator-card" id="presetCreatorPanel" style="display: none;">
+              <div class="creator-header">
+                <div class="creator-title-box">
+                  <span class="creator-badge">PRESET CUSTOMIZATION STUDIO</span>
+                  <h3>Save & Customize Hardware Preset</h3>
+                </div>
+                <button class="glass-btn btn-icon-only" id="btnClosePresetCreator" title="Close Panel">✕</button>
+              </div>
+
+              <!-- Live Snapshot Preview of what is being saved -->
+              <div class="preset-snapshot-preview">
+                <div class="snapshot-label">Live State Captured from Lights:</div>
+                <div class="snapshot-chips">
+                  <div class="snapshot-chip colors-chip">
+                    <span class="chip-title">Colors:</span>
+                    <span class="color-dot-swatch" id="previewColorDot1"></span>
+                    <span class="color-dot-swatch" id="previewColorDot2"></span>
+                    <span class="color-dot-swatch" id="previewColorDot3"></span>
+                  </div>
+                  <div class="snapshot-chip">
+                    <span class="chip-title">Effect:</span>
+                    <span class="chip-val" id="previewEffectName">Solid</span>
+                  </div>
+                  <div class="snapshot-chip">
+                    <span class="chip-title">Palette:</span>
+                    <span class="chip-val" id="previewPaletteName">Default</span>
+                  </div>
+                  <div class="snapshot-chip">
+                    <span class="chip-title">Brightness:</span>
+                    <span class="chip-val" id="previewBrightness">100%</span>
+                  </div>
+                  <div class="snapshot-chip">
+                    <span class="chip-title">Speed / Int:</span>
+                    <span class="chip-val" id="previewSpeedInt">128 / 128</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Inputs -->
+              <div class="creator-form-grid">
+                <!-- Preset Name Input -->
+                <div class="form-group form-group-span2">
+                  <label for="presetNameInput">Preset Name & Title</label>
+                  <div class="preset-name-input-wrapper">
+                    <input type="text" id="presetNameInput" placeholder="e.g. 🌅 Sunset Chill, 🌌 Cyber Neon..." maxlength="32" class="glass-input">
+                  </div>
+                  <!-- Quick Suggestions Chips -->
+                  <div class="preset-suggestions-row">
+                    <span class="suggestion-label">Quick Suggestions:</span>
+                    <div class="suggestion-chips" id="presetSuggestionsList">
+                      <button type="button" class="sugg-chip">🌅 Sunset Chill</button>
+                      <button type="button" class="sugg-chip">🌌 Cyber Vibe</button>
+                      <button type="button" class="sugg-chip">🔥 Cozy Hearth</button>
+                      <button type="button" class="sugg-chip">🌊 Ocean Wave</button>
+                      <button type="button" class="sugg-chip">🎮 Gamer Pulse</button>
+                      <button type="button" class="sugg-chip">🎬 Cinema Dim</button>
+                      <button type="button" class="sugg-chip">⚡ Neon Lightning</button>
+                      <button type="button" class="sugg-chip">☕ Lo-Fi Cafe</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Emoji Picker -->
+                <div class="form-group form-group-span2">
+                  <label>Preset Icon Emoji</label>
+                  <div class="emoji-chips-list" id="presetEmojiPicker">
+                    <button type="button" class="emoji-chip" data-emoji="🌅">🌅</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌌">🌌</button>
+                    <button type="button" class="emoji-chip" data-emoji="🔥">🔥</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌊">🌊</button>
+                    <button type="button" class="emoji-chip" data-emoji="💡">💡</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌙">🌙</button>
+                    <button type="button" class="emoji-chip" data-emoji="🎮">🎮</button>
+                    <button type="button" class="emoji-chip" data-emoji="🎬">🎬</button>
+                    <button type="button" class="emoji-chip" data-emoji="🚀">🚀</button>
+                    <button type="button" class="emoji-chip" data-emoji="⚡">⚡</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌈">🌈</button>
+                    <button type="button" class="emoji-chip" data-emoji="👾">👾</button>
+                    <button type="button" class="emoji-chip" data-emoji="💜">💜</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌺">🌺</button>
+                    <button type="button" class="emoji-chip" data-emoji="❄️">❄️</button>
+                    <button type="button" class="emoji-chip" data-emoji="☕">☕</button>
+                  </div>
+                </div>
+
+                <!-- Slot Selector -->
+                <div class="form-group">
+                  <label for="presetSlotSelect">Hardware Preset Slot (1–250)</label>
+                  <div class="slot-select-wrapper">
+                    <select id="presetSlotSelect" class="glass-select">
+                      <!-- Dynamic options populated with free/existing indicators -->
+                    </select>
+                    <span class="slot-status-hint" id="presetSlotStatusHint">Slot #1 is available</span>
+                  </div>
+                </div>
+
+                <!-- Customization Toggles -->
+                <div class="form-group options-group">
+                  <label>Preset Storage Options</label>
+                  <div class="checkboxes-row">
+                    <label class="custom-toggle-label">
+                      <input type="checkbox" id="presetOptIncludeBri" checked>
+                      <span class="toggle-text">Include Brightness</span>
+                    </label>
+                    <label class="custom-toggle-label">
+                      <input type="checkbox" id="presetOptSaveBounds">
+                      <span class="toggle-text">Save Segment Bounds</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Action Buttons -->
+              <div class="creator-actions-row">
+                <button type="button" class="glass-btn" id="btnCancelPresetCreator">Cancel</button>
+                <button type="button" class="primary-btn glow-btn" id="btnSavePresetConfirm">
+                  <span>💾 Save Preset to ESP32</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Hardware Presets List from WLED -->
+            <div class="hardware-presets-section">
+              <div class="section-title-compact">
+                <div class="title-with-badge">
+                  <h3>Custom Hardware Presets (On ESP32)</h3>
+                  <span class="badge" id="devicePresetsCountBadge">0 Presets</span>
+                </div>
+                <!-- Search / Filter Presets -->
+                <div class="preset-filter-wrapper">
+                  <input type="text" id="searchPresetsInput" placeholder="🔍 Search presets..." class="glass-input-compact">
+                </div>
+              </div>
+
+              <div class="hardware-presets-grid" id="devicePresetsList">
+                <div class="empty-hint">Loading presets from ESP32...</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           TAB: MULTI-DEVICE HUB & NETWORK SYNC
+           ======================================================== -->
+      <section class="tab-panel" id="tabNetwork">
+        <div class="network-container">
+          
+          <!-- Banner -->
+          <div class="glass-card network-banner-card">
+            <div class="banner-content">
+              <div class="banner-badge">MULTI-DEVICE SMART LIGHTING ECOSYSTEM</div>
+              <h2>Multi-Device Hub & Synchronization</h2>
+              <p>
+                Discover and control multiple WLED lights on your local network, switch targets seamlessly,
+                or link all lights together with real-time UDP broadcast sync!
+              </p>
+            </div>
+            <div class="banner-actions">
+              <button class="glass-btn btn-prominent" id="btnScanNetworkNodes">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Discover Network Lights</span>
+              </button>
+              <button class="glass-btn btn-secondary" id="btnTestSyncPulse">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>Broadcast Flash Test</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid-layout-network">
+
+            <!-- Card 1: UDP Broadcast Group Synchronization -->
+            <div class="glass-card sync-controller-card">
+              <div class="card-header">
+                <h3>UDP Broadcast Group Sync</h3>
+                <span class="card-subtitle">WLED Multi-Device Sync Protocol (Port 21324)</span>
+              </div>
+
+              <div class="sync-switches-list">
+                <!-- Send Sync -->
+                <div class="setting-group toggle-row">
+                  <div class="toggle-text">
+                    <span class="toggle-title">Broadcast Commands (Sync Send)</span>
+                    <span class="toggle-sub">Mirrors all color, brightness, effects & music sync to other WLED devices on LAN</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="checkSyncSend" />
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <!-- Receive Sync -->
+                <div class="setting-group toggle-row">
+                  <div class="toggle-text">
+                    <span class="toggle-title">Listen for Commands (Sync Receive)</span>
+                    <span class="toggle-sub">Allows this device to follow commands sent by other WLED remotes</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="checkSyncRecv" checked />
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Sync Groups -->
+              <div class="setting-group">
+                <label class="setting-title">WLED Sync Group</label>
+                <div class="sync-groups-row">
+                  <button class="group-btn active" data-grp="1">Group 1</button>
+                  <button class="group-btn" data-grp="2">Group 2</button>
+                  <button class="group-btn" data-grp="3">Group 3</button>
+                  <button class="group-btn" data-grp="4">Group 4</button>
+                </div>
+                <p class="setting-hint">Devices assigned to the same sync group update simultaneously in sub-millisecond sync.</p>
+              </div>
+            </div>
+
+            <!-- Card 2: Active Controller & Quick Switcher -->
+            <div class="glass-card active-target-card">
+              <div class="card-header">
+                <h3>Active Target Device</h3>
+                <span class="status-pill active-pill" id="activeDevStatusPill">Connected</span>
+              </div>
+
+              <div class="current-device-display">
+                <div class="device-avatar">💡</div>
+                <div class="device-details">
+                  <strong class="device-name-title" id="activeDevName">WLED Controller</strong>
+                  <span class="device-ip-code" id="activeDevIp">10.109.101.60</span>
+                  <div class="device-specs-chips">
+                    <span class="spec-chip" id="activeDevArch">ESP32</span>
+                    <span class="spec-chip" id="activeDevLeds">60 LEDs</span>
+                    <span class="spec-chip" id="activeDevRssi">-53 dBm</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Switch Target Device Input -->
+              <div class="setting-group">
+                <label class="setting-title" for="inputSwitchTargetIp">Switch Target IP / Device</label>
+                <div class="input-with-button">
+                  <input type="text" id="inputSwitchTargetIp" class="glass-input" placeholder="e.g. 10.109.101.61" value="10.109.101.60" />
+                  <button class="glass-btn btn-prominent" id="btnSwitchTargetIp">Switch</button>
+                </div>
+                <p class="setting-hint">Control any ESP32 light in your home directly from this interface.</p>
+              </div>
+            </div>
+
+            <!-- Card 3: Discovered WLED Devices & Multi-Room Lights -->
+            <div class="glass-card discovered-nodes-card">
+              <div class="card-header-flex">
+                <div>
+                  <h3>Discovered Lights on Network</h3>
+                  <span class="card-subtitle">Devices discovered via mDNS & WLED UDP ping</span>
+                </div>
+                <button class="glass-btn btn-xs" id="btnAddCustomDeviceModalBtn">+ Add IP</button>
+              </div>
+
+              <div class="discovered-nodes-grid" id="discoveredNodesList">
+                <!-- Dynamically populated or saved devices -->
+              </div>
+            </div>
+
+            <!-- Card 4: Wi-Fi Credentials & Connectivity Manager -->
+            <div class="glass-card wifi-manager-card">
+              <div class="card-header">
+                <h3>Wi-Fi & Network Configuration</h3>
+                <span class="card-subtitle">Default Wi-Fi: SSID pk / Pwd 00000000</span>
+              </div>
+
+              <div class="wifi-current-status-box">
+                <div class="wifi-status-row">
+                  <span class="wifi-label">Active Connection:</span>
+                  <strong class="wifi-value" id="currentWifiSsidDisplay">pk</strong>
+                </div>
+                <div class="wifi-status-row">
+                  <span class="wifi-label">Client IP Address:</span>
+                  <span class="wifi-value" id="currentWifiIpDisplay">10.109.101.60</span>
+                </div>
+                <div class="wifi-status-row">
+                  <span class="wifi-label">Signal Quality:</span>
+                  <span class="wifi-value" id="currentWifiSignalDisplay">94% (Good)</span>
+                </div>
+              </div>
+
+              <div class="wifi-form-group">
+                <label class="setting-title" for="wifiSsidInput">Wi-Fi Network Name (SSID)</label>
+                <input type="text" id="wifiSsidInput" class="glass-input" value="pk" placeholder="Network Name" />
+
+                <label class="setting-title" for="wifiPasswordInput">Wi-Fi Password</label>
+                <div class="password-input-wrapper">
+                  <input type="password" id="wifiPasswordInput" class="glass-input" value="00000000" placeholder="Password" />
+                  <button type="button" class="btn-toggle-pwd" id="btnToggleWifiPwd">👁️</button>
+                </div>
+
+                <div class="wifi-actions-row">
+                  <button class="glass-btn btn-prominent" id="btnSaveWifiCredentials">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    <span>Save to ESP32 & Connect</span>
+                  </button>
+                  <a href="http://10.109.101.60/settings/wifi" target="_blank" class="glass-btn btn-small" id="btnNativeWifiSettings">Firmware Wi-Fi Page</a>
+                </div>
+                <p class="setting-hint" id="wifiSaveFeedback">Default credentials set to pk / 00000000.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           TAB 6: SETTINGS & DEVICE STATS
+           ======================================================== -->
+      <section class="tab-panel" id="tabSettings">
+        <div class="settings-container">
+          <div class="grid-layout-settings">
+            <!-- Connection & Network -->
+            <div class="glass-card">
+              <div class="card-header">
+                <h2>WLED Target Device Configuration</h2>
+                <span class="card-subtitle">Connect to your ESP32 controller</span>
+              </div>
+
+              <div class="setting-group">
+                <label class="setting-title" for="wledIpInput">ESP32 IP Address / Hostname</label>
+                <div class="input-with-button">
+                  <input type="text" id="wledIpInput" value="10.109.101.60" class="glass-input" placeholder="e.g. 10.109.101.60" />
+                  <button class="glass-btn btn-prominent" id="saveIpBtn">Connect & Save</button>
+                </div>
+                <p class="setting-hint">WebSocket connects to ws://&lt;IP&gt;/ws for sub-10ms instantaneous lighting updates.</p>
+              </div>
+
+              <div class="setting-group">
+                <label class="setting-title" for="ledCountInput">Total LED Count (Strip Length)</label>
+                <input type="number" id="ledCountInput" value="60" min="1" max="1000" class="glass-input" />
+                <p class="setting-hint">Used by the live virtual strip visualizer and multi-zone edge ambilight engine.</p>
+              </div>
+
+              <div class="setting-group">
+                <label class="setting-title">Quick Links to ESP32 Firmware</label>
+                <div class="firmware-links-row">
+                  <a href="http://10.109.101.60/" target="_blank" class="glass-btn btn-small link-btn" id="linkNativeWled">Open Native WLED Web</a>
+                  <a href="http://10.109.101.60/settings" target="_blank" class="glass-btn btn-small link-btn" id="linkConfigWled">WLED Hardware Config</a>
+                  <a href="http://10.109.101.60/settings/ui" target="_blank" class="glass-btn btn-small link-btn" id="linkUiConfigWled">UI Settings</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hardware Diagnostics & Telemetry -->
+            <div class="glass-card">
+              <div class="card-header">
+                <h2>Hardware Diagnostics & Status</h2>
+                <span class="card-subtitle">Live telemetry from ESP32</span>
+              </div>
+
+              <div class="diagnostics-grid">
+                <div class="diag-card">
+                  <span class="diag-label">FIRMWARE VERSION</span>
+                  <span class="diag-value" id="diagVer">--</span>
+                </div>
+                <div class="diag-card">
+                  <span class="diag-label">DEVICE NAME</span>
+                  <span class="diag-value" id="diagName">--</span>
+                </div>
+                <div class="diag-card">
+                  <span class="diag-label">WI-FI SIGNAL (RSSI)</span>
+                  <span class="diag-value" id="diagWifi">-- dBm</span>
+                </div>
+                <div class="diag-card">
+                  <span class="diag-label">ESTIMATED CURRENT</span>
+                  <span class="diag-value" id="diagPower">-- mA</span>
+                </div>
+                <div class="diag-card">
+                  <span class="diag-label">RENDER FRAME-RATE</span>
+                  <span class="diag-value" id="diagFps">-- FPS</span>
+                </div>
+                <div class="diag-card">
+                  <span class="diag-label">WEBSOCKET STATUS</span>
+                  <span class="diag-value" id="diagWs">Connecting...</span>
+                </div>
+              </div>
+
+              <div class="device-actions-row">
+                <button class="glass-btn" id="btnRefreshDeviceStats">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <span>Refresh Telemetry</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Web Portal Appearance & Theme Studio -->
+            <div class="glass-card theme-studio-card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h2>Web Portal Appearance & Theme Studio</h2>
+                  <span class="badge" id="activeThemeBadge">🌌 Aurora (Active)</span>
+                </div>
+                <span class="card-subtitle">Choose your preferred visual aesthetic, contrast, and color palette for this portal</span>
+              </div>
+
+              <div class="theme-studio-grid" id="themeStudioCards">
+                <!-- Theme cards will be rendered here -->
+              </div>
+            </div>
+
+            <!-- Credits & Acknowledgments -->
+            <div class="glass-card" style="grid-column: 1 / -1; margin-top: 4px;">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h2>🙏 Acknowledgments & Credits</h2>
+                  <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Open Source</span>
+                </div>
+                <span class="card-subtitle">Chaos ESP32 Light is proudly powered by and built on top of the incredible WLED project</span>
+              </div>
+              <div class="credits-body" style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                <p style="margin-bottom: 12px;">Special thanks and full credit to <strong>Christian Schwinne (Aircoookie)</strong> and all contributors to the open-source <a href="https://github.com/Aircoookie/WLED" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: underline;">WLED Project</a>. WLED provides the rock-solid ESP32 firmware, real-time WebSocket protocol, and LED driver engine that powers Chaos ESP32 Light.</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <a href="https://github.com/Aircoookie/WLED" target="_blank" rel="noopener noreferrer" class="glass-btn btn-small">⭐ WLED GitHub Repository</a>
+                  <a href="https://kno.wled.ge/" target="_blank" rel="noopener noreferrer" class="glass-btn btn-small">📚 Official WLED Documentation</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal: Sleep Countdown Timer -->
+    <div class="glass-modal-backdrop hide" id="sleepTimerModal">
+      <div class="glass-modal-card">
+        <div class="modal-header">
+          <h3>⏱️ Sleep Countdown Timer</h3>
+          <button class="modal-close-btn" id="btnCloseSleepModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">Smoothly dims and fades your LEDs to black over the selected duration.</p>
+          <div class="timer-presets-grid">
+            <button class="timer-chip-btn" data-min="15">15 Minutes</button>
+            <button class="timer-chip-btn" data-min="30">30 Minutes</button>
+            <button class="timer-chip-btn" data-min="45">45 Minutes</button>
+            <button class="timer-chip-btn" data-min="60">60 Minutes</button>
+          </div>
+          <div class="active-timer-status-box hide" id="activeTimerBox">
+            <span class="timer-countdown-label">Time Remaining:</span>
+            <strong class="timer-countdown-display" id="timerCountdownDisplay">00:00</strong>
+            <button class="glass-btn btn-danger btn-xs" id="btnCancelSleepTimer">Cancel Timer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Add Manual Device IP -->
+    <div class="glass-modal-backdrop hide" id="addDeviceModal">
+      <div class="glass-modal-card">
+        <div class="modal-header">
+          <h3>➕ Add Custom Device IP</h3>
+          <button class="modal-close-btn" id="btnCloseAddDevModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">Add another WLED controller on your network to quickly switch and control it.</p>
+          <div class="setting-group">
+            <label class="setting-title" for="modalDevNameInput">Device Nickname</label>
+            <input type="text" id="modalDevNameInput" class="glass-input" placeholder="e.g. Desk Backlight, Kitchen LEDs" />
+          </div>
+          <div class="setting-group">
+            <label class="setting-title" for="modalDevIpInput">Device IP Address / Hostname</label>
+            <input type="text" id="modalDevIpInput" class="glass-input" placeholder="e.g. 10.109.101.61" />
+          </div>
+          <div class="modal-actions-row">
+            <button class="glass-btn btn-prominent" id="btnConfirmAddDevice">Save & Connect</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Rename Preset -->
+    <div class="glass-modal-backdrop hide" id="renamePresetModal">
+      <div class="glass-modal-card">
+        <div class="modal-header">
+          <h3>✏️ Rename Preset</h3>
+          <button class="modal-close-btn" id="btnCloseRenamePresetModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc" id="renameModalDesc">Update name for Preset #1</p>
+          <div class="setting-group">
+            <label class="setting-title" for="modalRenamePresetInput">Preset Name & Title</label>
+            <input type="text" id="modalRenamePresetInput" class="glass-input" placeholder="e.g. 🌅 Sunset Chill" maxlength="32" />
+          </div>
+          <div class="modal-actions-row">
+            <button class="glass-btn btn-secondary" id="btnCancelRenamePreset">Cancel</button>
+            <button class="primary-btn glow-btn" id="btnConfirmRenamePreset">Save Name</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Toast / Notification Pill -->
+    <div class="toast-notification hide" id="globalToast">
+      <span class="toast-icon">✨</span>
+      <span class="toast-msg" id="toastMessage">Connected to WLED</span>
+    </div>
+
+  </div>
+
+</body>
+</html>

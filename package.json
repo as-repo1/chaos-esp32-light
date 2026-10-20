@@ -1,0 +1,15 @@
+{
+  "name": "chaos-esp32-light",
+  "private": true,
+  "version": "1.3.0",
+  "description": "Chaos ESP32 Light — Smart Cinema Ambilight & Music Reactive Studio for ESP32 & WLED",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host --port 5173",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

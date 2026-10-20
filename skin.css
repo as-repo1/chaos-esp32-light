@@ -1,0 +1,398 @@
+/* ====================================================================
+   WLED Ultra Glassmorphic Theme (skin.css)
+   Designed for WLED v14 / v15 / v16+
+   Frosted Glass, Ambient Aurora Mesh, Translucent Cards & Modern Glows
+   ==================================================================== */
+
+:root {
+  --c-1: #090d16;
+  --c-2: rgba(25, 33, 58, 0.55);
+  --c-3: rgba(40, 52, 90, 0.45);
+  --c-4: rgba(60, 78, 130, 0.55);
+  --c-5: rgba(85, 110, 180, 0.65);
+  --c-6: #818cf8;
+  --c-8: #94a3b8;
+  --c-b: #6366f1;
+  --c-c: #cbd5e1;
+  --c-d: #e2e8f0;
+  --c-e: #f8fafc;
+  --c-f: #ffffff;
+  --c-r: #f43f5e;
+  --c-g: #10b981;
+  --c-l: #38bdf8;
+  --c-y: #fbbf24;
+  --t-b: 0.55;
+  --c-o: rgba(13, 18, 36, 0.85);
+  --c-tb: rgba(13, 18, 36, 0.55);
+  --c-tba: rgba(99, 102, 241, 0.3);
+  --c-tbh: rgba(30, 42, 75, 0.7);
+  --c-sb: rgba(255, 255, 255, 0.2);
+}
+
+/* Base Body & Ambient Aurora Background */
+body {
+  background-color: #080c16 !important;
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.32) 0%, transparent 45%),
+    radial-gradient(circle at 90% 12%, rgba(56, 189, 248, 0.28) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.22) 0%, transparent 50%),
+    radial-gradient(circle at 15% 85%, rgba(16, 185, 129, 0.2) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%) !important;
+  background-attachment: fixed !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  color: #f1f5f9 !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient canvas layer */
+#bg {
+  display: block !important;
+  opacity: 1 !important;
+  background: 
+    radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 90% 15%, rgba(56, 189, 248, 0.25) 0%, transparent 42%),
+    radial-gradient(circle at 80% 85%, rgba(236, 72, 153, 0.2) 0%, transparent 48%),
+    radial-gradient(circle at 15% 85%, rgba(16, 185, 129, 0.18) 0%, transparent 42%),
+    linear-gradient(135deg, #070a14 0%, #0d1326 50%, #080c17 100%) !important;
+  z-index: -10 !important;
+}
+
+/* Preserve WLED Icons font */
+.icons {
+  font-family: WIcons !important;
+}
+
+/* ====================================================================
+   Top Header (Navigation / Power / Brightness)
+   ==================================================================== */
+#top.wrapper, .wrapper {
+  background: rgba(13, 19, 38, 0.65) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.3s ease;
+}
+
+/* Power Button with Glow */
+#buttonPower {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+#buttonPower.on, .on {
+  color: #10b981 !important;
+  filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.85)) !important;
+}
+#buttonPower:hover {
+  transform: scale(1.1);
+}
+
+/* Header Action Buttons */
+.btnwrap button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  padding: 6px 12px !important;
+  color: #e2e8f0 !important;
+  transition: all 0.2s ease !important;
+}
+.btnwrap button:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+/* Brightness Slider Container in Header */
+#briwrap {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 20px !important;
+  padding: 4px 12px !important;
+}
+
+/* ====================================================================
+   Bottom Navigation Dock
+   ==================================================================== */
+#bot.tab.bot, .tab.bot {
+  background: rgba(13, 19, 38, 0.75) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.tablinks {
+  border-radius: 16px !important;
+  margin: 4px 6px !important;
+  padding: 6px 12px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid transparent !important;
+  color: #94a3b8 !important;
+}
+.tablinks:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+}
+.tablinks.active {
+  background: rgba(99, 102, 241, 0.25) !important;
+  border: 1px solid rgba(129, 140, 248, 0.45) !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  color: #e0e7ff !important;
+}
+
+/* ====================================================================
+   Colors Tab & Glass Cards (#Colors)
+   ==================================================================== */
+#Colors {
+  padding-bottom: 24px !important;
+}
+
+/* The Color Picker Card */
+#picker {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 36px !important;
+  padding: 20px 26px !important;
+  margin: 16px auto !important;
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.3) !important;
+  display: inline-block !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+#picker:hover {
+  box-shadow: 
+    0 20px 48px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25),
+    0 0 28px rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Color Slots */
+#csl {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin: 18px 0 !important;
+}
+#csl button {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 18px !important;
+  border: 2px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.3) !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+#csl button:hover {
+  transform: translateY(-3px) scale(1.08) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55) !important;
+}
+#csl .sl {
+  border-color: #818cf8 !important;
+  border-width: 3px !important;
+  box-shadow: 
+    0 0 24px rgba(99, 102, 241, 0.75),
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    inset 0 0 8px rgba(255, 255, 255, 0.4) !important;
+  transform: scale(1.12) !important;
+}
+
+/* Quick Color Swatches Container */
+#qcs-w {
+  background: rgba(255, 255, 255, 0.035) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 26px !important;
+  padding: 14px 20px !important;
+  margin: 16px auto !important;
+  max-width: 340px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+.qcs {
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+.qcs:hover {
+  transform: scale(1.15) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Hex Color Input */
+#hexw {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px !important;
+  padding: 6px 16px !important;
+  margin: 12px auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+#hexw input[type=text] {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px !important;
+  color: #fff !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 15px !important;
+  padding: 5px 10px !important;
+  text-align: center !important;
+  letter-spacing: 1px !important;
+}
+
+/* ====================================================================
+   Frosted Sliders & Knobs
+   ==================================================================== */
+.sliderwrap {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 20px !important;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.4),
+    0 4px 14px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden !important;
+  transition: all 0.25s ease !important;
+}
+.sliderwrap:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.4),
+    0 6px 20px rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Range input thumbs */
+input[type=range]::-webkit-slider-thumb {
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+  border: 2px solid #ffffff !important;
+}
+input[type=range]::-moz-range-thumb {
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* ====================================================================
+   Glass Buttons & Controls
+   ==================================================================== */
+.btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 20px !important;
+  color: #f8fafc !important;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  font-weight: 500 !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 10px 28px rgba(0, 0, 0, 0.4),
+    0 0 16px rgba(99, 102, 241, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+.btn:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+.btn-xs {
+  border-radius: 12px !important;
+  padding: 4px 10px !important;
+}
+
+/* ====================================================================
+   Palette & Effect Lists (Glass Cards)
+   ==================================================================== */
+.list {
+  padding: 8px 12px !important;
+}
+.lstI {
+  background: rgba(255, 255, 255, 0.035) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  margin: 6px 0 !important;
+  padding: 10px 14px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.25s ease !important;
+}
+.lstI:hover {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateX(4px) !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3) !important;
+}
+.lstI.selected {
+  background: rgba(99, 102, 241, 0.28) !important;
+  border: 1px solid rgba(129, 140, 248, 0.6) !important;
+  box-shadow: 
+    0 0 24px rgba(99, 102, 241, 0.45),
+    0 6px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Search Bars */
+.fnd input[type=text] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 18px !important;
+  color: #f1f5f9 !important;
+  font-size: 16px !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+.fnd input[type=text]:focus {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.35) !important;
+}
+
+/* ====================================================================
+   Modals & Overlays (Info, Nodes, Version Dialogs)
+   ==================================================================== */
+.modal {
+  background: rgba(13, 19, 38, 0.82) !important;
+  backdrop-filter: blur(32px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 28px !important;
+  box-shadow: 
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
