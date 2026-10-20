@@ -2888,7 +2888,14 @@ input:checked + .slider.round:before {
   font-size: 12px;
   cursor: pointer;
   text-align: left;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.zone-mode-btn * {
+  pointer-events: none;
 }
 
 .zone-mode-btn:hover {
@@ -2898,11 +2905,25 @@ input:checked + .slider.round:before {
   transform: translateY(-1px);
 }
 
+.zone-mode-btn:focus {
+  outline: none;
+}
+
+.zone-mode-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
 .zone-mode-btn.active {
-  background: rgba(99, 102, 241, 0.32);
-  border-color: var(--accent-indigo);
+  background: rgba(99, 102, 241, 0.35) !important;
+  border-color: var(--accent-indigo) !important;
+  color: #fff !important;
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.5) !important;
+}
+
+.zone-mode-btn.active .zone-mode-title {
   color: #fff;
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+  text-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
 }
 
 .zone-mode-icon {

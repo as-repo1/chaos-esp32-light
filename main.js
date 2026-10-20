@@ -750,12 +750,24 @@ class MovieSyncEngine {
     this.letterboxFilter = true;
     this.wiringDirection = localStorage.getItem('ambilight_wiring') || 'cw';
 
+    // Safe parsing helper to protect against corrupted localStorage
+    const safeParseRatio = (key, fallback) => {
+      try {
+        const item = localStorage.getItem(key);
+        if (!item) return fallback;
+        const parsed = JSON.parse(item);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    };
+
     // Proportions / parts per section for multi-zone modes (Default 3-4-2 for 3-edges as requested)
     this.zoneRatios = {
-      '3-edges': JSON.parse(localStorage.getItem('ambilight_ratios_3edges') || '[3, 4, 2]'),
-      '3-cols': JSON.parse(localStorage.getItem('ambilight_ratios_3cols') || '[1, 1, 1]'),
-      '4-edges': JSON.parse(localStorage.getItem('ambilight_ratios_4edges') || '[7, 3, 7, 3]'),
-      '2-sides': JSON.parse(localStorage.getItem('ambilight_ratios_2sides') || '[1, 1]')
+      '3-edges': safeParseRatio('ambilight_ratios_3edges', [3, 4, 2]),
+      '3-cols': safeParseRatio('ambilight_ratios_3cols', [1, 1, 1]),
+      '4-edges': safeParseRatio('ambilight_ratios_4edges', [7, 3, 7, 3]),
+      '2-sides': safeParseRatio('ambilight_ratios_2sides', [1, 1])
     };
 
     this.currentRGB = [0, 0, 0];
@@ -776,10 +788,25 @@ class MovieSyncEngine {
   init() {
     this.video = document.getElementById('screenVideoElement');
 
-    // Setup active mode button
+    // Event delegation on container - works reliably across all devices, touch and click
+    const modeSelectContainer = document.getElementById('ambilightModeSelect');
+    if (modeSelectContainer) {
+      modeSelectContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.zone-mode-btn');
+        if (btn && btn.dataset.mode) {
+          e.preventDefault();
+          this.setMode(btn.dataset.mode);
+        }
+      });
+    }
+
+    // Direct listener and active class setup on each button
     document.querySelectorAll('#ambilightModeSelect .zone-mode-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.mode === this.mode);
-      btn.addEventListener('click', () => {
+      const isMatch = btn.dataset.mode === this.mode;
+      btn.classList.toggle('active', isMatch);
+      btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
         this.setMode(btn.dataset.mode);
       });
     });
@@ -1116,28 +1143,48 @@ class MovieSyncEngine {
   }
 
   setMode(mode) {
+    if (!mode) return;
     this.mode = mode;
     try {
       localStorage.setItem('ambilight_mode', mode);
     } catch (e) {}
 
+    // Immediately toggle active state and ARIA attributes on all buttons
     document.querySelectorAll('#ambilightModeSelect .zone-mode-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.mode === mode);
+      const isMatch = btn.dataset.mode === mode;
+      btn.classList.toggle('active', isMatch);
+      btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
     });
 
-    this.updateWiringOptions();
-    this.renderDivisionControls();
-    this.updateVisibilityForMode();
+    try {
+      this.updateWiringOptions();
+    } catch (err) {
+      console.warn('updateWiringOptions error:', err);
+    }
 
-    // Reset visual indicators
-    ['edgeTop', 'edgeRight', 'edgeBottom', 'edgeLeft'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.background = 'transparent';
-    });
-    ['colZoneLeft', 'colZoneCenter', 'colZoneRight'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.background = 'transparent';
-    });
+    try {
+      this.renderDivisionControls();
+    } catch (err) {
+      console.warn('renderDivisionControls error:', err);
+    }
+
+    try {
+      this.updateVisibilityForMode();
+    } catch (err) {
+      console.warn('updateVisibilityForMode error:', err);
+    }
+
+    try {
+      // Reset visual indicators
+      ['edgeTop', 'edgeRight', 'edgeBottom', 'edgeLeft'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.background = 'transparent';
+      });
+      ['colZoneLeft', 'colZoneCenter', 'colZoneRight'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.background = 'transparent';
+      });
+    } catch (err) {}
 
     const modeTitles = {
       '3-edges': '3-Side Monitor (Left • Top • Right)',
@@ -3565,6 +3612,18 @@ function initEventListeners() {
   document.getElementById('btnStartMovieSync')?.addEventListener('click', () => movieSync.start());
   document.getElementById('btnStopMovieSync')?.addEventListener('click', () => movieSync.stop());
 
+  // Monitor Zone Layout mode selector buttons (delegation)
+  const ambilightModeSelect = document.getElementById('ambilightModeSelect');
+  if (ambilightModeSelect) {
+    ambilightModeSelect.addEventListener('click', (e) => {
+      const btn = e.target.closest('.zone-mode-btn');
+      if (btn && btn.dataset.mode) {
+        e.preventDefault();
+        movieSync.setMode(btn.dataset.mode);
+      }
+    });
+  }
+
 
 
   document.getElementById('sliderMovieSmoothing')?.addEventListener('input', (e) => {
@@ -4064,15 +4123,22 @@ function initPortalTheme() {
 window._wled = wled;
 window._movieSync = movieSync;
 window._musicSync = musicSync;
+window.setAmbilightMode = (m) => movieSync.setMode(m);
 
-document.addEventListener('DOMContentLoaded', () => {
-  colorWheel.init();
-  virtualStrip.init();
-  movieSync.init();
-  musicSync.init();
-  initEventListeners();
-  initPinnedScenes();
-  initPortalTheme();
-  wled.connect();
-  wled.fetchInitialData();
-});
+function bootApp() {
+  try { colorWheel.init(); } catch (e) { console.error('colorWheel init error:', e); }
+  try { virtualStrip.init(); } catch (e) { console.error('virtualStrip init error:', e); }
+  try { movieSync.init(); } catch (e) { console.error('movieSync init error:', e); }
+  try { musicSync.init(); } catch (e) { console.error('musicSync init error:', e); }
+  try { initEventListeners(); } catch (e) { console.error('initEventListeners error:', e); }
+  try { initPinnedScenes(); } catch (e) { console.error('initPinnedScenes error:', e); }
+  try { initPortalTheme(); } catch (e) { console.error('initPortalTheme error:', e); }
+  try { wled.connect(); } catch (e) { console.error('wled connect error:', e); }
+  try { wled.fetchInitialData(); } catch (e) { console.error('wled fetchInitialData error:', e); }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootApp);
+} else {
+  bootApp();
+}
