@@ -748,11 +748,16 @@ class MovieSyncEngine {
     this.blackFloor = 0;
     this.letterboxFilter = true;
     this.letterboxSensitivity = parseInt(localStorage.getItem('ambilight_letterbox_sens') || '25', 10);
-    this.dangerStrobeEnabled = localStorage.getItem('ambilight_danger_strobe') !== 'false';
-    this.dangerSensitivity = parseFloat(localStorage.getItem('ambilight_danger_sens') || '1.7');
+    this.dangerStrobeEnabled = localStorage.getItem('ambilight_danger_strobe') === 'true';
+    this.dangerSensitivity = parseFloat(localStorage.getItem('ambilight_danger_sens') || '2.2');
     this.dangerHz = parseInt(localStorage.getItem('ambilight_danger_hz') || '8', 10);
     this.fastEdgeBoost = localStorage.getItem('ambilight_fast_edge') === 'true';
     this.dangerTriggerUntil = 0;
+    this.antiFlickerEnabled = localStorage.getItem('ambilight_anti_flicker') !== 'false';
+    this.deadbandThreshold = parseInt(localStorage.getItem('ambilight_deadband') || '6', 10);
+    this.sceneCutSnapEnabled = localStorage.getItem('ambilight_scene_cut_snap') !== 'false';
+    this.lastAmbilightSendTime = 0;
+    this.lastAmbilightPayload = '';
     this.activeProfile = localStorage.getItem('ambilight_profile') || 'cinema';
     this.lastFrameAvgRGB = [0, 0, 0];
     this.effectiveSmoothing = 0.35;
@@ -871,10 +876,79 @@ class MovieSyncEngine {
     if (fastEdgeCheck) fastEdgeCheck.checked = this.fastEdgeBoost;
     const dangerCheck = document.getElementById('checkDangerStrobe');
     if (dangerCheck) dangerCheck.checked = this.dangerStrobeEnabled;
+    const antiFlickerCheck = document.getElementById('checkAntiFlicker');
+    if (antiFlickerCheck) antiFlickerCheck.checked = this.antiFlickerEnabled;
+    const deadbandSlider = document.getElementById('sliderDeadband');
+    if (deadbandSlider) deadbandSlider.value = this.deadbandThreshold;
+    const sceneCutCheck = document.getElementById('checkSceneCutSnap');
+    if (sceneCutCheck) sceneCutCheck.checked = this.sceneCutSnapEnabled;
+    this.updateDeadbandText(this.deadbandThreshold);
 
     this.updateWiringOptions();
     this.renderDivisionControls();
     this.updateVisibilityForMode();
+  }
+
+  updateDeadbandText(val) {
+    const textEl = document.getElementById('deadbandValText');
+    if (!textEl) return;
+    let desc = 'Clean';
+    if (val <= 3) desc = 'Ultra-Fine';
+    else if (val <= 6) desc = 'Clean';
+    else if (val <= 10) desc = 'Smooth';
+    else desc = 'Rock-Solid';
+    textEl.textContent = `${desc} (${val} Δ)`;
+  }
+
+  smoothColor(curr, target) {
+    const deltaR = Math.abs(target[0] - curr[0]);
+    const deltaG = Math.abs(target[1] - curr[1]);
+    const deltaB = Math.abs(target[2] - curr[2]);
+    const totalDelta = deltaR + deltaG + deltaB;
+
+    // 1. Deadband Noise Gate / Film Grain Threshold:
+    // If delta is below noise threshold, freeze output to eliminate jitter and flickering completely
+    if (this.antiFlickerEnabled && totalDelta <= this.deadbandThreshold) {
+      return [curr[0], curr[1], curr[2]];
+    }
+
+    // 2. Base smoothing interpolation
+    let alpha = this.effectiveSmoothing;
+
+    // 3. Velocity-Aware Instant Scene Cut Snapping
+    // When scene cut / explosion occurs (delta >= 85), dynamically accelerate alpha to snap instantly (0 delay)
+    if (this.sceneCutSnapEnabled) {
+      if (totalDelta >= 85) {
+        alpha = 0.95;
+      } else if (totalDelta >= 25) {
+        const speedRatio = Math.min(1.0, (totalDelta - 25) / 60);
+        alpha = alpha + (0.92 - alpha) * Math.pow(speedRatio, 1.4);
+      }
+    }
+
+    return [
+      Math.round(lerp(curr[0], target[0], alpha)),
+      Math.round(lerp(curr[1], target[1], alpha)),
+      Math.round(lerp(curr[2], target[2], alpha))
+    ];
+  }
+
+  sendAmbilightPacket(payload) {
+    const now = performance.now();
+    // Network pacing: ~33 packets/sec max (28ms throttle) to prevent ESP32 TCP buffer exhaustion
+    if (now - this.lastAmbilightSendTime < 28) {
+      return;
+    }
+
+    // Payload deduplication: skip sending if colors haven't changed from previous frame
+    const serialized = JSON.stringify(payload.seg?.i || payload.seg?.col || payload);
+    if (serialized === this.lastAmbilightPayload) {
+      return;
+    }
+
+    this.lastAmbilightSendTime = now;
+    this.lastAmbilightPayload = serialized;
+    wled.send(payload);
   }
 
   triggerTestDangerStrobe() {
@@ -905,52 +979,76 @@ class MovieSyncEngine {
       this.letterboxFilter = true;
       this.fastEdgeBoost = false;
       this.dangerStrobeEnabled = false;
+      this.antiFlickerEnabled = true;
+      this.deadbandThreshold = 6;
+      this.sceneCutSnapEnabled = true;
 
       setSlider('sliderMovieSmoothing', 0.25, 'smoothingValText', 'Cinematic (0.25)');
       setSlider('sliderMovieSaturation', 1.6, 'saturationValText', '1.6x (Vivid)');
       setSlider('sliderBlackFloor', 5, 'blackFloorValText', '5 (Ambient Floor)');
+      setSlider('sliderDeadband', 6, 'deadbandValText', 'Clean (6 Δ)');
       const chkLetter = document.getElementById('checkLetterboxFilter');
       if (chkLetter) chkLetter.checked = true;
       const chkFast = document.getElementById('checkFastEdgeBoost');
       if (chkFast) chkFast.checked = false;
       const chkDanger = document.getElementById('checkDangerStrobe');
       if (chkDanger) chkDanger.checked = false;
-      showToast('Profile: Cinema 21:9 Widescreen');
+      const chkAnti = document.getElementById('checkAntiFlicker');
+      if (chkAnti) chkAnti.checked = true;
+      const chkCut = document.getElementById('checkSceneCutSnap');
+      if (chkCut) chkCut.checked = true;
+      showToast('Profile: Cinema 21:9 Widescreen (Flicker-Free)');
     } else if (name === 'fps') {
-      this.smoothing = 0.75;
+      this.smoothing = 0.70;
       this.saturation = 1.8;
       this.blackFloor = 0;
       this.letterboxFilter = true;
       this.fastEdgeBoost = true;
-      this.dangerStrobeEnabled = true;
+      this.dangerStrobeEnabled = false;
+      this.antiFlickerEnabled = true;
+      this.deadbandThreshold = 4;
+      this.sceneCutSnapEnabled = true;
 
-      setSlider('sliderMovieSmoothing', 0.75, 'smoothingValText', 'Fast Esports (0.75)');
+      setSlider('sliderMovieSmoothing', 0.70, 'smoothingValText', 'Fast Esports (0.70)');
       setSlider('sliderMovieSaturation', 1.8, 'saturationValText', '1.8x (Vivid)');
       setSlider('sliderBlackFloor', 0, 'blackFloorValText', '0 (True Black)');
+      setSlider('sliderDeadband', 4, 'deadbandValText', 'Ultra-Fine (4 Δ)');
       const chkLetter = document.getElementById('checkLetterboxFilter');
       if (chkLetter) chkLetter.checked = true;
       const chkFast = document.getElementById('checkFastEdgeBoost');
       if (chkFast) chkFast.checked = true;
       const chkDanger = document.getElementById('checkDangerStrobe');
-      if (chkDanger) chkDanger.checked = true;
-      showToast('Profile: Fast FPS Esports & Twitch Motion');
+      if (chkDanger) chkDanger.checked = false;
+      const chkAnti = document.getElementById('checkAntiFlicker');
+      if (chkAnti) chkAnti.checked = true;
+      const chkCut = document.getElementById('checkSceneCutSnap');
+      if (chkCut) chkCut.checked = true;
+      showToast('Profile: Fast FPS Esports (Instant Cut Snap)');
     } else if (name === 'cyberpunk') {
       this.smoothing = 0.45;
       this.saturation = 2.2;
       this.blackFloor = 8;
       this.letterboxFilter = true;
       this.fastEdgeBoost = true;
-      this.dangerStrobeEnabled = true;
+      this.dangerStrobeEnabled = false;
+      this.antiFlickerEnabled = true;
+      this.deadbandThreshold = 5;
+      this.sceneCutSnapEnabled = true;
 
       setSlider('sliderMovieSmoothing', 0.45, 'smoothingValText', 'Responsive (0.45)');
       setSlider('sliderMovieSaturation', 2.2, 'saturationValText', '2.2x (Hyper-Saturated)');
       setSlider('sliderBlackFloor', 8, 'blackFloorValText', '8 (Ambient Floor)');
+      setSlider('sliderDeadband', 5, 'deadbandValText', 'Clean (5 Δ)');
       const chkLetter = document.getElementById('checkLetterboxFilter');
       if (chkLetter) chkLetter.checked = true;
       const chkFast = document.getElementById('checkFastEdgeBoost');
       if (chkFast) chkFast.checked = true;
       const chkDanger = document.getElementById('checkDangerStrobe');
-      if (chkDanger) chkDanger.checked = true;
+      if (chkDanger) chkDanger.checked = false;
+      const chkAnti = document.getElementById('checkAntiFlicker');
+      if (chkAnti) chkAnti.checked = true;
+      const chkCut = document.getElementById('checkSceneCutSnap');
+      if (chkCut) chkCut.checked = true;
       showToast('Profile: Cyberpunk Neon & High Saturation');
     } else if (name === 'horror') {
       this.smoothing = 0.30;
@@ -958,17 +1056,25 @@ class MovieSyncEngine {
       this.blackFloor = 2;
       this.letterboxFilter = true;
       this.fastEdgeBoost = false;
-      this.dangerStrobeEnabled = true;
+      this.dangerStrobeEnabled = false;
+      this.antiFlickerEnabled = true;
+      this.deadbandThreshold = 7;
+      this.sceneCutSnapEnabled = true;
 
       setSlider('sliderMovieSmoothing', 0.30, 'smoothingValText', 'Cinematic (0.30)');
       setSlider('sliderMovieSaturation', 1.3, 'saturationValText', '1.3x (Enhanced)');
       setSlider('sliderBlackFloor', 2, 'blackFloorValText', '2 (Faint Ambient)');
+      setSlider('sliderDeadband', 7, 'deadbandValText', 'Smooth (7 Δ)');
       const chkLetter = document.getElementById('checkLetterboxFilter');
       if (chkLetter) chkLetter.checked = true;
       const chkFast = document.getElementById('checkFastEdgeBoost');
       if (chkFast) chkFast.checked = false;
       const chkDanger = document.getElementById('checkDangerStrobe');
-      if (chkDanger) chkDanger.checked = true;
+      if (chkDanger) chkDanger.checked = false;
+      const chkAnti = document.getElementById('checkAntiFlicker');
+      if (chkAnti) chkAnti.checked = true;
+      const chkCut = document.getElementById('checkSceneCutSnap');
+      if (chkCut) chkCut.checked = true;
       showToast('Profile: Horror & Stealth Ambience');
     }
   }
@@ -1599,15 +1705,16 @@ class MovieSyncEngine {
         const g = borderSample[i + 1];
         const b = borderSample[i + 2];
         sampledPixels++;
-        if (r > 75) {
+        // Strict crimson red criteria: high red, low green/blue, strong ratio to prevent false triggering on warm hues
+        if (r > 130 && g < 70 && b < 70) {
           const maxGB = Math.max(g, b) + 1;
-          if (r / maxGB >= this.dangerSensitivity) {
+          if (r / maxGB >= Math.max(2.0, this.dangerSensitivity)) {
             redCount++;
           }
         }
       }
 
-      if (sampledPixels > 0 && (redCount / sampledPixels) >= 0.14) {
+      if (sampledPixels > 0 && (redCount / sampledPixels) >= 0.22) {
         // Red Danger trigger!
         this.dangerTriggerUntil = now + 900;
       }
@@ -1634,7 +1741,7 @@ class MovieSyncEngine {
           : '';
       }
 
-      wled.send({
+      this.sendAmbilightPacket({
         transition: 0,
         v: false,
         on: true,
@@ -1679,11 +1786,9 @@ class MovieSyncEngine {
       const rawTop = this._sampleZone(topData);
       const rawRight = this._sampleZone(rightData);
 
-      for (let c = 0; c < 3; c++) {
-        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.effectiveSmoothing));
-        this.zoneColors.top[c] = Math.round(lerp(this.zoneColors.top[c], rawTop[c], this.effectiveSmoothing));
-        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.effectiveSmoothing));
-      }
+      this.zoneColors.left = this.smoothColor(this.zoneColors.left, rawLeft);
+      this.zoneColors.top = this.smoothColor(this.zoneColors.top, rawTop);
+      this.zoneColors.right = this.smoothColor(this.zoneColors.right, rawRight);
 
       // Update Monitor Edge Indicators
       const setEdgeStyle = (id, rgb) => {
@@ -1745,7 +1850,7 @@ class MovieSyncEngine {
         ambientBg.style.background = `radial-gradient(circle at 50% 30%, rgba(${avgR}, ${avgG}, ${avgB}, 0.35) 0%, transparent 65%), linear-gradient(135deg, #05070e, #0a0e1c, #060913)`;
       }
 
-      wled.send({
+      this.sendAmbilightPacket({
         transition: 0,
         v: false,
         on: true,
@@ -1771,11 +1876,9 @@ class MovieSyncEngine {
       const rawCol2 = this._sampleZone(col2Data);
       const rawCol3 = this._sampleZone(col3Data);
 
-      for (let c = 0; c < 3; c++) {
-        this.zoneColors.colLeft[c] = Math.round(lerp(this.zoneColors.colLeft[c], rawCol1[c], this.effectiveSmoothing));
-        this.zoneColors.colCenter[c] = Math.round(lerp(this.zoneColors.colCenter[c], rawCol2[c], this.effectiveSmoothing));
-        this.zoneColors.colRight[c] = Math.round(lerp(this.zoneColors.colRight[c], rawCol3[c], this.effectiveSmoothing));
-      }
+      this.zoneColors.colLeft = this.smoothColor(this.zoneColors.colLeft, rawCol1);
+      this.zoneColors.colCenter = this.smoothColor(this.zoneColors.colCenter, rawCol2);
+      this.zoneColors.colRight = this.smoothColor(this.zoneColors.colRight, rawCol3);
 
       // Update Column Overlays inside Monitor Box
       const setColOverlay = (id, rgb) => {
@@ -1840,7 +1943,7 @@ class MovieSyncEngine {
         ambientBg.style.background = `radial-gradient(circle at 50% 30%, rgba(${avgR}, ${avgG}, ${avgB}, 0.35) 0%, transparent 65%), linear-gradient(135deg, #05070e, #0a0e1c, #060913)`;
       }
 
-      wled.send({
+      this.sendAmbilightPacket({
         transition: 0,
         v: false,
         on: true,
@@ -1868,12 +1971,10 @@ class MovieSyncEngine {
       const rawBottom = this._sampleZone(bottomData);
       const rawLeft = this._sampleZone(leftData);
 
-      for (let c = 0; c < 3; c++) {
-        this.zoneColors.top[c] = Math.round(lerp(this.zoneColors.top[c], rawTop[c], this.effectiveSmoothing));
-        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.effectiveSmoothing));
-        this.zoneColors.bottom[c] = Math.round(lerp(this.zoneColors.bottom[c], rawBottom[c], this.effectiveSmoothing));
-        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.effectiveSmoothing));
-      }
+      this.zoneColors.top = this.smoothColor(this.zoneColors.top, rawTop);
+      this.zoneColors.right = this.smoothColor(this.zoneColors.right, rawRight);
+      this.zoneColors.bottom = this.smoothColor(this.zoneColors.bottom, rawBottom);
+      this.zoneColors.left = this.smoothColor(this.zoneColors.left, rawLeft);
 
       const setEdgeStyle = (id, rgb) => {
         const el = document.getElementById(id);
@@ -1924,7 +2025,7 @@ class MovieSyncEngine {
         ambientBg.style.background = `radial-gradient(circle at 50% 30%, rgba(${avgR}, ${avgG}, ${avgB}, 0.35) 0%, transparent 65%), linear-gradient(135deg, #05070e, #0a0e1c, #060913)`;
       }
 
-      wled.send({
+      this.sendAmbilightPacket({
         transition: 0,
         v: false,
         on: true,
@@ -1949,10 +2050,8 @@ class MovieSyncEngine {
       const rawLeft = this._sampleZone(leftData);
       const rawRight = this._sampleZone(rightData);
 
-      for (let c = 0; c < 3; c++) {
-        this.zoneColors.left[c] = Math.round(lerp(this.zoneColors.left[c], rawLeft[c], this.effectiveSmoothing));
-        this.zoneColors.right[c] = Math.round(lerp(this.zoneColors.right[c], rawRight[c], this.effectiveSmoothing));
-      }
+      this.zoneColors.left = this.smoothColor(this.zoneColors.left, rawLeft);
+      this.zoneColors.right = this.smoothColor(this.zoneColors.right, rawRight);
 
       const setEdgeStyle = (id, rgb) => {
         const el = document.getElementById(id);
@@ -1999,7 +2098,7 @@ class MovieSyncEngine {
         ambientBg.style.background = `radial-gradient(circle at 50% 30%, rgba(${avgR}, ${avgG}, ${avgB}, 0.35) 0%, transparent 65%), linear-gradient(135deg, #05070e, #0a0e1c, #060913)`;
       }
 
-      wled.send({
+      this.sendAmbilightPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2071,9 +2170,7 @@ class MovieSyncEngine {
       targetG = Math.max(this.blackFloor, Math.min(255, Math.round(targetG)));
       targetB = Math.max(this.blackFloor, Math.min(255, Math.round(targetB)));
 
-      this.currentRGB[0] = Math.round(lerp(this.currentRGB[0], targetR, this.effectiveSmoothing));
-      this.currentRGB[1] = Math.round(lerp(this.currentRGB[1], targetG, this.effectiveSmoothing));
-      this.currentRGB[2] = Math.round(lerp(this.currentRGB[2], targetB, this.effectiveSmoothing));
+      this.currentRGB = this.smoothColor(this.currentRGB, [targetR, targetG, targetB]);
 
       const [finalR, finalG, finalB] = this.currentRGB;
       const hex = rgbToHex(finalR, finalG, finalB);
@@ -2100,7 +2197,7 @@ class MovieSyncEngine {
         Math.round(finalB * masterBriFactor)
       );
 
-      wled.send({
+      this.sendAmbilightPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2144,9 +2241,7 @@ class MovieSyncEngine {
       targetG = Math.max(this.blackFloor, Math.min(255, Math.round(targetG)));
       targetB = Math.max(this.blackFloor, Math.min(255, Math.round(targetB)));
 
-      this.currentRGB[0] = Math.round(lerp(this.currentRGB[0], targetR, this.effectiveSmoothing));
-      this.currentRGB[1] = Math.round(lerp(this.currentRGB[1], targetG, this.effectiveSmoothing));
-      this.currentRGB[2] = Math.round(lerp(this.currentRGB[2], targetB, this.effectiveSmoothing));
+      this.currentRGB = this.smoothColor(this.currentRGB, [targetR, targetG, targetB]);
 
       const [finalR, finalG, finalB] = this.currentRGB;
       const hex = rgbToHex(finalR, finalG, finalB);
@@ -2173,7 +2268,7 @@ class MovieSyncEngine {
         Math.round(finalB * masterBriFactor)
       );
 
-      wled.send({
+      this.sendAmbilightPacket({
         transition: 0,
         v: false,
         on: true,
@@ -3903,6 +3998,25 @@ function initEventListeners() {
     else label = 'Instant (Gaming)';
     const textEl = document.getElementById('smoothingValText');
     if (textEl) textEl.textContent = `${label} (${val.toFixed(2)})`;
+  });
+
+  document.getElementById('checkAntiFlicker')?.addEventListener('change', (e) => {
+    movieSync.antiFlickerEnabled = e.target.checked;
+    try { localStorage.setItem('ambilight_anti_flicker', e.target.checked ? 'true' : 'false'); } catch (err) {}
+    showToast(e.target.checked ? '🛡️ Anti-Flicker Enabled (Noise Gate Active)' : '⚠️ Anti-Flicker Disabled');
+  });
+
+  document.getElementById('sliderDeadband')?.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    movieSync.deadbandThreshold = val;
+    try { localStorage.setItem('ambilight_deadband', val.toString()); } catch (err) {}
+    movieSync.updateDeadbandText(val);
+  });
+
+  document.getElementById('checkSceneCutSnap')?.addEventListener('change', (e) => {
+    movieSync.sceneCutSnapEnabled = e.target.checked;
+    try { localStorage.setItem('ambilight_scene_cut_snap', e.target.checked ? 'true' : 'false'); } catch (err) {}
+    showToast(e.target.checked ? '⚡ Instant Scene-Cut Snap Enabled' : 'Scene-Cut Snap Disabled');
   });
 
   document.getElementById('sliderMovieSaturation')?.addEventListener('input', (e) => {

@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.3.1] - 2026-10-21
+
+### Fixed
+- **Severe Flickering Root Cause**: Fixed Tactical Danger Strobe defaulting to active due to loose `localStorage.getItem('ambilight_danger_strobe') !== 'false'` check when unset. Enforced strict opt-in check (`=== 'true'`), raised red detection thresholds (`r > 130`, `g < 70`, `b < 70`, `ratio >= 2.0`) to avoid false-triggering on warm indoor lighting, skin tones, or red UI elements.
+- **Profile Layout Responsive Clipping**: Fixed CSS grid on `.quick-profiles-grid` with `grid-template-columns: repeat(4, minmax(0, 1fr))` and `box-sizing: border-box`, ensuring all 4 gaming/cinema profile chips fit cleanly without clipping on mobile and desktop viewports.
+
+### Added
+- **Smart Anti-Flicker & Noise Gate Engine**:
+  - **Deadband Noise Gate**: Swallows micro-fluctuations and video compression noise when color delta $\Delta \le \text{threshold}$ (default 6 $\Delta$), keeping steady shots rock-solid with zero nervous blinking.
+  - **Velocity-Aware Instant Scene-Cut Snap**: Accelerates alpha to 0.95 whenever scene cuts, explosions, or flashbangs occur ($\Delta \ge 85$), eliminating transition latency ("too much late").
+  - **Interactive Filter Card**: Added dedicated UI with toggle, live noise gate slider (2 to 16 $\Delta$), and Instant Scene-Cut Snap toggle.
+- **ESP32 Network Pacing & Deduplication**: Throttled WebSocket packets to ~33 FPS (28ms minimum transmission interval) with serialized payload deduplication, preventing ESP32 TCP buffer exhaustion and dropped packet stuttering.
+
+---
+
 ## [1.3.0] - 2026-10-21
 
 ### Fixed
