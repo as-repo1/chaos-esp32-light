@@ -1,0 +1,49 @@
+name: Build & Validate Bundle
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite production bundle
+        run: npm run build
+
+      - name: Generate standalone LittleFS bundle
+        run: python3 inline_bundle.py
+
+      - name: Validate bundle size & existence
+        run: |
+          if [ ! -f dist/index.htm ]; then
+            echo "Error: dist/index.htm was not generated!"
+            exit 1
+          fi
+          SIZE=$(wc -c < dist/index.htm)
+          echo "Standalone bundle size: $SIZE bytes"
+          if [ $SIZE -gt 350000 ]; then
+            echo "Warning: Bundle exceeds 350KB target threshold!"
+          else
+            echo "Bundle size check passed successfully!"
+          fi

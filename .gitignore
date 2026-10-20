@@ -1,22 +1,52 @@
+# ==========================================
+# WLED Ambient Studio - Git Ignore
+# ==========================================
+
 # Dependencies
 node_modules/
 .pnp
 .pnp.js
 
-# Testing and Logs
+# Testing & Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
-# Environment and IDE
-.env
-.env.local
-.DS_Store
-Thumbs.db
+# Python & Bundling Scratch
+__pycache__/
+*.py[cod]
+*$py.class
+env/
+venv/
+.venv/
+
+# Editor & IDE files
 .vscode/
 .idea/
-
-# Temporary files
-*.tmp
+*.sw?
 *.bak
+*.tmp
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Local Scratch & Temp Media Storage
+.tempmediaStorage/
+scratch/
+

@@ -14,6 +14,15 @@
   Sync your WS2812B / WS2811 / SK6812 LEDs in real time with movies (Netflix, YouTube, VLC, PC games) and audio (Spotify, system audio, microphone) with sub-15ms latency over low-overhead WebSockets.
 </p>
 
+<p align="center">
+  <a href="MANUAL.md"><strong>📖 User Manual</strong></a> •
+  <a href="HARDWARE.md"><strong>🔌 Hardware Guide</strong></a> •
+  <a href="ARCHITECTURE.md"><strong>🏛️ Architecture</strong></a> •
+  <a href="API.md"><strong>📡 API Spec</strong></a> •
+  <a href="CONTRIBUTING.md"><strong>🤝 Contributing</strong></a> •
+  <a href="CHANGELOG.md"><strong>📝 Changelog</strong></a>
+</p>
+
 </div>
 
 ---
@@ -36,12 +45,21 @@
   - **14 Curated Color Themes**: Cyberpunk, Classic VU Meter, Fire & Magma, Ocean Ice, Synthwave Neon, Matrix Green, Aurora Borealis, Toxic Sunset, Blood Moon, Vaporwave Pastel, Deep Space, Solar Flare, Arctic Mint, and Custom Mix.
   - **Beat Transient Detection**: Real-time energy peak tracking with dynamic noise floor gates and customizable decay speeds.
 
+- 🎨 **Multi-Theme Portal Engine**:
+  - 6 bespoke visual modes: **Aurora** (midnight cyan/magenta), **OLED Void Black** (pure pitch black), **Synthwave 80s** (retro neon purple/pink), **Emerald Matrix** (cybernetic terminal green), **Solar Ember** (magma red/orange), and **Nordic Frost** (arctic glacier blue).
+  - Quick-switch dropdown in the top header and dedicated Theme Studio in Settings.
+
+- 💾 **Hardware Preset Studio & Quick Scenes**:
+  - Create, overwrite, rename, and delete presets saved permanently to ESP32 LittleFS `/presets.json`.
+  - Emoji avatar tags (🌅, ⚡, 🌆, 🌌, 🔥, 💎, 🎮, 🌿) for rapid visual scanning.
+  - Pin favorite presets directly to the **Quick Scenes** bar for 1-click room mood transitions.
+
 - 🌐 **Multi-Device Network Hub & UDP Sync**:
   - Automatically scans and controls multiple WLED nodes across your local subnet.
   - Broadcast group synchronization over UDP port 21324 with 1-click sync testing.
 
 - 📦 **Plug & Play Standalone LittleFS Bundle**:
-  - A single self-contained `index.htm` bundle (173 KB) containing all HTML, CSS, JavaScript, and SVG icons.
+  - A single self-contained `index.htm` bundle (~219 KB) containing all HTML, CSS, JavaScript, and SVG icons.
   - **Zero cloud or CDN dependencies**: Works completely offline on isolated Wi-Fi subnets.
 
 ---
