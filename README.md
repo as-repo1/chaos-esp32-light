@@ -4,110 +4,127 @@
 
 ![ESP32](https://img.shields.io/badge/Platform-ESP32-E7352C?style=for-the-badge&logo=espressif&logoColor=white)
 ![WLED](https://img.shields.io/badge/Firmware-WLED%20v0.14+-007ACC?style=for-the-badge)
+![Screen Sync](https://img.shields.io/badge/Screen-Smart%20Anti--Flicker-6366F1?style=for-the-badge)
 ![Web Audio](https://img.shields.io/badge/Audio-256%20FFT%20Spectrum-10B981?style=for-the-badge)
-![Screen Sync](https://img.shields.io/badge/Screen-60%20FPS%20Ambilight-6366F1?style=for-the-badge)
-![Architecture](https://img.shields.io/badge/Bundle-Zero--Config%20LittleFS-EC4899?style=for-the-badge)
+![Bundle](https://img.shields.io/badge/LittleFS-Standalone%20Single--File-EC4899?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)
 
 <p align="center">
-  <strong>An ultra-fast, zero-dependency, glassmorphic web hub and real-time streaming engine for WLED / ESP32.</strong><br>
-  Sync your WS2812B / WS2811 / SK6812 LEDs in real time with movies (Netflix, YouTube, VLC, PC games) and audio (Spotify, system audio, microphone) with sub-15ms latency over low-overhead WebSockets.
+  <strong>Transform your room into an intelligent cinema and music reactive stage.</strong><br>
+  Sync your WS2812B / WS2811 / SK6812 LEDs in real time with movies, gameplay, and music with sub-15ms WebSocket responsiveness — running as a single, offline LittleFS web hub on your ESP32.
 </p>
 
 <p align="center">
+  <a href="#-quickstart-in-60-seconds"><strong>⚡ Quick Start</strong></a> •
+  <a href="#-the-visual-tour"><strong>📸 Feature Tour</strong></a> •
   <a href="MANUAL.md"><strong>📖 User Manual</strong></a> •
   <a href="HARDWARE.md"><strong>🔌 Hardware Guide</strong></a> •
   <a href="ARCHITECTURE.md"><strong>🏛️ Architecture</strong></a> •
-  <a href="API.md"><strong>📡 API Spec</strong></a> •
-  <a href="CONTRIBUTING.md"><strong>🤝 Contributing</strong></a> •
   <a href="CHANGELOG.md"><strong>📝 Changelog</strong></a>
 </p>
+
+---
+
+<img src="docs/screenshots/hero_dashboard.png" alt="Chaos ESP32 Light Studio Dashboard" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
 
 </div>
 
 ---
 
-## 🌟 Highlights & Features
+## 🌟 Why You'll Love It
 
-- 🖥️ **Cinema Ambilight Engine (60 FPS)**:
-  - **3-Zone Monitor Mode**: Configured specifically for 3-sided desktop setups (Left, Top, Right) where desk stands obstruct the bottom edge.
-  - **Section Division & Custom Ratios**: Customize LED distribution with presets like **`3-4-2 (Custom 3-Zone)`**, `1-2-1` (16:9 standard), `1-1-1` (equal), `1-3-1` (21:9 ultrawide), or enter any custom ratio or slider values.
-  - **Dynamic Letterbox Crop**: Automatically detects and ignores black cinematic bars on 2.39:1 widescreen films.
-  - **Dominant Chroma Extraction**: Uses 16-bucket HSV vibrancy analysis to isolate vivid foreground scene colors instead of muddy brown/grey averages.
-  - **Multi-Zone Layouts**: 3-Side Monitor, 3 Panoramic Columns, 4-Edge Perimeter, 2 Lightbar Pillars, Vibrant Dominant, and Weighted Average.
-  - **Strip Wiring Sequence Selector**: Bottom-Left ➔ Top ➔ Right (Clockwise), Bottom-Right ➔ Top ➔ Left (Counter-Clockwise), or Horizontal Sweep.
-  - **Zero-Latency Range Streaming**: Color data is encoded in a single WLED range packet (`seg.i = [start1, stop1, col1, start2, stop2, col2]`), minimizing WebSocket overhead.
-
-- 🎵 **Music Reactive FFT Equalizer**:
-  - **Zero-Hardware Audio Reactivity**: Runs directly in the browser via Web Audio API; no external I2S microphones or INMP441 wiring needed on the ESP32!
-  - **Dual Source Support**: Microphone / Headset, System Audio (YouTube, Spotify, PC output), or Built-in Synthwave Demo Loop.
-  - **12 Dynamic Reactive Algorithms**: Full Spectrum Equalizer, Symmetrical Center Mirror, Thermal Heatmap, Frequency Shockwave, Kinetic Pulse, Twinkling Starfield, BPM Rhythm Comet, Center Pulse, VU Meter, Beat Strobe, Frequency Rainbow, and Chill Ambient Flow.
-  - **14 Curated Color Themes**: Cyberpunk, Classic VU Meter, Fire & Magma, Ocean Ice, Synthwave Neon, Matrix Green, Aurora Borealis, Toxic Sunset, Blood Moon, Vaporwave Pastel, Deep Space, Solar Flare, Arctic Mint, and Custom Mix.
-  - **Beat Transient Detection**: Real-time energy peak tracking with dynamic noise floor gates and customizable decay speeds.
-
-- 🎨 **Multi-Theme Portal Engine**:
-  - 6 bespoke visual modes: **Aurora** (midnight cyan/magenta), **OLED Void Black** (pure pitch black), **Synthwave 80s** (retro neon purple/pink), **Emerald Matrix** (cybernetic terminal green), **Solar Ember** (magma red/orange), and **Nordic Frost** (arctic glacier blue).
-  - Quick-switch dropdown in the top header and dedicated Theme Studio in Settings.
-
-- 💾 **Hardware Preset Studio & Quick Scenes**:
-  - Create, overwrite, rename, and delete presets saved permanently to ESP32 LittleFS `/presets.json`.
-  - Emoji avatar tags (🌅, ⚡, 🌆, 🌌, 🔥, 💎, 🎮, 🌿) for rapid visual scanning.
-  - Pin favorite presets directly to the **Quick Scenes** bar for 1-click room mood transitions.
-
-- 🌐 **Multi-Device Network Hub & UDP Sync**:
-  - Automatically scans and controls multiple WLED nodes across your local subnet.
-  - Broadcast group synchronization over UDP port 21324 with 1-click sync testing.
-
-- 📦 **Plug & Play Standalone LittleFS Bundle**:
-  - A single self-contained `index.htm` bundle (~219 KB) containing all HTML, CSS, JavaScript, and SVG icons.
-  - **Zero cloud or CDN dependencies**: Works completely offline on isolated Wi-Fi subnets.
+* 🎬 **Cinema & Gaming Ambilight**: Turn any desktop monitor or TV into an immersive screen-sync display.
+* 🛡️ **Zero-Jitter Anti-Flicker Engine**: Swallows film-grain jitter on steady scenes so your lights never twitch nervously.
+* ⚡ **Instant Scene-Cut Snap**: Dynamically accelerates transitions to 0 ms on explosions and cuts — no trailing delay.
+* 🎵 **Microphone-Free Audio Reactivity**: Uses your browser's Web Audio API for real-time 256-band FFT spectrum lighting — no extra sound hardware or soldering required!
+* 🎨 **6 Aesthetic Themes**: Switch between Synthwave 80s, OLED Void Black, Aurora, Emerald Matrix, Solar Ember, and Nordic Frost.
+* 📦 **Zero-Config LittleFS Bundle**: One tiny compiled file (`index.htm`, ~244 KB) stored directly on the ESP32. 100% offline, zero cloud or CDN dependencies!
 
 ---
 
-## 🚀 Quickstart: Plug & Play in 60 Seconds
+## 📸 The Visual Tour
 
-You don't need Node.js or any compilation tools installed to use Chaos ESP32 Light! The production-ready standalone bundle is already compiled in `dist/index.htm`.
+### 1. 🎬 Cinema Ambilight & Gaming Studio
+Stream movies from Netflix, YouTube, or PC games directly to your LED strip with custom zone splits and zero flicker.
 
-### Method 1: Instant 1-Line Terminal Upload (Recommended)
+<div align="center">
+  <img src="docs/screenshots/cinema_ambilight.png" alt="Cinema Ambilight Studio" width="100%" style="border-radius: 12px;" />
+</div>
 
-Connect your computer to the same Wi-Fi network as your ESP32, then run:
+* 🛡️ **Smart Anti-Flicker Deadband**: A noise gate eliminates micro-fluctuations from video compression and film grain.
+* ⚡ **Instant Scene-Cut Snapping**: Instantly changes colors on scene transitions so lighting is never "too late".
+* 📐 **Custom Monitor Zones & Division**: Pre-tuned for 3-side monitors (`3-4-2`, `1-2-1`), ultrawide displays, or full 4-side frames.
+* 🍿 **Dynamic Letterbox Crop**: Automatically ignores 21:9 black cinematic bars so edge colors remain accurate.
+* 🕹️ **One-Touch Calibration Profiles**: Instant 1-click profiles for Cinema 21:9, Fast FPS Esports, Cyberpunk Neon, and Horror.
+
+---
+
+### 2. 🎵 Music Reactive FFT Spectrum Studio
+Turn any track from Spotify, YouTube, or your microphone into a living frequency visualizer.
+
+<div align="center">
+  <img src="docs/screenshots/music_reactive.png" alt="Music Reactive Studio" width="100%" style="border-radius: 12px;" />
+</div>
+
+* 🎙️ **Zero Extra Hardware**: No microphone modules (INMP441) or soldering needed — audio is analyzed directly in Chrome/Edge.
+* 🎛️ **12 Dynamic Reactive Modes**: Full 60-LED Equalizer, Symmetrical Dual EQ, Bass Explosions, Heatmaps, and Chill Flow.
+* 🌈 **14 Curated Color Themes**: Cyberpunk, Classic VU, Magma Fire, Synthwave Neon, Blood Moon, and more.
+* 🥁 **Beat Transient Peak Detection**: Tracks kick and snare energy peaks with automatic noise floor thresholding.
+
+---
+
+### 3. 💾 Hardware Presets & Atmosphere Scenes
+Control and personalize your room's mood in one tap.
+
+<div align="center">
+  <img src="docs/screenshots/presets_scenes.png" alt="Hardware Presets and Atmospheric Quick Scenes" width="100%" style="border-radius: 12px;" />
+</div>
+
+* 🌅 **Quick Atmospheric Scenes**: Sunset Glow, Cyberpunk Neon, Campfire Ember, Deep Ocean, and Studio Daylight.
+* 🏷️ **Emoji Tagging**: Give custom presets cute avatar tags (🌅, ⚡, 🌆, 🌌, 🔥, 💎, 🎮, 🌿) for rapid visual scanning.
+* 📌 **Pin to Header**: Keep your favorite scenes right on the top navigation bar for 1-click room transitions.
+
+---
+
+## ⚡ Quickstart in 60 Seconds
+
+You don't need Node.js or any compilation tools installed! The pre-built bundle is ready to flash directly from `dist/index.htm`.
+
+### Method 1: Instant Terminal Upload (Recommended)
+Make sure your computer is connected to the same Wi-Fi as your ESP32, then run:
 
 ```bash
 curl -F "data=@dist/index.htm;filename=/index.htm" http://<YOUR_ESP32_IP>/upload
 ```
 *(Example: `curl -F "data=@dist/index.htm;filename=/index.htm" http://10.109.101.60/upload`)*
 
-That's it! Open `http://<YOUR_ESP32_IP>/` in your browser.
+Open **`http://<YOUR_ESP32_IP>/`** in your browser and you're good to go! 🎉
 
 ---
 
 ### Method 2: Web Browser GUI Upload
-
-1. Navigate to `http://<YOUR_ESP32_IP>/edit` in Google Chrome or Microsoft Edge.
+1. Open `http://<YOUR_ESP32_IP>/edit` in Chrome or Edge.
 2. Under **File Upload**, select `dist/index.htm`.
 3. Set the target path to `/index.htm` and click **Upload**.
 4. Refresh `http://<YOUR_ESP32_IP>/`.
 
 ---
 
-## 🔌 Hardware Bill of Materials & Wiring Schematics
+## 🔍 Deep Dive & Technical Specs
 
-### Bill of Materials (BOM)
+<details>
+<summary><strong>🔌 Hardware Bill of Materials (BOM) & Wiring Schematic</strong></summary>
+<br>
 
-| Component | Recommended Model | Purpose |
-| :--- | :--- | :--- |
-| **Microcontroller** | ESP32 DevKit V1 (30-pin or 38-pin) | WLED controller running WebSocket & UDP server |
-| **Addressable LEDs** | WS2812B / WS2811 / SK6812 (60 LEDs/m) | RGB / RGBW perimeter lighting strip |
-| **Power Supply** | 5V 5A–10A DC Power Supply | Supplies stable current to ESP32 and LEDs |
-| **Logic Level Shifter** | 74AHCT125 or SN74HCT245 | Boosts ESP32 3.3V GPIO data signal to 5V CMOS level |
-| **Filter Capacitor** | 1000 µF 6.3V–16V Electrolytic | Prevents voltage sag and inrush current spikes |
-| **Data Resistor** | 330Ω to 470Ω 1/4W | Suppresses signal reflections on data line |
+### Recommended Hardware
+* **Microcontroller**: ESP32 DevKit V1 (30-pin or 38-pin)
+* **LED Strip**: WS2812B, WS2811, or SK6812 (60 LEDs/meter recommended)
+* **Power Supply**: 5V DC (3A–10A depending on LED count)
+* **Level Shifter**: 74AHCT125 or SN74HCT245 (converts ESP32 3.3V logic to 5V data)
+* **Capacitor & Resistor**: 1000 µF electrolytic capacitor across 5V/GND, 330Ω–470Ω resistor on data line
 
----
-
-### Circuit Wiring Schematic
-
-```
+### Circuit Schematic
+```text
           +-------------------+
           |  5V 10A DC Power  |
           +---+-----------+---+
@@ -132,162 +149,88 @@ That's it! Open `http://<YOUR_ESP32_IP>/` in your browser.
     +---------+-------------------------------------+------------+
                          COMMON GROUND
 ```
-
 > [!IMPORTANT]
-> **Common Ground**: Always tie the ground (`GND`) pin of the ESP32, power supply, and LED strip together to prevent signal noise and erratic flashing.
-> **Power Budget**: Each WS2812B LED draws up to 60mA at full white brightness. For 60 LEDs, plan for $60 \times 0.06\text{A} = 3.6\text{A}$ ($18\text{W}$).
+> **Common Ground**: Always connect the ground (`GND`) pin of the ESP32, power supply, and LED strip together to prevent erratic flickering.
 
----
+</details>
 
-## 🏗️ Architecture & Base Pipelines: How It Works
+<details>
+<summary><strong>📐 3-Zone Monitor Setup & Custom Ratio Guide</strong></summary>
+<br>
 
-### 1. Screen Ambilight Cinema Pipeline
+Desktop monitors sit on a desk or monitor stand, meaning lights usually run only along the **Left, Top, and Right** edges. Chaos ESP32 Light handles this natively:
 
-```mermaid
-flowchart TD
-    A["Screen Video Capture (getDisplayMedia)"] --> B["Offscreen Canvas Sampling (160 x 90)"]
-    B --> C{"Letterbox Filter"}
-    C -->|"Detect 2.39:1 Black Bars"| D["Dynamic Vertical Crop (startY / endY)"]
-    D --> E["Multi-Zone Sampling"]
-    E --> F1["Left Edge (20% Width)"]
-    E --> F2["Top Edge (20% Height)"]
-    E --> F3["Right Edge (20% Width)"]
-    F1 & F2 & F3 --> G["HSV Chroma Extraction & Saturation Boost"]
-    G --> H["Proportional Section Division (3-4-2, 1-2-1, etc.)"]
-    H --> I["Linear Interpolation Smoothing (LERP)"]
-    I --> J["Compact Range Payload: seg.i = [0, p1, ColL, p1, p2, ColT, p2, p3, ColR]"]
-    J --> K["Low-Overhead WebSocket (60 FPS, <15ms latency)"]
-    K --> L["ESP32 WLED LEDs"]
-```
-
-#### Pipeline Technical Details:
-1. **Screen Frame Downsampling**: The browser captures the display surface at 60 FPS and draws it to a `160x90` offscreen 2D canvas with `{ willReadFrequently: true }`.
-2. **Dynamic Letterbox Crop**: Analyzes top and bottom horizontal scanlines. If black bars are detected (brightness $< 25$), the sampling bounding box shifts inward automatically so widescreen 2.39:1 films don't cause black ambilight bars.
-3. **HSV Vibrant Chroma Filter**: Extracts colors into 12 hue buckets weighted by $S^2 \times V^{1.2}$. Muddy desktop backgrounds and neutral greys are discarded in favor of rich, vibrant scene colors.
-4. **Proportional Section Division**: Maps edge colors across your strip according to user ratios (e.g. `3 : 4 : 2` ➔ 20 Left, 27 Top, 13 Right).
-5. **LERP Response Smoothing**: Smooths transitions using $C_{t} = C_{t-1} + (C_{\text{target}} - C_{t-1}) \times \alpha$ ($\alpha = 0.35$ responsive).
-6. **WLED Range API**: Emits WLED range arrays `[start, stop, [r, g, b]]` with `transition: 0` and `frz: true` to bypass internal WLED crossfades and deliver instantaneous frame response.
-
----
-
-### 2. Audio Reactive Spectrum Pipeline
-
-```mermaid
-flowchart TD
-    A["Audio Stream (Mic / Tab Audio / Demo Synth)"] --> B["Web Audio API AudioContext"]
-    B --> C["AnalyserNode (256-point FFT, 0.72 smoothing)"]
-    C --> D["Frequency Spectrum Decomposition"]
-    D --> E1["Bass & Sub-bass (20Hz–250Hz, Bins 1–6)"]
-    D --> E2["Midrange (250Hz–4kHz, Bins 7–24)"]
-    D --> E3["Treble (4kHz–16kHz, Bins 25–60)"]
-    E1 & E2 & E3 --> F["Gain Amplification & Noise Floor Gate"]
-    E1 --> G["Beat Transient Detector (Exponential Energy Buffer)"]
-    G --> H{"Beat Detected?"}
-    H -->|Yes| I["Strobe / Pulse / Hue Shift Trigger"]
-    H -->|No| J["Exponential Decay Falloff"]
-    F & I & J --> K["12 Reactive Algorithms (Spectrum, Mirror, Wave, etc.)"]
-    K --> L["14 Color Palette Linear Interpolators"]
-    L --> M["Single-Packet WebSocket Transmission"]
-    M --> N["ESP32 Hardware LED Mirror"]
-```
-
----
-
-## 🖥️ Calibration Manual: 3-Zone Monitor Setup
-
-### Why 3-Side Monitor?
-Desktop monitors sit on a desk or monitor arm, meaning LED strips cannot wrap across the bottom edge. Standard ambilight kits fail here because they assume a 4-sided TV frame. Chaos ESP32 Light natively solves this with dedicated **3-Side Monitor** geometry.
-
-### Configuring Section Divisions:
-Navigate to **Movie Sync (Ambilight) ➔ Section Division & LED Distribution**:
-
-| Ratio Preset | Left Edge | Top Edge | Right Edge | Best Suited For |
+| Ratio Preset | Left Edge | Top Edge | Right Edge | Ideal Monitor Type |
 | :---: | :---: | :---: | :---: | :--- |
-| **`3 : 4 : 2`** | 20 LEDs (33%) | 27 LEDs (45%) | 13 LEDs (22%) | **Custom User Division** (taller left pillar / asymmetric wiring) |
-| **`1 : 2 : 1`** | 15 LEDs (25%) | 30 LEDs (50%) | 15 LEDs (25%) | **Standard 16:9 Monitor** (27", 32") |
-| **`1 : 1 : 1`** | 20 LEDs (33%) | 20 LEDs (33%) | 20 LEDs (33%) | **Equal Thirds** / Square / Portrait monitors |
+| **`3 : 4 : 2`** | 20 LEDs (33%) | 27 LEDs (45%) | 13 LEDs (22%) | **Custom Asymmetric** (taller left lightbar or custom wiring) |
+| **`1 : 2 : 1`** | 15 LEDs (25%) | 30 LEDs (50%) | 15 LEDs (25%) | **Standard 16:9 Displays** (24", 27", 32") |
+| **`1 : 1 : 1`** | 20 LEDs (33%) | 20 LEDs (33%) | 20 LEDs (33%) | **Equal Sides** / Square / Portrait Displays |
 | **`1 : 3 : 1`** | 12 LEDs (20%) | 36 LEDs (60%) | 12 LEDs (20%) | **21:9 Ultrawide Monitors** (34", 38") |
-| **`2 : 3 : 2`** | 17 LEDs (28%) | 26 LEDs (44%) | 17 LEDs (28%) | **16:10 Aspect Ratio** Displays |
 | **`3 : 5 : 3`** | 16 LEDs (27%) | 28 LEDs (46%) | 16 LEDs (27%) | **32:9 Super Ultrawide** (49") |
 
-### Custom Ratios:
-Type any custom distribution (such as `3-4-2`, `3:4:2`, or exact counts `20-27-13`) into the **Custom Division Ratio** input and click **Apply**. The sliders and live hardware mirror will adjust immediately.
+Type any numbers (e.g. `3-4-2` or `20-27-13`) into the **Custom Division Ratio** input box to set exact LED counts on the fly.
 
-### Wiring Sequence Options:
-- **Bottom-Left ➔ Top ➔ Right (Clockwise)**: Standard sequence where strip begins at bottom-left corner, runs up left side, across top, and down right side.
-- **Bottom-Right ➔ Top ➔ Left (Counter-Clockwise)**: For strips starting on bottom-right corner.
-- **Left ➔ Top ➔ Right (Sweep)**: Direct linear progression.
+</details>
 
----
+<details>
+<summary><strong>🧠 How the Adaptive Anti-Flicker & Scene-Cut Snap Works</strong></summary>
+<br>
 
-## 💻 Local Development & Building
+Video streams have film grain and codec artifacts that jitter $\pm 2$ to $5$ values every frame:
+1. **Deadband Filter ($\Delta \le 6$)**: When the total color difference $\Delta = |\Delta R| + |\Delta G| + |\Delta B|$ is below the deadband threshold, the output freezes completely. Steady scenes stay completely still with zero twitching.
+2. **Velocity-Aware Acceleration ($\Delta \ge 85$)**: On rapid camera cuts or explosions, $\alpha$ automatically accelerates to `0.95`, eliminating the slow transition lag of conventional lerp smoothers.
+3. **ESP32 Network Pacing**: WebSocket packets are paced at ~33 FPS (28 ms throttle) with payload deduplication, preventing the ESP32's micro-controller TCP socket queue from overflowing.
 
-To run the development server or compile custom modifications:
+</details>
+
+<details>
+<summary><strong>💻 Building From Source & Developer Instructions</strong></summary>
+<br>
 
 ```bash
-# 1. Clone the repository
+# Clone repository
 git clone git@github.com:as-repo1/chaos-esp32-light.git
 cd chaos-esp32-light
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Start local development server with Hot Module Replacement
+# Start local dev server with Hot Module Replacement
 npm run dev
 
-# 4. Build and inline the single-file production bundle
+# Build standalone production bundle
 npm run build && python3 inline_bundle.py
 ```
 
-The resulting `dist/index.htm` is fully self-contained and ready to flash to any ESP32 running WLED.
+The output file `dist/index.htm` is bundled with all CSS, JavaScript, and assets inlined for LittleFS storage.
 
----
-
-## 🛠️ Wi-Fi & Network Configuration
-
-- **Default Pre-configured SSID**: `pk`
-- **Default Wi-Fi Password**: `00000000`
-- **Target Device IP**: `10.109.101.60` (or your ESP32's assigned DHCP IP)
-- Wi-Fi credentials can be changed live from the **Settings & Device** tab, which saves them directly to WLED's non-volatile EEPROM storage.
-
----
-
-## ❓ Frequently Asked Questions (FAQ)
-
-<details>
-<summary><strong>Q: Does screen capture work on Netflix / protected DRM content?</strong></summary>
-<p>
-Yes! However, hardware-accelerated video decoding in Google Chrome (Widevine DRM) may output black frames for DRM-protected streams. To bypass this for Ambilight syncing, disable <em>"Use graphics acceleration when available"</em> in Chrome Settings (<code>chrome://settings/system</code>), or play video via VLC / MPV / Firefox.
-</p>
 </details>
 
 <details>
-<summary><strong>Q: Why does my LED strip flicker when brightness is turned to 100%?</strong></summary>
-<p>
-Flickering at high brightness is caused by voltage drop across the copper traces of the LED strip. For 60+ LEDs, inject 5V power at both ends of the strip, and verify your 5V power supply can provide at least 4 Amps.
-</p>
-</details>
+<summary><strong>❓ Frequently Asked Questions (FAQ)</strong></summary>
+<br>
 
-<details>
-<summary><strong>Q: Do I need to unfreeze segments after stopping sync?</strong></summary>
-<p>
-Chaos ESP32 Light handles this automatically! When you click <em>Stop Screen Sync</em> or <em>Stop Audio Sync</em>, the engine sends a restore packet with <code>frz: false</code> and restores your normal WLED presets, colors, and effects.
-</p>
+* **Q: Does screen capture work on Netflix or protected videos?**  
+  *Yes!* Hardware acceleration in Chrome can occasionally blank protected DRM streams. If your screen captures as black, simply disable *"Use graphics acceleration when available"* in Chrome Settings (`chrome://settings/system`), or play the video in Firefox or VLC.
+* **Q: Why do my LEDs flicker at 100% white brightness?**  
+  High brightness draws up to 3.6A for 60 LEDs. Voltage drop along thin copper traces causes trailing LEDs to brown out or flicker. Ensure your 5V power supply provides sufficient amperage and inject power at both ends of the strip for runs over 60 LEDs.
+* **Q: Do I have to manually restore WLED after syncing?**  
+  *No!* Stopping Movie Sync or Music Sync automatically sends a cleanup packet that unfreezes segments (`frz: false`) and restores your normal WLED effects and brightness.
+
 </details>
 
 ---
 
 ## 🙏 Acknowledgments & Credits
 
-Chaos ESP32 Light is proudly built on top of and powered by the extraordinary **[WLED Project](https://github.com/Aircoookie/WLED)**.
+Chaos ESP32 Light is proudly built on top of the extraordinary **[WLED Project](https://github.com/Aircoookie/WLED)**.
 
-- **Christian Schwinne ([@Aircoookie](https://github.com/Aircoookie))** and all WLED community contributors for creating the world's most versatile, reliable open-source ESP8266/ESP32 addressable LED controller firmware.
-- The WLED WebSocket & JSON API, LittleFS architecture, and UDP real-time synchronization protocols that make high-speed browser-based Ambilight and Audio FFT visualizers possible.
-- **Official WLED Project Repository**: [github.com/Aircoookie/WLED](https://github.com/Aircoookie/WLED)
-- **Official WLED Documentation & Knowledge Base**: [kno.wled.ge](https://kno.wled.ge/)
+* **Christian Schwinne ([@Aircoookie](https://github.com/Aircoookie))** and all WLED contributors for creating the world's most versatile, reliable open-source ESP8266/ESP32 LED firmware.
+* The WLED WebSocket & JSON API, LittleFS architecture, and UDP real-time protocols that make browser-driven Ambilight and Audio FFT visualizers possible.
+* **WLED Repository**: [github.com/Aircoookie/WLED](https://github.com/Aircoookie/WLED) • **Documentation**: [kno.wled.ge](https://kno.wled.ge/)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE). Built with ❤️ for the open-source lighting and maker community.
+This project is open-source under the [MIT License](LICENSE). Built with ❤️ for the lighting and maker community.
