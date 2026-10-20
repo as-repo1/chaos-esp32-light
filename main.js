@@ -270,11 +270,7 @@ class WLEDClient {
       APP_STATE.palettesList = await palRes.json();
       renderPalettesGrid(APP_STATE.palettesList);
 
-      try {
-        const presetRes = await fetch(`http://${this.ip}/presets.json`);
-        APP_STATE.presetsList = await presetRes.json();
-        renderPresetsList(APP_STATE.presetsList);
-      } catch (e) {}
+      await this.fetchPresets();
     } catch (err) {
       console.warn('Failed to load initial WLED data via REST:', err);
     }
@@ -423,6 +419,71 @@ class WLEDClient {
     } catch (err) {
       showToast('Error saving Wi-Fi settings');
     }
+  }
+
+  async fetchPresets() {
+    try {
+      const res = await fetch(`http://${this.ip}/presets.json?_t=${Date.now()}`);
+      APP_STATE.presetsList = await res.json();
+      renderPresetsList(APP_STATE.presetsList);
+      updatePresetSlotOptions();
+      return APP_STATE.presetsList;
+    } catch (err) {
+      console.warn('Failed to load presets.json:', err);
+      return null;
+    }
+  }
+
+  async savePreset(slotId, name, options = { ib: true, sb: false }) {
+    const payload = {
+      psave: parseInt(slotId, 10),
+      n: name || `Preset ${slotId}`,
+      ib: options.ib !== undefined ? !!options.ib : true,
+      sb: options.sb !== undefined ? !!options.sb : false
+    };
+    try {
+      const res = await fetch(`http://${this.ip}/json/state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Preset #${slotId} ("${name}") saved to ESP32!`);
+        await this.fetchPresets();
+        return true;
+      }
+    } catch (err) {
+      console.error('Failed to save preset:', err);
+      showToast('Error saving preset to ESP32');
+    }
+    return false;
+  }
+
+  async deletePreset(slotId) {
+    try {
+      const res = await fetch(`http://${this.ip}/json/state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pdel: parseInt(slotId, 10) })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Deleted Preset #${slotId} from ESP32`);
+        await this.fetchPresets();
+        return true;
+      }
+    } catch (err) {
+      console.error('Failed to delete preset:', err);
+      showToast('Error deleting preset');
+    }
+    return false;
+  }
+
+  applyPreset(slotId) {
+    this.send({ ps: parseInt(slotId, 10) }, true);
+    showToast(`Loaded Preset #${slotId}`);
+    highlightActivePreset(slotId);
   }
 
   send(payload, immediate = false) {
@@ -2860,29 +2921,368 @@ function highlightActivePalette(id) {
   if (active) active.classList.add('active');
 }
 
+// ====================================================================
+// Preset Customization Studio, Hardware Cards & Quick Scenes
+// ====================================================================
+let currentRenamingSlot = null;
+
+function highlightActivePreset(slotId) {
+  document.querySelectorAll('.hardware-preset-card').forEach(c => {
+    if (parseInt(c.dataset.slot, 10) === parseInt(slotId, 10)) {
+      c.classList.add('active-hardware-preset');
+    } else {
+      c.classList.remove('active-hardware-preset');
+    }
+  });
+}
+
+function updatePresetSlotOptions(selectedSlot) {
+  const select = document.getElementById('presetSlotSelect');
+  if (!select) return;
+
+  const presets = APP_STATE.presetsList || {};
+  const existingSlots = Object.keys(presets)
+    .map(Number)
+    .filter(n => n > 0 && !isNaN(n));
+
+  // Determine lowest free slot
+  let nextFreeSlot = 1;
+  while (existingSlots.includes(nextFreeSlot) && nextFreeSlot < 250) {
+    nextFreeSlot++;
+  }
+
+  const activeSlot = selectedSlot || nextFreeSlot;
+  select.innerHTML = '';
+
+  const maxSlot = Math.max(30, ...existingSlots, activeSlot);
+  for (let i = 1; i <= Math.min(maxSlot, 250); i++) {
+    const isUsed = existingSlots.includes(i);
+    const opt = document.createElement('option');
+    opt.value = i;
+    if (isUsed) {
+      const p = presets[i];
+      opt.textContent = `Slot #${i} — "${p.n || 'Preset ' + i}"`;
+    } else {
+      opt.textContent = `Slot #${i} (Free Slot)`;
+    }
+    select.appendChild(opt);
+  }
+
+  select.value = activeSlot;
+  updatePresetSlotHint(activeSlot);
+}
+
+function updatePresetSlotHint(slot) {
+  const hint = document.getElementById('presetSlotStatusHint');
+  if (!hint) return;
+  const presets = APP_STATE.presetsList || {};
+  if (presets[slot]) {
+    hint.textContent = `⚠️ Slot #${slot} already has "${presets[slot].n || 'Preset ' + slot}". Saving will overwrite it.`;
+    hint.style.color = '#f59e0b';
+  } else {
+    hint.textContent = `✅ Slot #${slot} is available.`;
+    hint.style.color = '#38bdf8';
+  }
+}
+
+function openPresetCreator(defaultSlot) {
+  const panel = document.getElementById('presetCreatorPanel');
+  if (!panel) return;
+  panel.style.display = 'block';
+
+  // Live Snapshot Preview update
+  const dot1 = document.getElementById('previewColorDot1');
+  const dot2 = document.getElementById('previewColorDot2');
+  const dot3 = document.getElementById('previewColorDot3');
+  if (dot1 && APP_STATE.colors[0]) dot1.style.background = `rgb(${APP_STATE.colors[0].join(',')})`;
+  if (dot2 && APP_STATE.colors[1]) dot2.style.background = `rgb(${APP_STATE.colors[1].join(',')})`;
+  if (dot3 && APP_STATE.colors[2]) dot3.style.background = `rgb(${APP_STATE.colors[2].join(',')})`;
+
+  const fxNameEl = document.getElementById('previewEffectName');
+  const effName = (APP_STATE.effectsList && APP_STATE.effectsList[APP_STATE.currentFx]) || 'Solid';
+  if (fxNameEl) fxNameEl.textContent = effName;
+
+  const palNameEl = document.getElementById('previewPaletteName');
+  if (palNameEl) palNameEl.textContent = (APP_STATE.palettesList && APP_STATE.palettesList[APP_STATE.currentPal]) || 'Default';
+
+  const briEl = document.getElementById('previewBrightness');
+  if (briEl) briEl.textContent = `${Math.round(APP_STATE.brightness / 2.55)}% (${APP_STATE.brightness}/255)`;
+
+  const speedIntEl = document.getElementById('previewSpeedInt');
+  if (speedIntEl) speedIntEl.textContent = `${APP_STATE.speed} / ${APP_STATE.intensity}`;
+
+  updatePresetSlotOptions(defaultSlot);
+
+  // Set default suggested name
+  const nameInput = document.getElementById('presetNameInput');
+  if (nameInput) {
+    nameInput.value = `🌅 ${effName} Mood`;
+    nameInput.focus();
+    nameInput.select();
+  }
+
+  // Clear emoji active highlights
+  document.querySelectorAll('.emoji-chip').forEach(c => c.classList.remove('active'));
+  const firstEmoji = document.querySelector('.emoji-chip[data-emoji="🌅"]');
+  if (firstEmoji) firstEmoji.classList.add('active');
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closePresetCreator() {
+  const panel = document.getElementById('presetCreatorPanel');
+  if (panel) panel.style.display = 'none';
+}
+
+function openRenamePresetModal(slotId, currentName) {
+  currentRenamingSlot = slotId;
+  const modal = document.getElementById('renamePresetModal');
+  const desc = document.getElementById('renameModalDesc');
+  const input = document.getElementById('modalRenamePresetInput');
+
+  if (desc) desc.textContent = `Update name and title for Preset #${slotId}`;
+  if (input) {
+    input.value = currentName;
+    setTimeout(() => {
+      input.focus();
+      input.select();
+    }, 100);
+  }
+  if (modal) modal.classList.remove('hide');
+}
+
+function closeRenamePresetModal() {
+  const modal = document.getElementById('renamePresetModal');
+  if (modal) modal.classList.add('hide');
+  currentRenamingSlot = null;
+}
+
 // Render Presets List
-function renderPresetsList(presets) {
+function renderPresetsList(presets = {}) {
   const container = document.getElementById('devicePresetsList');
   if (!container) return;
   container.innerHTML = '';
 
-  const keys = Object.keys(presets).filter(k => k !== '0');
-  if (keys.length === 0) {
-    container.innerHTML = '<div class="empty-hint">No user presets found on ESP32. Save some in WLED Config!</div>';
+  const badge = document.getElementById('devicePresetsCountBadge');
+  const searchInput = document.getElementById('searchPresetsInput');
+  const query = (searchInput?.value || '').trim().toLowerCase();
+
+  const allKeys = Object.keys(presets)
+    .filter(k => k !== '0' && presets[k] && typeof presets[k] === 'object')
+    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+  if (badge) {
+    badge.textContent = `${allKeys.length} Preset${allKeys.length === 1 ? '' : 's'}`;
+  }
+
+  // Filter keys by search query
+  const filteredKeys = allKeys.filter(k => {
+    if (!query) return true;
+    const p = presets[k];
+    const name = (p.n || `Preset ${k}`).toLowerCase();
+    return name.includes(query) || k.includes(query);
+  });
+
+  if (allKeys.length === 0) {
+    container.innerHTML = `
+      <div class="presets-empty-state">
+        <div class="empty-icon">🎨</div>
+        <h4>No Hardware Presets Stored Yet</h4>
+        <p>Save your current lighting colors and effects directly to your ESP32's onboard LittleFS memory to recall them anytime.</p>
+        <button class="primary-btn glow-btn btn-small" id="btnEmptyCreatePreset">
+          <span class="btn-icon">💾</span>
+          <span>Save Current State as Preset #1</span>
+        </button>
+      </div>
+    `;
+    document.getElementById('btnEmptyCreatePreset')?.addEventListener('click', () => {
+      openPresetCreator(1);
+    });
     return;
   }
 
-  keys.forEach(k => {
+  if (filteredKeys.length === 0) {
+    container.innerHTML = `<div class="empty-hint">No presets matching "${query}"</div>`;
+    return;
+  }
+
+  filteredKeys.forEach(k => {
     const p = presets[k];
-    const btn = document.createElement('button');
-    btn.className = 'preset-btn';
-    btn.textContent = p.n || `Preset ${k}`;
-    btn.addEventListener('click', () => {
-      wled.send({ ps: parseInt(k, 10) }, true);
-      showToast(`Preset: ${p.n || k}`);
+    const rawName = p.n || `Preset ${k}`;
+    const slotNum = parseInt(k, 10);
+
+    // Extract emoji from name if present
+    const emojiMatch = rawName.match(/^([\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F]|\uD83D[\uDE80-\uDEFF]|\uD83E[\uDD00-\uDDFF])/);
+    const emoji = emojiMatch ? emojiMatch[1] : '⭐';
+    const cleanTitle = emojiMatch ? rawName.replace(emojiMatch[1], '').trim() : rawName;
+
+    // Segment info & colors
+    const seg = (p.seg && p.seg[0]) ? p.seg[0] : null;
+    const fxName = (seg && APP_STATE.effectsList && APP_STATE.effectsList[seg.fx]) ? APP_STATE.effectsList[seg.fx] : 'Solid';
+    const briPct = p.bri !== undefined ? `${Math.round(p.bri / 2.55)}%` : '100%';
+
+    // Build swatches
+    let swatchesHtml = '';
+    if (seg && Array.isArray(seg.col)) {
+      seg.col.slice(0, 3).forEach(c => {
+        if (Array.isArray(c) && c.length >= 3) {
+          swatchesHtml += `<span class="preset-dot" style="background: rgb(${c[0]}, ${c[1]}, ${c[2]});"></span>`;
+        }
+      });
+    }
+
+    const card = document.createElement('div');
+    card.className = 'hardware-preset-card';
+    card.dataset.slot = slotNum;
+
+    card.innerHTML = `
+      <div class="preset-card-top">
+        <span class="preset-slot-tag">#${slotNum}</span>
+        <div class="preset-swatches">${swatchesHtml}</div>
+      </div>
+      <div class="preset-card-body" title="Click to activate Preset #${slotNum}">
+        <span class="preset-icon">${emoji}</span>
+        <div class="preset-info">
+          <span class="preset-name" title="${rawName}">${cleanTitle || rawName}</span>
+          <span class="preset-submeta">${fxName} • Bri: ${briPct}</span>
+        </div>
+      </div>
+      <div class="preset-card-actions">
+        <button class="preset-action-btn apply-btn" title="Activate Preset">▶ Apply</button>
+        <button class="preset-action-btn overwrite-btn" title="Overwrite slot with current live lighting">🔄 Overwrite</button>
+        <button class="preset-action-btn rename-btn" title="Rename Preset">✏️</button>
+        <button class="preset-action-btn delete-btn" title="Delete from ESP32 memory">🗑️</button>
+      </div>
+    `;
+
+    // Click on body or apply button -> apply
+    const applyAction = () => {
+      wled.applyPreset(slotNum);
+    };
+    card.querySelector('.preset-card-body').addEventListener('click', applyAction);
+    card.querySelector('.apply-btn').addEventListener('click', applyAction);
+
+    // Overwrite button
+    card.querySelector('.overwrite-btn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (confirm(`Overwrite Preset #${slotNum} ("${rawName}") with your current live lighting state?`)) {
+        await wled.savePreset(slotNum, rawName, { ib: true, sb: false });
+      }
     });
-    container.appendChild(btn);
+
+    // Rename button
+    card.querySelector('.rename-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openRenamePresetModal(slotNum, rawName);
+    });
+
+    // Delete button
+    card.querySelector('.delete-btn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (confirm(`Are you sure you want to delete Preset #${slotNum} ("${rawName}") from ESP32 memory?`)) {
+        await wled.deletePreset(slotNum);
+      }
+    });
+
+    container.appendChild(card);
   });
+}
+
+// Atmospheric Quick Scenes Pinning
+function initPinnedScenes() {
+  const customScenes = getPinnedScenes();
+  renderPinnedScenes(customScenes);
+}
+
+function getPinnedScenes() {
+  try {
+    return JSON.parse(localStorage.getItem('wled_pinned_scenes') || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function savePinnedScenes(scenes) {
+  localStorage.setItem('wled_pinned_scenes', JSON.stringify(scenes));
+}
+
+function renderPinnedScenes(scenes) {
+  const grid = document.getElementById('quickScenesGrid');
+  if (!grid) return;
+
+  // Remove existing pinned custom scene cards
+  grid.querySelectorAll('.scene-card-custom').forEach(el => el.remove());
+
+  scenes.forEach((scene, index) => {
+    const btn = document.createElement('button');
+    btn.className = 'scene-card scene-card-custom';
+    btn.dataset.fx = scene.fx;
+    btn.dataset.pal = scene.pal;
+    btn.dataset.bri = scene.bri;
+    btn.dataset.col = scene.col;
+
+    btn.innerHTML = `
+      <span class="scene-badge-custom">CUSTOM</span>
+      <span class="scene-unpin-btn" title="Unpin scene">✕</span>
+      <span class="scene-icon">${scene.icon || '✨'}</span>
+      <span class="scene-name">${scene.name}</span>
+      <span class="scene-desc">${scene.desc || 'Custom ambient look'}</span>
+    `;
+
+    // Click scene
+    btn.addEventListener('click', (e) => {
+      if (e.target.closest('.scene-unpin-btn')) return;
+      const col = hexToRgb(scene.col);
+      APP_STATE.colors[0] = col;
+      updateActiveColor(...col, false);
+      wled.send({
+        bri: scene.bri,
+        seg: {
+          fx: scene.fx,
+          pal: scene.pal,
+          col: [col, [0, 0, 0], [0, 0, 0]]
+        }
+      }, true);
+      showToast(`Custom Scene: ${scene.name}`);
+    });
+
+    // Unpin button
+    btn.querySelector('.scene-unpin-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const updated = getPinnedScenes().filter((_, i) => i !== index);
+      savePinnedScenes(updated);
+      renderPinnedScenes(updated);
+      showToast(`Unpinned scene: ${scene.name}`);
+    });
+
+    grid.appendChild(btn);
+  });
+}
+
+function pinCurrentLookToScenes() {
+  const fxName = (APP_STATE.effectsList && APP_STATE.effectsList[APP_STATE.currentFx]) || 'Custom';
+  const name = prompt('Enter a name for this Quick Scene:', `✨ ${fxName} Ambient`);
+  if (!name || !name.trim()) return;
+
+  const hexCol = rgbToHex(...APP_STATE.colors[0]);
+  const emojiMatch = name.match(/^([\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F]|\uD83D[\uDE80-\uDEFF]|\uD83E[\uDD00-\uDDFF])/);
+  const icon = emojiMatch ? emojiMatch[1] : '✨';
+
+  const newScene = {
+    name: name.trim(),
+    icon: icon,
+    desc: `${fxName} • ${Math.round(APP_STATE.brightness / 2.55)}% Bri`,
+    col: hexCol,
+    fx: APP_STATE.currentFx,
+    pal: APP_STATE.currentPal,
+    bri: APP_STATE.brightness
+  };
+
+  const scenes = getPinnedScenes();
+  scenes.push(newScene);
+  savePinnedScenes(scenes);
+  renderPinnedScenes(scenes);
+  showToast(`Pinned "${name}" to Quick Scenes!`);
 }
 
 // Math & Color Utilities
@@ -3408,6 +3808,93 @@ function initEventListeners() {
 
   document.getElementById('refreshPresetsBtn')?.addEventListener('click', () => {
     wled.fetchInitialData();
+    showToast('Refreshing presets from ESP32...');
+  });
+
+  // ==================================================================
+  // Preset Customization Studio & Events
+  // ==================================================================
+  document.getElementById('btnOpenSavePresetModal')?.addEventListener('click', () => {
+    openPresetCreator();
+  });
+
+  document.getElementById('btnClosePresetCreator')?.addEventListener('click', () => {
+    closePresetCreator();
+  });
+
+  document.getElementById('btnCancelPresetCreator')?.addEventListener('click', () => {
+    closePresetCreator();
+  });
+
+  document.getElementById('presetSlotSelect')?.addEventListener('change', (e) => {
+    updatePresetSlotHint(parseInt(e.target.value, 10));
+  });
+
+  // Suggestion chips
+  document.querySelectorAll('.sugg-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const nameInput = document.getElementById('presetNameInput');
+      if (nameInput) {
+        nameInput.value = chip.textContent.trim();
+        nameInput.focus();
+      }
+    });
+  });
+
+  // Emoji picker chips
+  document.querySelectorAll('.emoji-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.emoji-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const emoji = chip.dataset.emoji;
+      const nameInput = document.getElementById('presetNameInput');
+      if (nameInput) {
+        let val = nameInput.value.trim();
+        const emojiRegex = /^([\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F]|\uD83D[\uDE80-\uDEFF]|\uD83E[\uDD00-\uDDFF])\s*/;
+        if (emojiRegex.test(val)) {
+          val = val.replace(emojiRegex, `${emoji} `);
+        } else {
+          val = `${emoji} ${val}`;
+        }
+        nameInput.value = val;
+        nameInput.focus();
+      }
+    });
+  });
+
+  // Confirm Save Preset
+  document.getElementById('btnSavePresetConfirm')?.addEventListener('click', async () => {
+    const slot = parseInt(document.getElementById('presetSlotSelect').value, 10) || 1;
+    const name = document.getElementById('presetNameInput').value.trim() || `Preset ${slot}`;
+    const ib = document.getElementById('presetOptIncludeBri')?.checked ?? true;
+    const sb = document.getElementById('presetOptSaveBounds')?.checked ?? false;
+
+    const ok = await wled.savePreset(slot, name, { ib, sb });
+    if (ok) {
+      closePresetCreator();
+    }
+  });
+
+  // Search Presets Filter
+  document.getElementById('searchPresetsInput')?.addEventListener('input', () => {
+    renderPresetsList(APP_STATE.presetsList);
+  });
+
+  // Pin Current Look to Atmospheric Quick Scenes
+  document.getElementById('btnPinCurrentScene')?.addEventListener('click', () => {
+    pinCurrentLookToScenes();
+  });
+
+  // Rename Preset Modal
+  document.getElementById('btnCloseRenamePresetModal')?.addEventListener('click', closeRenamePresetModal);
+  document.getElementById('btnCancelRenamePreset')?.addEventListener('click', closeRenamePresetModal);
+  document.getElementById('btnConfirmRenamePreset')?.addEventListener('click', async () => {
+    if (!currentRenamingSlot) return;
+    const newName = document.getElementById('modalRenamePresetInput').value.trim();
+    if (newName) {
+      await wled.savePreset(currentRenamingSlot, newName, { ib: true, sb: false });
+      closeRenamePresetModal();
+    }
   });
 }
 
@@ -3422,6 +3909,7 @@ document.addEventListener('DOMContentLoaded', () => {
   movieSync.init();
   musicSync.init();
   initEventListeners();
+  initPinnedScenes();
   wled.connect();
   wled.fetchInitialData();
 });

@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-GoKdoTW-.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-nDvmaA3o.css">
+  <script type="module" crossorigin src="/assets/index-BogD5Rij.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BoxJABz_.css">
 </head>
 <body>
   <!-- Ambient Aurora Glow Canvas / Background -->
@@ -835,64 +835,222 @@
       <!-- ========================================================
            TAB 4: PRESETS & SCENES
            ======================================================== -->
+      <!-- ========================================================
+           TAB 4: PRESETS & SCENES
+           ======================================================== -->
       <section class="tab-panel" id="tabPresets">
         <div class="presets-container">
           <div class="glass-card presets-card">
-            <div class="card-header">
-              <h2>WLED Presets & Ambient Scenes</h2>
-              <span class="card-subtitle">Stored in your ESP32's internal memory</span>
+            
+            <!-- Main Header with Action Buttons -->
+            <div class="card-header presets-main-header">
+              <div class="presets-header-title-box">
+                <h2>WLED Presets & Ambient Scenes</h2>
+                <span class="card-subtitle">Customized & saved directly in your ESP32's non-volatile LittleFS storage</span>
+              </div>
+              <div class="presets-header-actions">
+                <button class="primary-btn glow-btn btn-small" id="btnOpenSavePresetModal" title="Save current live lighting look to an ESP32 preset slot">
+                  <span class="btn-icon">💾</span>
+                  <span>Save Live Look as Preset</span>
+                </button>
+                <button class="glass-btn btn-small" id="btnPinCurrentScene" title="Pin current lighting look to quick scenes grid">
+                  <span class="btn-icon">📌</span>
+                  <span>Pin Look to Quick Scenes</span>
+                </button>
+                <button class="glass-btn btn-small" id="refreshPresetsBtn" title="Reload presets from ESP32">
+                  <span class="btn-icon">🔄</span>
+                  <span>Refresh</span>
+                </button>
+              </div>
             </div>
 
-            <!-- Built-in Quick Scene Atmosphere Presets -->
-            <div class="quick-scenes-grid">
-              <button class="scene-card" data-fx="0" data-col="#ff6a00" data-pal="0" data-bri="255">
-                <span class="scene-icon">🌅</span>
-                <span class="scene-name">Sunset Glow</span>
-                <span class="scene-desc">Warm amber peaceful light</span>
-              </button>
+            <!-- Built-in & Pinned Quick Atmosphere Scenes -->
+            <div class="quick-scenes-wrapper">
+              <div class="quick-scenes-section-header">
+                <h4>Atmospheric Quick Scenes</h4>
+                <span class="sub-badge">1-Click Live Ambient Lighting</span>
+              </div>
+              <div class="quick-scenes-grid" id="quickScenesGrid">
+                <!-- Built-in scenes -->
+                <button class="scene-card" data-fx="0" data-col="#ff6a00" data-pal="0" data-bri="255">
+                  <span class="scene-icon">🌅</span>
+                  <span class="scene-name">Sunset Glow</span>
+                  <span class="scene-desc">Warm amber peaceful light</span>
+                </button>
 
-              <button class="scene-card" data-fx="42" data-col="#00f2fe" data-pal="3" data-bri="220">
-                <span class="scene-icon">🌌</span>
-                <span class="scene-name">Cyberpunk Neon</span>
-                <span class="scene-desc">Electric cyan & magenta flow</span>
-              </button>
+                <button class="scene-card" data-fx="42" data-col="#00f2fe" data-pal="3" data-bri="220">
+                  <span class="scene-icon">🌌</span>
+                  <span class="scene-name">Cyberpunk Neon</span>
+                  <span class="scene-desc">Electric cyan & magenta flow</span>
+                </button>
 
-              <button class="scene-card" data-fx="75" data-col="#ff2200" data-pal="4" data-bri="240">
-                <span class="scene-icon">🔥</span>
-                <span class="scene-name">Campfire Ember</span>
-                <span class="scene-desc">Flickering flame fireplace</span>
-              </button>
+                <button class="scene-card" data-fx="75" data-col="#ff2200" data-pal="4" data-bri="240">
+                  <span class="scene-icon">🔥</span>
+                  <span class="scene-name">Campfire Ember</span>
+                  <span class="scene-desc">Flickering flame fireplace</span>
+                </button>
 
-              <button class="scene-card" data-fx="15" data-col="#00d2ff" data-pal="5" data-bri="180">
-                <span class="scene-icon">🌊</span>
-                <span class="scene-name">Deep Ocean</span>
-                <span class="scene-desc">Subtle blue wave dynamics</span>
-              </button>
+                <button class="scene-card" data-fx="15" data-col="#00d2ff" data-pal="5" data-bri="180">
+                  <span class="scene-icon">🌊</span>
+                  <span class="scene-name">Deep Ocean</span>
+                  <span class="scene-desc">Subtle blue wave dynamics</span>
+                </button>
 
-              <button class="scene-card" data-fx="10" data-col="#ffffff" data-pal="0" data-bri="255">
-                <span class="scene-icon">💡</span>
-                <span class="scene-name">Studio Daylight</span>
-                <span class="scene-desc">Pure crisp 6500K task light</span>
-              </button>
+                <button class="scene-card" data-fx="10" data-col="#ffffff" data-pal="0" data-bri="255">
+                  <span class="scene-icon">💡</span>
+                  <span class="scene-name">Studio Daylight</span>
+                  <span class="scene-desc">Pure crisp 6500K task light</span>
+                </button>
 
-              <button class="scene-card" data-fx="8" data-col="#ff9944" data-pal="0" data-bri="60">
-                <span class="scene-icon">🌙</span>
-                <span class="scene-name">Nightlight Relax</span>
-                <span class="scene-desc">Ultra-dim cozy nightglow</span>
-              </button>
+                <button class="scene-card" data-fx="8" data-col="#ff9944" data-pal="0" data-bri="60">
+                  <span class="scene-icon">🌙</span>
+                  <span class="scene-name">Nightlight Relax</span>
+                  <span class="scene-desc">Ultra-dim cozy nightglow</span>
+                </button>
+                <!-- Pinned custom scenes rendered dynamically here -->
+              </div>
+            </div>
+
+            <!-- Expandable Preset Customization Studio / Creator Panel -->
+            <div class="preset-creator-card" id="presetCreatorPanel" style="display: none;">
+              <div class="creator-header">
+                <div class="creator-title-box">
+                  <span class="creator-badge">PRESET CUSTOMIZATION STUDIO</span>
+                  <h3>Save & Customize Hardware Preset</h3>
+                </div>
+                <button class="glass-btn btn-icon-only" id="btnClosePresetCreator" title="Close Panel">✕</button>
+              </div>
+
+              <!-- Live Snapshot Preview of what is being saved -->
+              <div class="preset-snapshot-preview">
+                <div class="snapshot-label">Live State Captured from Lights:</div>
+                <div class="snapshot-chips">
+                  <div class="snapshot-chip colors-chip">
+                    <span class="chip-title">Colors:</span>
+                    <span class="color-dot-swatch" id="previewColorDot1"></span>
+                    <span class="color-dot-swatch" id="previewColorDot2"></span>
+                    <span class="color-dot-swatch" id="previewColorDot3"></span>
+                  </div>
+                  <div class="snapshot-chip">
+                    <span class="chip-title">Effect:</span>
+                    <span class="chip-val" id="previewEffectName">Solid</span>
+                  </div>
+                  <div class="snapshot-chip">
+                    <span class="chip-title">Palette:</span>
+                    <span class="chip-val" id="previewPaletteName">Default</span>
+                  </div>
+                  <div class="snapshot-chip">
+                    <span class="chip-title">Brightness:</span>
+                    <span class="chip-val" id="previewBrightness">100%</span>
+                  </div>
+                  <div class="snapshot-chip">
+                    <span class="chip-title">Speed / Int:</span>
+                    <span class="chip-val" id="previewSpeedInt">128 / 128</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Inputs -->
+              <div class="creator-form-grid">
+                <!-- Preset Name Input -->
+                <div class="form-group form-group-span2">
+                  <label for="presetNameInput">Preset Name & Title</label>
+                  <div class="preset-name-input-wrapper">
+                    <input type="text" id="presetNameInput" placeholder="e.g. 🌅 Sunset Chill, 🌌 Cyber Neon..." maxlength="32" class="glass-input">
+                  </div>
+                  <!-- Quick Suggestions Chips -->
+                  <div class="preset-suggestions-row">
+                    <span class="suggestion-label">Quick Suggestions:</span>
+                    <div class="suggestion-chips" id="presetSuggestionsList">
+                      <button type="button" class="sugg-chip">🌅 Sunset Chill</button>
+                      <button type="button" class="sugg-chip">🌌 Cyber Vibe</button>
+                      <button type="button" class="sugg-chip">🔥 Cozy Hearth</button>
+                      <button type="button" class="sugg-chip">🌊 Ocean Wave</button>
+                      <button type="button" class="sugg-chip">🎮 Gamer Pulse</button>
+                      <button type="button" class="sugg-chip">🎬 Cinema Dim</button>
+                      <button type="button" class="sugg-chip">⚡ Neon Lightning</button>
+                      <button type="button" class="sugg-chip">☕ Lo-Fi Cafe</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Emoji Picker -->
+                <div class="form-group form-group-span2">
+                  <label>Preset Icon Emoji</label>
+                  <div class="emoji-chips-list" id="presetEmojiPicker">
+                    <button type="button" class="emoji-chip" data-emoji="🌅">🌅</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌌">🌌</button>
+                    <button type="button" class="emoji-chip" data-emoji="🔥">🔥</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌊">🌊</button>
+                    <button type="button" class="emoji-chip" data-emoji="💡">💡</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌙">🌙</button>
+                    <button type="button" class="emoji-chip" data-emoji="🎮">🎮</button>
+                    <button type="button" class="emoji-chip" data-emoji="🎬">🎬</button>
+                    <button type="button" class="emoji-chip" data-emoji="🚀">🚀</button>
+                    <button type="button" class="emoji-chip" data-emoji="⚡">⚡</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌈">🌈</button>
+                    <button type="button" class="emoji-chip" data-emoji="👾">👾</button>
+                    <button type="button" class="emoji-chip" data-emoji="💜">💜</button>
+                    <button type="button" class="emoji-chip" data-emoji="🌺">🌺</button>
+                    <button type="button" class="emoji-chip" data-emoji="❄️">❄️</button>
+                    <button type="button" class="emoji-chip" data-emoji="☕">☕</button>
+                  </div>
+                </div>
+
+                <!-- Slot Selector -->
+                <div class="form-group">
+                  <label for="presetSlotSelect">Hardware Preset Slot (1–250)</label>
+                  <div class="slot-select-wrapper">
+                    <select id="presetSlotSelect" class="glass-select">
+                      <!-- Dynamic options populated with free/existing indicators -->
+                    </select>
+                    <span class="slot-status-hint" id="presetSlotStatusHint">Slot #1 is available</span>
+                  </div>
+                </div>
+
+                <!-- Customization Toggles -->
+                <div class="form-group options-group">
+                  <label>Preset Storage Options</label>
+                  <div class="checkboxes-row">
+                    <label class="custom-toggle-label">
+                      <input type="checkbox" id="presetOptIncludeBri" checked>
+                      <span class="toggle-text">Include Brightness</span>
+                    </label>
+                    <label class="custom-toggle-label">
+                      <input type="checkbox" id="presetOptSaveBounds">
+                      <span class="toggle-text">Save Segment Bounds</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Action Buttons -->
+              <div class="creator-actions-row">
+                <button type="button" class="glass-btn" id="btnCancelPresetCreator">Cancel</button>
+                <button type="button" class="primary-btn glow-btn" id="btnSavePresetConfirm">
+                  <span>💾 Save Preset to ESP32</span>
+                </button>
+              </div>
             </div>
 
             <!-- Hardware Presets List from WLED -->
             <div class="hardware-presets-section">
               <div class="section-title-compact">
-                <h3>Custom User Presets (From Device)</h3>
-                <button class="glass-btn btn-small" id="refreshPresetsBtn">Refresh Presets</button>
+                <div class="title-with-badge">
+                  <h3>Custom Hardware Presets (On ESP32)</h3>
+                  <span class="badge" id="devicePresetsCountBadge">0 Presets</span>
+                </div>
+                <!-- Search / Filter Presets -->
+                <div class="preset-filter-wrapper">
+                  <input type="text" id="searchPresetsInput" placeholder="🔍 Search presets..." class="glass-input-compact">
+                </div>
               </div>
 
-              <div class="presets-list-grid" id="devicePresetsList">
+              <div class="hardware-presets-grid" id="devicePresetsList">
                 <div class="empty-hint">Loading presets from ESP32...</div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -1194,6 +1352,27 @@
           </div>
           <div class="modal-actions-row">
             <button class="glass-btn btn-prominent" id="btnConfirmAddDevice">Save & Connect</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Rename Preset -->
+    <div class="glass-modal-backdrop hide" id="renamePresetModal">
+      <div class="glass-modal-card">
+        <div class="modal-header">
+          <h3>✏️ Rename Preset</h3>
+          <button class="modal-close-btn" id="btnCloseRenamePresetModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc" id="renameModalDesc">Update name for Preset #1</p>
+          <div class="setting-group">
+            <label class="setting-title" for="modalRenamePresetInput">Preset Name & Title</label>
+            <input type="text" id="modalRenamePresetInput" class="glass-input" placeholder="e.g. 🌅 Sunset Chill" maxlength="32" />
+          </div>
+          <div class="modal-actions-row">
+            <button class="glass-btn btn-secondary" id="btnCancelRenamePreset">Cancel</button>
+            <button class="primary-btn glow-btn" id="btnConfirmRenamePreset">Save Name</button>
           </div>
         </div>
       </div>
