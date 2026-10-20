@@ -1,4 +1,4 @@
-# ⚡ Chaos Lights — Smart Cinema Ambilight & Music Reactive Studio
+# ⚡ Chaos ESP32 Light — Smart Cinema Ambilight & Music Reactive Studio
 
 <div align="center">
 
@@ -66,7 +66,7 @@
 
 ## 🚀 Quickstart: Plug & Play in 60 Seconds
 
-You don't need Node.js or any compilation tools installed to use Chaos Lights! The production-ready standalone bundle is already compiled in `dist/index.htm`.
+You don't need Node.js or any compilation tools installed to use Chaos ESP32 Light! The production-ready standalone bundle is already compiled in `dist/index.htm`.
 
 ### Method 1: Instant 1-Line Terminal Upload (Recommended)
 
@@ -196,7 +196,7 @@ flowchart TD
 ## 🖥️ Calibration Manual: 3-Zone Monitor Setup
 
 ### Why 3-Side Monitor?
-Desktop monitors sit on a desk or monitor arm, meaning LED strips cannot wrap across the bottom edge. Standard ambilight kits fail here because they assume a 4-sided TV frame. Chaos Lights natively solves this with dedicated **3-Side Monitor** geometry.
+Desktop monitors sit on a desk or monitor arm, meaning LED strips cannot wrap across the bottom edge. Standard ambilight kits fail here because they assume a 4-sided TV frame. Chaos ESP32 Light natively solves this with dedicated **3-Side Monitor** geometry.
 
 ### Configuring Section Divisions:
 Navigate to **Movie Sync (Ambilight) ➔ Section Division & LED Distribution**:
@@ -226,8 +226,8 @@ To run the development server or compile custom modifications:
 
 ```bash
 # 1. Clone the repository
-git clone git@github.com:as-repo1/chaos-lights.git
-cd chaos-lights
+git clone git@github.com:as-repo1/chaos-esp32-light.git
+cd chaos-esp32-light
 
 # 2. Install dependencies
 npm install
@@ -271,7 +271,7 @@ Flickering at high brightness is caused by voltage drop across the copper traces
 <details>
 <summary><strong>Q: Do I need to unfreeze segments after stopping sync?</strong></summary>
 <p>
-Chaos Lights handles this automatically! When you click <em>Stop Screen Sync</em> or <em>Stop Audio Sync</em>, the engine sends a restore packet with <code>frz: false</code> and restores your normal WLED presets, colors, and effects.
+Chaos ESP32 Light handles this automatically! When you click <em>Stop Screen Sync</em> or <em>Stop Audio Sync</em>, the engine sends a restore packet with <code>frz: false</code> and restores your normal WLED presets, colors, and effects.
 </p>
 </details>
 
@@ -279,7 +279,7 @@ Chaos Lights handles this automatically! When you click <em>Stop Screen Sync</em
 
 ## 🙏 Acknowledgments & Credits
 
-Chaos Lights is proudly built on top of and powered by the extraordinary **[WLED Project](https://github.com/Aircoookie/WLED)**.
+Chaos ESP32 Light is proudly built on top of and powered by the extraordinary **[WLED Project](https://github.com/Aircoookie/WLED)**.
 
 - **Christian Schwinne ([@Aircoookie](https://github.com/Aircoookie))** and all WLED community contributors for creating the world's most versatile, reliable open-source ESP8266/ESP32 addressable LED controller firmware.
 - The WLED WebSocket & JSON API, LittleFS architecture, and UDP real-time synchronization protocols that make high-speed browser-based Ambilight and Audio FFT visualizers possible.

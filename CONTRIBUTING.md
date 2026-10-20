@@ -1,6 +1,6 @@
-# 🤝 Contributing to Chaos Lights
+# 🤝 Contributing to Chaos ESP32 Light
 
-Thank you for your interest in contributing to **Chaos Lights**! We welcome contributions from developers, makers, and lighting enthusiasts worldwide.
+Thank you for your interest in contributing to **Chaos ESP32 Light**! We welcome contributions from developers, makers, and lighting enthusiasts worldwide.
 
 ---
 
@@ -37,8 +37,8 @@ We are committed to providing a welcoming, inclusive, and harassment-free enviro
 
 1. **Fork & Clone**:
    ```bash
-   git clone git@github.com:as-repo1/chaos-lights.git
-   cd chaos-lights
+   git clone git@github.com:as-repo1/chaos-esp32-light.git
+   cd chaos-esp32-light
    ```
 
 2. **Install Dependencies**:

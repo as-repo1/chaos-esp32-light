@@ -1,6 +1,6 @@
-# 📖 Chaos Lights — Complete User Manual & Operation Guide
+# 📖 Chaos ESP32 Light — Complete User Manual & Operation Guide
 
-Welcome to the comprehensive user manual for **Chaos Lights** (Powered by WLED). This guide walks you through every feature of the web studio, from initial Wi-Fi setup to advanced cinema calibration, audio tuning, and hardware preset creation.
+Welcome to the comprehensive user manual for **Chaos ESP32 Light** (Powered by WLED). This guide walks you through every feature of the web studio, from initial Wi-Fi setup to advanced cinema calibration, audio tuning, and hardware preset creation.
 
 ---
 
@@ -181,7 +181,7 @@ Synchronize multiple WLED devices across your local network:
 
 ## 9. Acknowledgments & Credits
 
-Chaos Lights is powered by the open-source **[WLED Project](https://github.com/Aircoookie/WLED)** created by Christian Schwinne (Aircoookie).
+Chaos ESP32 Light is powered by the open-source **[WLED Project](https://github.com/Aircoookie/WLED)** created by Christian Schwinne (Aircoookie).
 All low-level hardware communication, FastLED integration, LittleFS web server, and Wi-Fi drivers rely on the rock-solid WLED firmware.
 - Official Repository: [github.com/Aircoookie/WLED](https://github.com/Aircoookie/WLED)
 - Documentation: [kno.wled.ge](https://kno.wled.ge/)

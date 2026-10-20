@@ -1,5 +1,5 @@
 /* ====================================================================
-   Chaos Lights — Smart Cinema & Music Reactive Studio
+   Chaos ESP32 Light — Smart Cinema & Music Reactive Studio
    Powered by WLED (Christian Schwinne / Aircoookie)
    ==================================================================== */
 
@@ -4126,7 +4126,7 @@ window.setAmbilightMode = (m) => movieSync.setMode(m);
 
 function bootApp() {
   console.log(
-    '%c Chaos Lights %c Powered by WLED (Aircoookie) ',
+    '%c Chaos ESP32 Light %c Powered by WLED (Aircoookie) ',
     'background:#6366f1;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px 0 0 4px;',
     'background:#10b981;color:#fff;font-weight:bold;padding:4px 8px;border-radius:0 4px 4px 0;'
   );

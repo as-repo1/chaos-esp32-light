@@ -1,6 +1,6 @@
-# 🏛️ Chaos Lights — Architecture & Base Pipelines
+# 🏛️ Chaos ESP32 Light — Architecture & Base Pipelines
 
-This document details the internal architecture, real-time pipelines, algorithms, and latency optimizations underpinning **Chaos Lights** (Powered by WLED).
+This document details the internal architecture, real-time pipelines, algorithms, and latency optimizations underpinning **Chaos ESP32 Light** (Powered by WLED).
 
 ---
 
@@ -86,7 +86,7 @@ Widescreen movies (2.39:1 / 21:9) on 16:9 displays contain horizontal black bars
 $$\text{startY} = Y_{\text{detected\_top}}, \quad \text{endY} = Y_{\text{detected\_bottom}}$$
 
 ### 3. HSV Dominant Chroma Extraction
-Standard RGB averaging yields muddy greys and desaturated browns when dark scenes mix with colorful highlights. Chaos Lights uses a **16-bucket Hue Histogram**:
+Standard RGB averaging yields muddy greys and desaturated browns when dark scenes mix with colorful highlights. Chaos ESP32 Light uses a **16-bucket Hue Histogram**:
 1. Pixels are converted from RGB to HSV.
 2. Low-saturation pixels ($S < 0.20$) or near-black pixels ($V < 0.12$) are discarded.
 3. Remaining pixels are binned into 16 hue buckets weighted by vibrancy score:
@@ -186,6 +186,6 @@ When **Sync Broadcast (UDP)** is enabled, the primary ESP32 mirrors all received
 
 ## 7. Acknowledgments & Credits
 
-Chaos Lights is architected on top of the open-source **[WLED Project](https://github.com/Aircoookie/WLED)** created by Christian Schwinne (Aircoookie).
-- WLED's asynchronous WebSocket architecture, LittleFS WebServer, and JSON segment range streaming protocol enable Chaos Lights to achieve sub-15ms real-time latency with zero cloud dependency.
+Chaos ESP32 Light is architected on top of the open-source **[WLED Project](https://github.com/Aircoookie/WLED)** created by Christian Schwinne (Aircoookie).
+- WLED's asynchronous WebSocket architecture, LittleFS WebServer, and JSON segment range streaming protocol enable Chaos ESP32 Light to achieve sub-15ms real-time latency with zero cloud dependency.
 - WLED Repository: [github.com/Aircoookie/WLED](https://github.com/Aircoookie/WLED)
