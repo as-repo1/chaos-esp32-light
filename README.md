@@ -48,7 +48,7 @@
 Stream movies from Netflix, YouTube, or PC games directly to your LED strip with custom zone splits and zero flicker.
 
 <div align="center">
-  <img src="docs/screenshots/cinema_ambilight.png" alt="Cinema Ambilight Studio" width="100%" style="border-radius: 12px;" />
+  <img src="docs/screenshots/cinema_ambilight.png" alt="Cinema Ambilight Studio" width="100%" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);" />
 </div>
 
 * 🛡️ **Smart Anti-Flicker Deadband**: A noise gate eliminates micro-fluctuations from video compression and film grain.
@@ -63,7 +63,7 @@ Stream movies from Netflix, YouTube, or PC games directly to your LED strip with
 Turn any track from Spotify, YouTube, or your microphone into a living frequency visualizer.
 
 <div align="center">
-  <img src="docs/screenshots/music_reactive.png" alt="Music Reactive Studio" width="100%" style="border-radius: 12px;" />
+  <img src="docs/screenshots/music_reactive.png" alt="Music Reactive Studio" width="100%" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);" />
 </div>
 
 * 🎙️ **Zero Extra Hardware**: No microphone modules (INMP441) or soldering needed — audio is analyzed directly in Chrome/Edge.
@@ -77,7 +77,7 @@ Turn any track from Spotify, YouTube, or your microphone into a living frequency
 Control and personalize your room's mood in one tap.
 
 <div align="center">
-  <img src="docs/screenshots/presets_scenes.png" alt="Hardware Presets and Atmospheric Quick Scenes" width="100%" style="border-radius: 12px;" />
+  <img src="docs/screenshots/presets_scenes.png" alt="Hardware Presets and Atmospheric Quick Scenes" width="100%" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);" />
 </div>
 
 * 🌅 **Quick Atmospheric Scenes**: Sunset Glow, Cyberpunk Neon, Campfire Ember, Deep Ocean, and Studio Daylight.
