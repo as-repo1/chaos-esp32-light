@@ -958,19 +958,12 @@ class MovieSyncEngine {
 
   sendAmbilightPacket(payload) {
     const now = performance.now();
-    // Network pacing: ~30 packets/sec max (33ms throttle) to prevent ESP32 TCP buffer exhaustion
+    // Network pacing: ~30 packets/sec max (33ms throttle) to keep stream smooth & stable
     if (now - this.lastAmbilightSendTime < 33) {
       return;
     }
 
-    // Payload deduplication: skip sending if colors haven't changed from previous frame
-    const serialized = JSON.stringify(payload.seg?.i || payload.seg?.col || payload);
-    if (serialized === this.lastAmbilightPayload) {
-      return;
-    }
-
     this.lastAmbilightSendTime = now;
-    this.lastAmbilightPayload = serialized;
     payload.isStream = true;
     wled.send(payload);
   }
@@ -2422,19 +2415,12 @@ class MusicSyncEngine {
 
   sendMusicPacket(payload) {
     const now = performance.now();
-    // Network pacing: ~30 packets/sec max (33ms throttle) to prevent ESP32 TCP buffer exhaustion
+    // Network pacing: ~30 packets/sec max (33ms throttle) to keep stream smooth & stable
     if (now - this.lastMusicSendTime < 33) {
       return;
     }
 
-    // Payload deduplication: skip sending if colors haven't changed from previous frame
-    const serialized = JSON.stringify(payload.seg?.i || payload.seg?.col || payload);
-    if (serialized === this.lastMusicPayload) {
-      return;
-    }
-
     this.lastMusicSendTime = now;
-    this.lastMusicPayload = serialized;
     payload.isStream = true;
     wled.send(payload);
   }
