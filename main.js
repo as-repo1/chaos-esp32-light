@@ -170,6 +170,7 @@ class WLEDClient {
     this.pingTimer = null;
     this.pendingPayload = null;
     this.isThrottling = false;
+    this.lastSendTime = 0;
   }
 
   setIp(ip) {
@@ -238,9 +239,11 @@ class WLEDClient {
 
   startPing() {
     this.pingTimer = setInterval(() => {
+      // Avoid competing HTTP queries when active high-frequency movie or music streaming is running
+      if (window._movieSync?.active || window._musicSync?.active) return;
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         const start = performance.now();
-        fetch(`http://${this.ip}/json/state`, { signal: AbortSignal.timeout(2000) })
+        fetch(`http://${this.ip}/json/info`, { signal: AbortSignal.timeout(2000) })
           .then(() => {
             const ms = Math.round(performance.now() - start);
             const pingEl = document.getElementById('pingBadge');
@@ -248,7 +251,7 @@ class WLEDClient {
           })
           .catch(() => {});
       }
-    }, 6000);
+    }, 10000);
   }
 
   async fetchInitialData() {
@@ -491,6 +494,12 @@ class WLEDClient {
       return;
     }
 
+    // Direct path for pre-paced stream packets (Movie Sync & Music Sync)
+    if (payload.isStream) {
+      this._transmit(payload);
+      return;
+    }
+
     this.pendingPayload = { ...(this.pendingPayload || {}), ...payload };
     const now = performance.now();
     const elapsed = now - this.lastSendTime;
@@ -502,7 +511,7 @@ class WLEDClient {
       setTimeout(() => {
         this.isThrottling = false;
         this._flush();
-      }, APP_STATE.sendThrottleMs - elapsed);
+      }, Math.max(0, APP_STATE.sendThrottleMs - elapsed));
     }
   }
 
@@ -516,10 +525,24 @@ class WLEDClient {
 
   _transmit(payload) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      // Congestion control: if socket buffer has backpressure, drop streaming frames
+      // to avoid TCP buffer bloat, latency spikes, and burst delivery.
+      if (this.ws.bufferedAmount > 2048) {
+        if (payload.isStream || payload.seg?.i) {
+          return; // Drop frame gracefully
+        }
+      }
       try {
         this.ws.send(JSON.stringify(payload));
         return;
       } catch (e) {}
+    }
+
+    // NEVER fallback to HTTP POST for streaming frames!
+    // Firing 30-60 HTTP POSTs per second to an ESP32 web server causes lwIP socket
+    // and heap exhaustion, triggering a watchdog timeout (WDT) and device reboot.
+    if (payload.isStream || payload.seg?.i) {
+      return;
     }
 
     fetch(`http://${this.ip}/json/state`, {
@@ -935,8 +958,8 @@ class MovieSyncEngine {
 
   sendAmbilightPacket(payload) {
     const now = performance.now();
-    // Network pacing: ~33 packets/sec max (28ms throttle) to prevent ESP32 TCP buffer exhaustion
-    if (now - this.lastAmbilightSendTime < 28) {
+    // Network pacing: ~30 packets/sec max (33ms throttle) to prevent ESP32 TCP buffer exhaustion
+    if (now - this.lastAmbilightSendTime < 33) {
       return;
     }
 
@@ -948,6 +971,7 @@ class MovieSyncEngine {
 
     this.lastAmbilightSendTime = now;
     this.lastAmbilightPayload = serialized;
+    payload.isStream = true;
     wled.send(payload);
   }
 
@@ -2387,11 +2411,32 @@ class MusicSyncEngine {
     this.starfieldStars = new Float32Array(120);
     this.cometPos = 0;
     this.kineticHue = 0;
+    this.lastMusicSendTime = 0;
+    this.lastMusicPayload = '';
 
     this.specCanvas = null;
     this.specCtx = null;
     this.waveCanvas = null;
     this.waveCtx = null;
+  }
+
+  sendMusicPacket(payload) {
+    const now = performance.now();
+    // Network pacing: ~30 packets/sec max (33ms throttle) to prevent ESP32 TCP buffer exhaustion
+    if (now - this.lastMusicSendTime < 33) {
+      return;
+    }
+
+    // Payload deduplication: skip sending if colors haven't changed from previous frame
+    const serialized = JSON.stringify(payload.seg?.i || payload.seg?.col || payload);
+    if (serialized === this.lastMusicPayload) {
+      return;
+    }
+
+    this.lastMusicSendTime = now;
+    this.lastMusicPayload = serialized;
+    payload.isStream = true;
+    wled.send(payload);
   }
 
   init() {
@@ -2759,7 +2804,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2791,7 +2836,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2836,7 +2881,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2864,7 +2909,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2894,7 +2939,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2927,7 +2972,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2958,7 +3003,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -2994,7 +3039,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -3022,7 +3067,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -3053,7 +3098,7 @@ class MusicSyncEngine {
       }
 
       virtualStrip.setMultiLed(ledColors);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -3072,7 +3117,7 @@ class MusicSyncEngine {
       const bri = Math.max(5, Math.round(Math.min(255, (bass + mid) * 0.75 * masterBriFactor)));
 
       virtualStrip.setUniformColor(r, g, b);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
@@ -3087,7 +3132,7 @@ class MusicSyncEngine {
       const [r, g, b] = samplePalette(this.paletteName, Math.min(1.0, energy * 1.5));
 
       virtualStrip.setUniformColor(r, g, b);
-      wled.send({
+      this.sendMusicPacket({
         transition: 0,
         v: false,
         on: true,
