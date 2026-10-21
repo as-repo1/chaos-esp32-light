@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.3.2] - 2026-10-21
+
+### Fixed
+- **Theme Dropdown Stacking & Readability**: Fixed theme selector menu rendering underneath navigation tabs and content cards. Established dedicated stacking contexts (`.glass-header` z-index: 1000, dropdown z-index: 99999) and introduced bespoke high-contrast opaque frosted backgrounds (`--bg-dropdown: 0.97 - 0.98` opacity) with deep elevation shadows, completely eliminating bleed-through text interference.
+- **Color Flickering & Bin Oscillations**: Replaced discrete 12-bucket and 16-bucket hue quantization in `_sampleZone` and `dominant` modes with continuous chroma-weighted integration (`weight = 1.0 + (chroma / 255) * 2.5`). This stops frame-to-frame color bouncing between hue bins during scenes with balanced colors.
+- **Smooth Transition Dynamics**: Refactored smoothing into a stable Exponential Moving Average (EMA) and an instant scene-cut snap for large transitions ($\Delta \ge 100$), removing non-linear speed spikes and erratic motion velocity jumps.
+- **ESP32 Streaming Protocol Streamlining**: Stripped redundant keys (`fx: 0`, `bri`, `on`, `v: false`, `frz: true`) from 30+ FPS stream packets in `MovieSyncEngine` and `MusicSyncEngine` down to minimal `{ transition: 0, seg: { i: [...] } }`. Added one-time solid mode initialization packets on stream start, preventing WLED effect re-initialization and brightness flicker.
+
+### Cleaned
+- **Jargon Code & UI Cleanup**: Replaced tactical jargon ("Tactical", "Tactical Pulse", "Tactical Danger Strobe") with clean intuitive terms ("Alert", "Pulse Rate", "Low HP Alert Strobe") across `index.html` and `main.js`. Removed unused/dead variables (`lastAmbilightPayload`).
+
+---
+
 ## [1.3.1] - 2026-10-21
 
 ### Fixed

@@ -780,7 +780,6 @@ class MovieSyncEngine {
     this.deadbandThreshold = parseInt(localStorage.getItem('ambilight_deadband') || '6', 10);
     this.sceneCutSnapEnabled = localStorage.getItem('ambilight_scene_cut_snap') !== 'false';
     this.lastAmbilightSendTime = 0;
-    this.lastAmbilightPayload = '';
     this.activeProfile = localStorage.getItem('ambilight_profile') || 'cinema';
     this.lastFrameAvgRGB = [0, 0, 0];
     this.effectiveSmoothing = 0.35;
@@ -929,24 +928,19 @@ class MovieSyncEngine {
     const deltaB = Math.abs(target[2] - curr[2]);
     const totalDelta = deltaR + deltaG + deltaB;
 
-    // 1. Deadband Noise Gate / Film Grain Threshold:
-    // If delta is below noise threshold, freeze output to eliminate jitter and flickering completely
+    // 1. Deadband Noise Gate:
+    // Disregard micro-variations and compression noise below threshold to prevent flickering
     if (this.antiFlickerEnabled && totalDelta <= this.deadbandThreshold) {
       return [curr[0], curr[1], curr[2]];
     }
 
-    // 2. Base smoothing interpolation
-    let alpha = this.effectiveSmoothing;
+    // 2. Base Exponential Moving Average (EMA) smoothing
+    let alpha = this.effectiveSmoothing || this.smoothing || 0.28;
 
-    // 3. Velocity-Aware Instant Scene Cut Snapping
-    // When scene cut / explosion occurs (delta >= 85), dynamically accelerate alpha to snap instantly (0 delay)
-    if (this.sceneCutSnapEnabled) {
-      if (totalDelta >= 85) {
-        alpha = 0.95;
-      } else if (totalDelta >= 25) {
-        const speedRatio = Math.min(1.0, (totalDelta - 25) / 60);
-        alpha = alpha + (0.92 - alpha) * Math.pow(speedRatio, 1.4);
-      }
+    // 3. Instant Scene Cut Snap:
+    // Snap instantly on actual scene transitions (totalDelta >= 100) without trailing lag
+    if (this.sceneCutSnapEnabled && totalDelta >= 100) {
+      alpha = 0.95;
     }
 
     return [
@@ -970,7 +964,7 @@ class MovieSyncEngine {
 
   triggerTestDangerStrobe() {
     this.dangerTriggerUntil = performance.now() + 2500;
-    showToast('🚨 Testing Tactical Danger Strobe (2.5s)...');
+    showToast('🚨 Testing Low HP Alert Strobe (2.5s)...');
   }
 
   applyProfile(name) {
@@ -1534,6 +1528,13 @@ class MovieSyncEngine {
       }
 
       showToast('Movie Sync Activated! Colors are streaming to ESP32');
+      // Initialize WLED for real-time streaming: turn on, solid effect 0, unfreeze
+      wled.send({
+        on: true,
+        bri: APP_STATE.brightness,
+        transition: 0,
+        seg: { fx: 0, frz: false }
+      }, true);
       this.loop();
     } catch (err) {
       console.warn('Screen capture canceled or denied:', err);
@@ -1738,7 +1739,7 @@ class MovieSyncEngine {
     }
 
     if (now < this.dangerTriggerUntil) {
-      // Active Tactical Danger Strobe Phase
+      // Low HP Alert Strobe Phase
       if (monitorBox) monitorBox.classList.add('danger-strobe-active');
       if (dangerHudAlert) dangerHudAlert.classList.remove('hide');
 
@@ -1760,13 +1761,8 @@ class MovieSyncEngine {
 
       this.sendAmbilightPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
         seg: {
-          frz: true,
-          i: [0, ledCount, dangerColor],
-          fx: 0
+          i: [0, ledCount, dangerColor]
         }
       });
       return;
@@ -1775,26 +1771,19 @@ class MovieSyncEngine {
       if (dangerHudAlert) dangerHudAlert.classList.add('hide');
     }
 
-    // 3. Fast Edge FPS Motion Velocity Boost
+    // Motion-adaptive smoothing & saturation
     let effectiveSmoothing = this.smoothing;
     let effectiveSaturation = this.saturation;
 
     if (this.fastEdgeBoost) {
-      const frameDelta = Math.abs(this.currentRGB[0] - this.lastFrameAvgRGB[0]) +
-                         Math.abs(this.currentRGB[1] - this.lastFrameAvgRGB[1]) +
-                         Math.abs(this.currentRGB[2] - this.lastFrameAvgRGB[2]);
-
-      if (frameDelta > 30) {
-        effectiveSmoothing = Math.min(0.95, this.smoothing * 2.1);
-        effectiveSaturation = Math.min(2.5, this.saturation * 1.25);
-      }
-      this.lastFrameAvgRGB = [...this.currentRGB];
+      effectiveSmoothing = Math.min(0.85, this.smoothing * 1.5);
+      effectiveSaturation = Math.min(2.2, this.saturation * 1.2);
     }
     this.effectiveSmoothing = effectiveSmoothing;
     this.effectiveSaturation = effectiveSaturation;
 
     if (this.mode === '3-edges') {
-      // 1. 3-SIDE MONITOR (Left • Top • Right, e.g. 3-4-2 or 1-2-1)
+      // 3-side monitor edges (Left • Top • Right, e.g. 3-4-2 or 1-2-1)
       const leftData = this.sampleCtx.getImageData(0, startY, Math.max(2, Math.floor(sw * 0.20)), activeHeight).data;
       const topData = this.sampleCtx.getImageData(0, startY, sw, Math.max(2, Math.floor(activeHeight * 0.20))).data;
       const rightData = this.sampleCtx.getImageData(sw - Math.max(2, Math.floor(sw * 0.20)), startY, Math.max(2, Math.floor(sw * 0.20)), activeHeight).data;
@@ -1869,17 +1858,12 @@ class MovieSyncEngine {
 
       this.sendAmbilightPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
         seg: {
-          frz: true,
           i: [
             0, p1, z0.rgb,
             p1, p2, z1.rgb,
             p2, p3, z2.rgb
-          ],
-          fx: 0
+          ]
         }
       });
 
@@ -1962,17 +1946,12 @@ class MovieSyncEngine {
 
       this.sendAmbilightPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
         seg: {
-          frz: true,
           i: [
             0, p1, z0.rgb,
             p1, p2, z1.rgb,
             p2, p3, z2.rgb
-          ],
-          fx: 0
+          ]
         }
       });
 
@@ -2044,18 +2023,13 @@ class MovieSyncEngine {
 
       this.sendAmbilightPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
         seg: {
-          frz: true,
           i: [
             p1, p2, this.zoneColors.top,
             p2, p3, this.zoneColors.right,
             p3, p4, this.zoneColors.bottom,
             p4, p5, this.zoneColors.left
-          ],
-          fx: 0
+          ]
         }
       });
 
@@ -2117,67 +2091,41 @@ class MovieSyncEngine {
 
       this.sendAmbilightPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
         seg: {
-          frz: true,
           i: [
             p1, p2, this.zoneColors.left,
             p2, p3, this.zoneColors.right
-          ],
-          fx: 0
+          ]
         }
       });
 
     } else if (this.mode === 'dominant') {
-      // 5. VIBRANT DOMINANT CHROMA EXTRACTION
+      // Vibrant continuous chroma-weighted dominant scene mode
       const imgData = this.sampleCtx.getImageData(0, startY, sw, activeHeight).data;
-      const hueBuckets = new Array(16).fill(0).map(() => ({ r: 0, g: 0, b: 0, weight: 0 }));
-      let totalVibrantWeight = 0;
-      let totalR = 0, totalG = 0, totalB = 0, validPixelCount = 0;
+      let rSum = 0, gSum = 0, bSum = 0, totalW = 0;
+      let fallbackR = 0, fallbackG = 0, fallbackB = 0, validPixelCount = 0;
 
       for (let i = 0; i < imgData.length; i += 16) {
         const r = imgData[i], g = imgData[i + 1], b = imgData[i + 2];
-        if (r < 18 && g < 18 && b < 18) continue; // ignore letterbox black
+        if (r < 14 && g < 14 && b < 14) continue; // ignore letterbox black
 
-        totalR += r; totalG += g; totalB += b; validPixelCount++;
+        fallbackR += r; fallbackG += g; fallbackB += b; validPixelCount++;
 
         const max = Math.max(r, g, b);
         const min = Math.min(r, g, b);
         const chroma = max - min;
-        const brightness = max / 255;
+        // Smooth continuous chroma weight avoids discrete bucket hopping
+        const weight = 1.0 + Math.pow(chroma / 255, 1.5) * 3.5;
 
-        if (chroma >= 20 && brightness >= 0.12) {
-          const [h, s, v] = rgbToHsv(r, g, b);
-          const bucketIdx = Math.floor((h / 360) * 16) % 16;
-          const weight = Math.pow(s, 2.2) * Math.pow(v, 1.2);
-
-          hueBuckets[bucketIdx].r += r * weight;
-          hueBuckets[bucketIdx].g += g * weight;
-          hueBuckets[bucketIdx].b += b * weight;
-          hueBuckets[bucketIdx].weight += weight;
-          totalVibrantWeight += weight;
-        }
+        rSum += r * weight;
+        gSum += g * weight;
+        bSum += b * weight;
+        totalW += weight;
       }
 
-      let targetR = 0, targetG = 0, targetB = 0;
-
-      if (totalVibrantWeight > 0.05) {
-        let bestBucket = hueBuckets[0];
-        for (let b = 1; b < 16; b++) {
-          if (hueBuckets[b].weight > bestBucket.weight) bestBucket = hueBuckets[b];
-        }
-        targetR = bestBucket.r / bestBucket.weight;
-        targetG = bestBucket.g / bestBucket.weight;
-        targetB = bestBucket.b / bestBucket.weight;
-      } else if (validPixelCount > 0) {
-        targetR = totalR / validPixelCount;
-        targetG = totalG / validPixelCount;
-        targetB = totalB / validPixelCount;
-      } else {
-        targetR = 0; targetG = 0; targetB = 0;
-      }
+      let targetR = totalW > 0 ? rSum / totalW : (validPixelCount > 0 ? fallbackR / validPixelCount : 0);
+      let targetG = totalW > 0 ? gSum / totalW : (validPixelCount > 0 ? fallbackG / validPixelCount : 0);
+      let targetB = totalW > 0 ? bSum / totalW : (validPixelCount > 0 ? fallbackB / validPixelCount : 0);
 
       const satDom = this.effectiveSaturation || this.saturation;
       if (satDom > 1.0 && (targetR > 0 || targetG > 0 || targetB > 0)) {
@@ -2216,25 +2164,19 @@ class MovieSyncEngine {
 
       this.sendAmbilightPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
         seg: {
-          frz: true,
-          i: [0, ledCount, [finalR, finalG, finalB]],
-          col: [[finalR, finalG, finalB], [0, 0, 0], [0, 0, 0]],
-          fx: 0
+          i: [0, ledCount, [finalR, finalG, finalB]]
         }
       });
 
     } else {
-      // 6. SMART CHROMA-WEIGHTED AVERAGE MODE
+      // Smart chroma-weighted average mode
       const imgData = this.sampleCtx.getImageData(0, startY, sw, activeHeight).data;
       let rSum = 0, gSum = 0, bSum = 0, totalW = 0;
 
       for (let i = 0; i < imgData.length; i += 16) {
         const r = imgData[i], g = imgData[i + 1], b = imgData[i + 2];
-        if (r < 18 && g < 18 && b < 18) continue;
+        if (r < 14 && g < 14 && b < 14) continue;
 
         const max = Math.max(r, g, b), min = Math.min(r, g, b);
         const chroma = max - min;
@@ -2287,14 +2229,8 @@ class MovieSyncEngine {
 
       this.sendAmbilightPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
         seg: {
-          frz: true,
-          i: [0, ledCount, [finalR, finalG, finalB]],
-          col: [[finalR, finalG, finalB], [0, 0, 0], [0, 0, 0]],
-          fx: 0
+          i: [0, ledCount, [finalR, finalG, finalB]]
         }
       });
     }
@@ -2309,47 +2245,29 @@ class MovieSyncEngine {
   }
 
   _sampleZone(data) {
-    let totalR = 0, totalG = 0, totalB = 0, count = 0;
-    const hueBuckets = new Array(12).fill(0).map(() => ({ r: 0, g: 0, b: 0, weight: 0 }));
-    let totalWeight = 0;
+    let rSum = 0, gSum = 0, bSum = 0, totalWeight = 0;
+    let fallbackR = 0, fallbackG = 0, fallbackB = 0, count = 0;
 
     for (let i = 0; i < data.length; i += 16) {
       const r = data[i], g = data[i + 1], b = data[i + 2];
-      if (r < 18 && g < 18 && b < 18) continue; // letterbox black
+      if (r < 14 && g < 14 && b < 14) continue; // letterbox black
 
-      totalR += r; totalG += g; totalB += b; count++;
+      fallbackR += r; fallbackG += g; fallbackB += b; count++;
 
       const max = Math.max(r, g, b), min = Math.min(r, g, b);
       const chroma = max - min;
-      const brightness = max / 255;
+      // Smooth continuous chroma weighting: vibrant colors smoothly dominate without bucket oscillation
+      const weight = 1.0 + (chroma / 255) * 2.5;
 
-      if (chroma >= 20 && brightness >= 0.12) {
-        const [h, s, v] = rgbToHsv(r, g, b);
-        const bucketIdx = Math.floor((h / 360) * 12) % 12;
-        const weight = (s * s) * v;
-
-        hueBuckets[bucketIdx].r += r * weight;
-        hueBuckets[bucketIdx].g += g * weight;
-        hueBuckets[bucketIdx].b += b * weight;
-        hueBuckets[bucketIdx].weight += weight;
-        totalWeight += weight;
-      }
+      rSum += r * weight;
+      gSum += g * weight;
+      bSum += b * weight;
+      totalWeight += weight;
     }
 
-    let targetR = 0, targetG = 0, targetB = 0;
-    if (totalWeight > 0.05) {
-      let best = hueBuckets[0];
-      for (let b = 1; b < 12; b++) {
-        if (hueBuckets[b].weight > best.weight) best = hueBuckets[b];
-      }
-      targetR = best.r / best.weight;
-      targetG = best.g / best.weight;
-      targetB = best.b / best.weight;
-    } else if (count > 0) {
-      targetR = totalR / count;
-      targetG = totalG / count;
-      targetB = totalB / count;
-    }
+    let targetR = totalWeight > 0 ? rSum / totalWeight : (count > 0 ? fallbackR / count : 0);
+    let targetG = totalWeight > 0 ? gSum / totalWeight : (count > 0 ? fallbackG / count : 0);
+    let targetB = totalWeight > 0 ? bSum / totalWeight : (count > 0 ? fallbackB / count : 0);
 
     const sat = this.effectiveSaturation || this.saturation;
     if (sat > 1.0 && (targetR > 0 || targetG > 0 || targetB > 0)) {
@@ -2510,6 +2428,13 @@ class MusicSyncEngine {
       document.getElementById('musicActiveBadge').classList.remove('hide');
 
       showToast(`Audio Sync Active (${this.audioSourceType.toUpperCase()})`);
+      // Initialize WLED for real-time streaming: turn on, solid effect 0, unfreeze
+      wled.send({
+        on: true,
+        bri: APP_STATE.brightness,
+        transition: 0,
+        seg: { fx: 0, frz: false }
+      }, true);
       this.loop();
     } catch (err) {
       console.warn('Audio start error:', err);
@@ -2792,10 +2717,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'symmetricalMirror') {
@@ -2824,10 +2746,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'thermalHeatmap') {
@@ -2869,10 +2788,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'frequencyWave') {
@@ -2897,10 +2813,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'kineticPulse') {
@@ -2927,10 +2840,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'starfield') {
@@ -2960,10 +2870,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'bpmChase') {
@@ -2991,10 +2898,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'centerPulse') {
@@ -3027,10 +2931,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'vuMeter') {
@@ -3055,10 +2956,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'beatStrobe') {
@@ -3086,10 +2984,7 @@ class MusicSyncEngine {
       virtualStrip.setMultiLed(ledColors);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: APP_STATE.brightness,
-        seg: { i: [0, ...ledColors], fx: 0 }
+        seg: { i: [0, ...ledColors] }
       });
 
     } else if (this.mode === 'freqRainbow') {
@@ -3105,10 +3000,7 @@ class MusicSyncEngine {
       virtualStrip.setUniformColor(r, g, b);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: bri,
-        seg: { col: [[r, g, b]], fx: 0 }
+        seg: { i: [0, ledCount, [r, g, b]] }
       });
 
     } else if (this.mode === 'chillFlow') {
@@ -3120,10 +3012,7 @@ class MusicSyncEngine {
       virtualStrip.setUniformColor(r, g, b);
       this.sendMusicPacket({
         transition: 0,
-        v: false,
-        on: true,
-        bri: bri,
-        seg: { col: [[r, g, b]], fx: 0 }
+        seg: { i: [0, ledCount, [r, g, b]] }
       });
     }
   }
@@ -4106,7 +3995,7 @@ function initEventListeners() {
     movieSync.dangerHz = val;
     try { localStorage.setItem('ambilight_danger_hz', val.toString()); } catch (err) {}
     const textEl = document.getElementById('dangerHzValText');
-    if (textEl) textEl.textContent = `${val} Hz (Tactical Pulse)`;
+    if (textEl) textEl.textContent = `${val} Hz (Pulse Rate)`;
   });
 
   document.getElementById('checkFastEdgeBoost')?.addEventListener('change', (e) => {
