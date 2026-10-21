@@ -25,7 +25,9 @@
 
 ---
 
-<img src="docs/screenshots/hero_dashboard.png" alt="Chaos ESP32 Light Studio Dashboard" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+<p align="center">
+  <img src="docs/screenshots/hero_dashboard.png" alt="Chaos ESP32 Light Studio Dashboard" width="100%">
+</p>
 
 </div>
 
@@ -33,56 +35,101 @@
 
 ## 🌟 Why You'll Love It
 
-* 🎬 **Cinema & Gaming Ambilight**: Turn any desktop monitor or TV into an immersive screen-sync display.
-* 🛡️ **Zero-Jitter Anti-Flicker Engine**: Swallows film-grain jitter on steady scenes so your lights never twitch nervously.
-* ⚡ **Instant Scene-Cut Snap**: Dynamically accelerates transitions to 0 ms on explosions and cuts — no trailing delay.
-* 🎵 **Microphone-Free Audio Reactivity**: Uses your browser's Web Audio API for real-time 256-band FFT spectrum lighting — no extra sound hardware or soldering required!
-* 🎨 **6 Aesthetic Themes**: Switch between Synthwave 80s, OLED Void Black, Aurora, Emerald Matrix, Solar Ember, and Nordic Frost.
-* 📦 **Zero-Config LittleFS Bundle**: One tiny compiled file (`index.htm`, ~244 KB) stored directly on the ESP32. 100% offline, zero cloud or CDN dependencies!
+* 💡 **Lighting Studio & Dynamic FX**: Interactive HSV color wheel, 220 native WLED lighting effects, 72 color palettes, and quick mood presets.
+* 🎬 **Cinema & Gaming Ambilight**: Turn any desktop monitor, ultrawide, or TV into an immersive screen-sync display.
+* 🛡️ **Zero-Jitter Anti-Flicker Engine**: Deadband noise gate swallows video compression jitter and film grain on steady shots.
+* ⚡ **Instant Scene-Cut Snap**: Accelerates transitions dynamically to 0 ms on explosions and cuts — zero trailing delay.
+* 🎵 **Microphone-Free Audio Reactivity**: Uses your browser's Web Audio API for real-time 256-band FFT spectrum lighting — no extra microphone hardware or soldering required!
+* 🎨 **6 Bespoke Portal Themes**: Switch between Synthwave 80s, OLED Void Black, Cyberpunk Aurora, Emerald Matrix, Solar Ember, and Nordic Frost.
+* 💾 **LittleFS Hardware Presets**: Save looks directly to the ESP32's non-volatile flash memory with emoji avatars and quick scenes.
+* 📦 **Zero-Config LittleFS Bundle**: One single compiled file (`index.htm`, ~244 KB) stored directly on the ESP32. 100% offline, zero cloud or CDN dependencies!
 
 ---
 
 ## 📸 The Visual Tour
 
-### 1. 🎬 Cinema Ambilight & Gaming Studio
-Stream movies from Netflix, YouTube, or PC games directly to your LED strip with custom zone splits and zero flicker.
+### 1. 💡 Lighting Studio & Real-Time Color Engine
+Real-time HSV color wheel synthesis, primary/secondary/tertiary color slots, 220 animated lighting effects, 72 color palettes, and instant speed/intensity tuning.
 
-<div align="center">
-  <img src="docs/screenshots/cinema_ambilight.png" alt="Cinema Ambilight Studio" width="100%" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);" />
-</div>
+<p align="center">
+  <img src="docs/screenshots/hero_dashboard.png" alt="Lighting Studio and Real-Time Color Engine" width="100%">
+</p>
 
-* 🛡️ **Smart Anti-Flicker Deadband**: A noise gate eliminates micro-fluctuations from video compression and film grain.
-* ⚡ **Instant Scene-Cut Snapping**: Instantly changes colors on scene transitions so lighting is never "too late".
-* 📐 **Custom Monitor Zones & Division**: Pre-tuned for 3-side monitors (`3-4-2`, `1-2-1`), ultrawide displays, or full 4-side frames.
-* 🍿 **Dynamic Letterbox Crop**: Automatically ignores 21:9 black cinematic bars so edge colors remain accurate.
-* 🕹️ **One-Touch Calibration Profiles**: Instant 1-click profiles for Cinema 21:9, Fast FPS Esports, Cyberpunk Neon, and Horror.
+* 🎨 **Interactive Color Wheel**: Drag to blend HSV hues smoothly with real-time hardware mirroring.
+* ✨ **220 Hardware Effects & 72 Palettes**: Instant search filtering for effects like Rainbow, Fire, Twinkle, and Sinelon.
+* ⚡ **Live Virtual LED Mirror**: 60-LED canvas strip simulation running at 40+ FPS with sub-millisecond telemetry.
 
 ---
 
-### 2. 🎵 Music Reactive FFT Spectrum Studio
-Turn any track from Spotify, YouTube, or your microphone into a living frequency visualizer.
+### 2. 🎬 Cinema Ambilight & Gaming Studio
+Stream movies from Netflix, YouTube, VLC, or PC games directly to your LED strip with custom zone splits and zero flicker.
 
-<div align="center">
-  <img src="docs/screenshots/music_reactive.png" alt="Music Reactive Studio" width="100%" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);" />
-</div>
+<p align="center">
+  <img src="docs/screenshots/cinema_ambilight.png" alt="Cinema Ambilight Studio" width="100%">
+</p>
 
-* 🎙️ **Zero Extra Hardware**: No microphone modules (INMP441) or soldering needed — audio is analyzed directly in Chrome/Edge.
+* 🛡️ **Smart Anti-Flicker Deadband**: A noise gate eliminates micro-fluctuations from video compression and film grain.
+* ⚡ **Instant Scene-Cut Snapping**: Instantly snaps colors on scene cuts ($\Delta \ge 100$) so lighting is never "too late".
+* 📐 **Custom Monitor Zones & Division**: Pre-tuned for 3-side monitors (`3-4-2`, `1-2-1`), 3 columns, 4-edge frames, or lightbars.
+* 🍿 **Dynamic Letterbox Crop**: Automatically ignores 21:9 black cinematic bars so edge colors remain accurate.
+* 🕹️ **One-Touch Calibration Profiles**: Instant 1-click profiles for Cinema 21:9, Fast FPS Esports, Cyberpunk Neon, and Low HP Alert.
+
+---
+
+### 3. 🎵 Music Reactive FFT Spectrum Studio
+Turn any track from Spotify, YouTube, your PC audio, or microphone into a living frequency visualizer.
+
+<p align="center">
+  <img src="docs/screenshots/music_reactive.png" alt="Music Reactive Studio" width="100%">
+</p>
+
+* 🎙️ **Zero Extra Hardware**: No microphone modules (INMP441) or soldering needed — audio is analyzed directly via Web Audio API.
 * 🎛️ **12 Dynamic Reactive Modes**: Full 60-LED Equalizer, Symmetrical Dual EQ, Bass Explosions, Heatmaps, and Chill Flow.
 * 🌈 **14 Curated Color Themes**: Cyberpunk, Classic VU, Magma Fire, Synthwave Neon, Blood Moon, and more.
 * 🥁 **Beat Transient Peak Detection**: Tracks kick and snare energy peaks with automatic noise floor thresholding.
 
 ---
 
-### 3. 💾 Hardware Presets & Atmosphere Scenes
-Control and personalize your room's mood in one tap.
+### 4. 💾 Hardware Presets & Atmosphere Scenes
+Control and personalize your room's mood in one tap, saved permanently to ESP32 LittleFS flash.
 
-<div align="center">
-  <img src="docs/screenshots/presets_scenes.png" alt="Hardware Presets and Atmospheric Quick Scenes" width="100%" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);" />
-</div>
+<p align="center">
+  <img src="docs/screenshots/presets_scenes.png" alt="Hardware Presets and Atmospheric Quick Scenes" width="100%">
+</p>
 
 * 🌅 **Quick Atmospheric Scenes**: Sunset Glow, Cyberpunk Neon, Campfire Ember, Deep Ocean, and Studio Daylight.
 * 🏷️ **Emoji Tagging**: Give custom presets cute avatar tags (🌅, ⚡, 🌆, 🌌, 🔥, 💎, 🎮, 🌿) for rapid visual scanning.
 * 📌 **Pin to Header**: Keep your favorite scenes right on the top navigation bar for 1-click room transitions.
+
+---
+
+### 5. 🎨 6-Mode Portal Theme Engine & Theme Studio
+Tailor the web portal's visual aesthetic to match your ambient environment or room lighting setup.
+
+<p align="center">
+  <img src="docs/screenshots/theme_dropdown.png" alt="6-Mode Portal Theme Dropdown Menu" width="100%">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/theme_studio.png" alt="Web Portal Appearance & Theme Studio" width="100%">
+</p>
+
+* 🌌 **6 Bespoke Themes**: Cyberpunk Aurora, OLED Void Black (#000000 true cinema contrast), Synthwave 80s, Emerald Matrix, Solar Ember, and Nordic Frost.
+* 🛸 **High-Contrast Floating Dropdown**: Frosted opaque acrylic backdrops with zero text bleed-through and instant theme switching.
+* 🎚️ **Theme Studio Showcase**: Interactive palette swatches and theme preview cards in the Settings tab.
+
+---
+
+### 6. 🌐 Multi-Device Hub & LAN Synchronization
+Discover and coordinate multiple ESP32 and WLED nodes across your local Wi-Fi network.
+
+<p align="center">
+  <img src="docs/screenshots/multidevice_hub.png" alt="Multi-Device Hub and Broadcast Sync" width="100%">
+</p>
+
+* 📡 **UDP Broadcast Group Sync**: Synchronize color, brightness, effects, and music reactive visuals to all lights simultaneously on UDP port 21324.
+* 🔍 **Network Node Discovery**: Scan subnet for online controllers and switch active target device in one click.
+* 📶 **Live Telemetry & Diagnostics**: Real-time Wi-Fi RSSI signal strength, ping latency, and frame-rate monitors.
 
 ---
 
