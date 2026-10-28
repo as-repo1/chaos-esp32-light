@@ -280,4 +280,4 @@ Chaos ESP32 Light is proudly built on top of the extraordinary **[WLED Project](
 
 ## 📄 License
 
-This project is open-source under the [MIT License](LICENSE). Built with ❤️ for the lighting and maker community.
+This project is open-source under the [MIT License](LICENSE). 
