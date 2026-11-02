@@ -965,10 +965,16 @@ class MovieSyncEngine {
     // 2. Base Exponential Moving Average (EMA) smoothing
     let alpha = this.effectiveSmoothing || this.smoothing || 0.28;
 
-    // 3. Instant Scene Cut Snap:
-    // Snap instantly on actual scene transitions (totalDelta >= 100) without trailing lag
-    if (this.sceneCutSnapEnabled && totalDelta >= 100) {
-      alpha = 0.95;
+    // 3. Instant Scene Cut Snap with Hysteresis (prevents threshold oscillation flicker)
+    if (this.sceneCutSnapEnabled) {
+      if (totalDelta >= 120) {
+        this._snapActive = true;
+      } else if (totalDelta < 60) {
+        this._snapActive = false;
+      }
+      if (this._snapActive) {
+        alpha = 0.88;
+      }
     }
 
     return [
