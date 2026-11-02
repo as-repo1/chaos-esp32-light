@@ -5744,7 +5744,13 @@ class WLEDClient {
       } catch (e) {}
     }
 
-    // Direct HTTP POST fallback when WebSocket is not connected
+    // NEVER fallback to HTTP POST for streaming frames!
+    // Firing 30 HTTP POSTs/sec to an ESP32 web server causes socket exhaustion and LED flicker.
+    if (payload.isStream || payload.seg?.i) {
+      return;
+    }
+
+    // Direct HTTP POST fallback when WebSocket is not connected (for discrete button actions only)
     fetch(`http://${this.ip}/json/state`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -8292,7 +8298,7 @@ function updateActiveColor(r, g, b, sendToDevice = false) {
 
   if (sendToDevice) {
     wled.send({
-      seg: { col: APP_STATE.colors }
+      seg: { col: APP_STATE.colors, fx: 0 }
     });
   }
 }
