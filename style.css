@@ -3524,6 +3524,383 @@ select option, .wiring-select option, .glass-select option {
   100% { border-color: #ef4444; }
 }
 
+/* ========================================================
+   OLED DISPLAY STUDIO STYLES
+   ======================================================== */
+.oled-studio-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.oled-hero-card {
+  padding: 20px 24px;
+}
+
+.oled-hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.oled-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.oled-badge-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.1));
+  border: 1px solid rgba(0, 242, 254, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00f2fe;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+}
+
+.oled-quick-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.oled-studio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 960px) {
+  .oled-studio-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* OLED Screen Bezel & Canvas */
+.oled-screen-bezel {
+  background: #090d16;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: inset 0 4px 16px rgba(0, 0, 0, 0.9), 0 12px 36px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.oled-screen-housing {
+  background: #000000;
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  box-shadow: 0 0 24px rgba(0, 242, 254, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.oled-screen-glass {
+  width: 384px;
+  height: 192px;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+#oledVirtualCanvas {
+  width: 384px;
+  height: 192px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.6));
+  transition: transform 0.3s ease, filter 0.2s ease;
+}
+
+#oledVirtualCanvas.oled-inverted {
+  filter: invert(1) hue-rotate(180deg) drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+}
+
+#oledVirtualCanvas.oled-flipped {
+  transform: rotate(180deg);
+}
+
+.oled-bezel-footer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 384px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.oled-chip-tag {
+  color: #00f2fe;
+}
+
+.oled-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: monospace;
+  background: rgba(0, 242, 254, 0.1);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  color: #00f2fe;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* Feature Box & Auto-Switch */
+.oled-feature-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 16px 0;
+}
+
+.feature-info strong {
+  display: block;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.feature-info p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Quick Theme Chips */
+.preset-chips-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.chip-preset-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chip-preset-btn:hover {
+  background: rgba(0, 242, 254, 0.15);
+  border-color: #00f2fe;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Mode Selection Cards */
+.oled-modes-selector-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.oled-mode-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.oled-mode-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(0, 242, 254, 0.3);
+}
+
+.oled-mode-card.active {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.12), rgba(79, 172, 254, 0.06));
+  border-color: #00f2fe;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.2);
+}
+
+.mode-card-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.oled-mode-card.active .mode-card-radio {
+  border-color: #00f2fe;
+}
+
+.oled-mode-card.active .mode-card-radio::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00f2fe;
+  box-shadow: 0 0 8px #00f2fe;
+}
+
+.mode-card-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.mode-card-body strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.mode-card-body p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Customizer Subgroups */
+.oled-dynamic-customizer {
+  margin-top: 16px;
+}
+
+.customizer-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  margin: 16px 0;
+}
+
+.oled-subgroup {
+  margin-bottom: 16px;
+}
+
+.oled-subgroup label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-group-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip-sub-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chip-sub-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.chip-sub-btn.active {
+  background: rgba(0, 242, 254, 0.18);
+  border-color: #00f2fe;
+  color: #00f2fe;
+  font-weight: 600;
+}
+
+.pill-toggles-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.checkbox-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.checkbox-tag input {
+  accent-color: #00f2fe;
+}
+
+.banner-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.banner-input-row input {
+  flex: 1;
+}
+
+.oled-apply-row {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-glow-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
+  border: none;
+  color: #000000;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+  transition: all 0.2s ease;
+}
+
+.btn-glow-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(0, 242, 254, 0.7);
+}
+
+
 
 
 

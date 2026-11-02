@@ -298,6 +298,9 @@ class WLEDClient {
       renderPalettesGrid(APP_STATE.palettesList);
 
       await this.fetchPresets();
+      if (typeof oledStudio !== 'undefined' && oledStudio.fetchSettings) {
+        oledStudio.fetchSettings();
+      }
     } catch (err) {
       console.warn('Failed to load initial WLED data via REST:', err);
     }
@@ -4553,10 +4556,959 @@ function initPortalTheme() {
   });
 }
 
+// ====================================================================
+// TAB: OLED HARDWARE HUD & DISPLAY STUDIO CONTROLLER
+// ====================================================================
+class OledStudioManager {
+  constructor() {
+    this.canvas = null;
+    this.ctx = null;
+    this.animId = null;
+    this.frameCount = 0;
+    this.simFps = 30;
+    this.lastFpsUpdate = performance.now();
+    this.scrollOffset = 0;
+    this.bannerOffset = -112;
+    this.animWave = 0;
+    this.vinylAngle = 0;
+    this.peakBars = new Array(32).fill(2);
+    this.peakHold = new Array(32).fill(2);
+    this.peakHoldSpeed = new Array(32).fill(0);
+    this.pollTimer = null;
+    this.sendThrottleTimer = null;
+
+    // Hardware State Mirror
+    this.state = {
+      mode: 0,        // 0: Music HUD, 1: Clock & Telemetry, 2: Spectrum 128px, 3: Ambient Mirror, 4: Banner
+      artPos: 0,      // 0: Left, 1: Right, 2: Hidden
+      vis: 0,         // 0: Bars, 1: Wave, 2: Peak Dots, 3: Off
+      icon: true,
+      prog: true,
+      div: true,
+      bri: 255,
+      inv: false,
+      flip: false,
+      pwr: true,
+      auto: false,
+      text: "LumiOS Smart Desk"
+    };
+
+    // Live Media Cache from ESP32 /status or media sync daemon
+    this.media = {
+      title: "Starboy",
+      artist: "The Weeknd ft. Daft Punk",
+      app: "spotify",
+      pos: 84,
+      dur: 230,
+      playing: true,
+      hasArt: true
+    };
+
+    // Telemetry Cache
+    this.telemetry = {
+      rssi: -58,
+      ssid: "ichaos",
+      temp: 42,
+      heap: 184,
+      uptime: "02:14:35",
+      lightBri: 85
+    };
+  }
+
+  init() {
+    this.canvas = document.getElementById('oledVirtualCanvas');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.ctx.imageSmoothingEnabled = false;
+
+    this.bindEvents();
+    this.startRenderingLoop();
+    this.startStatusPolling();
+    this.fetchSettings();
+  }
+
+  bindEvents() {
+    // Mode selector cards
+    document.querySelectorAll('.oled-mode-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const mode = parseInt(card.dataset.mode, 10);
+        this.setMode(mode);
+      });
+    });
+
+    // Art position chips
+    document.querySelectorAll('#oledArtPosChips .chip-sub-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pos = parseInt(btn.dataset.artpos, 10);
+        this.setArtPos(pos);
+      });
+    });
+
+    // Visualizer style chips
+    document.querySelectorAll('#oledVisStyleChips .chip-sub-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const vis = parseInt(btn.dataset.vis, 10);
+        this.setVisStyle(vis);
+      });
+    });
+
+    // Toggle checkboxes
+    document.getElementById('oledToggleIcon')?.addEventListener('change', (e) => {
+      this.state.icon = e.target.checked;
+      this.sendUpdate({ icon: this.state.icon });
+    });
+
+    document.getElementById('oledToggleProgress')?.addEventListener('change', (e) => {
+      this.state.prog = e.target.checked;
+      this.sendUpdate({ prog: this.state.prog });
+    });
+
+    document.getElementById('oledToggleDivider')?.addEventListener('change', (e) => {
+      this.state.div = e.target.checked;
+      this.sendUpdate({ div: this.state.div });
+    });
+
+    // Contrast / Brightness slider
+    const contrastSlider = document.getElementById('oledContrastSlider');
+    const contrastVal = document.getElementById('oledContrastVal');
+    contrastSlider?.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      this.state.bri = val;
+      if (contrastVal) contrastVal.textContent = `${Math.round((val / 255) * 100)}%`;
+      this.updateScreenBrightnessVisual();
+      this.throttleSend({ bri: val });
+    });
+
+    // Smart Auto Switching
+    document.getElementById('oledAutoSwitchToggle')?.addEventListener('change', (e) => {
+      this.state.auto = e.target.checked;
+      this.sendUpdate({ auto: this.state.auto });
+      showToast(this.state.auto ? "Smart Auto-Switching ENABLED" : "Smart Auto-Switching DISABLED");
+    });
+
+    // Quick action buttons
+    document.getElementById('oledInvertBtn')?.addEventListener('click', () => {
+      this.toggleInvert();
+    });
+
+    document.getElementById('oledFlipBtn')?.addEventListener('click', () => {
+      this.toggleFlip();
+    });
+
+    document.getElementById('oledTogglePowerBtn')?.addEventListener('click', () => {
+      this.togglePower();
+    });
+
+    // Banner Text
+    document.getElementById('oledUpdateBannerBtn')?.addEventListener('click', () => {
+      this.updateBannerText();
+    });
+    document.getElementById('oledBannerTextInput')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') this.updateBannerText();
+    });
+
+    // Quick presets
+    document.getElementById('oledPresetMusicDefault')?.addEventListener('click', () => {
+      this.applyPreset({ mode: 0, artPos: 0, vis: 0, icon: true, prog: true, div: true }, "Music Standard");
+    });
+    document.getElementById('oledPresetClockMinimal')?.addEventListener('click', () => {
+      this.applyPreset({ mode: 1 }, "Desk Clock Minimal");
+    });
+    document.getElementById('oledPresetWideSpectrum')?.addEventListener('click', () => {
+      this.applyPreset({ mode: 2 }, "Wide 128px Spectrum");
+    });
+    document.getElementById('oledPresetAmbientMirror')?.addEventListener('click', () => {
+      this.applyPreset({ mode: 3 }, "Ambient LED Mirror");
+    });
+
+    // Save & Push to ESP32
+    document.getElementById('oledSaveSettingsBtn')?.addEventListener('click', () => {
+      this.pushFullSettings();
+    });
+  }
+
+  setMode(mode) {
+    this.state.mode = mode;
+    this.syncUI();
+    const modeNames = ["Now Playing Music HUD", "Digital Clock & Telemetry", "128px Audio Spectrum", "Ambient Lightbar Mirror", "Cyberpunk Banner Ticker"];
+    showToast(`OLED Mode: ${modeNames[mode] || mode}`);
+    this.sendUpdate({ mode: this.state.mode });
+  }
+
+  setArtPos(pos) {
+    this.state.artPos = pos;
+    this.syncUI();
+    const posNames = ["Album Art: Left (Maximized)", "Album Art: Right Side", "Album Art: Hidden (Full Width)"];
+    showToast(posNames[pos] || `Art Position: ${pos}`);
+    this.sendUpdate({ artPos: this.state.artPos });
+  }
+
+  setVisStyle(vis) {
+    this.state.vis = vis;
+    this.syncUI();
+    const visNames = ["Visualizer: Equalizer Bars", "Visualizer: Sine Waveform", "Visualizer: Floating Peak Dots", "Visualizer: Disabled"];
+    showToast(visNames[vis] || `Vis Style: ${vis}`);
+    this.sendUpdate({ vis: this.state.vis });
+  }
+
+  toggleInvert() {
+    this.state.inv = !this.state.inv;
+    this.syncUI();
+    showToast(this.state.inv ? "OLED Colors Inverted (White Theme)" : "OLED Colors Restored (Dark Theme)");
+    this.sendUpdate({ inv: this.state.inv });
+  }
+
+  toggleFlip() {
+    this.state.flip = !this.state.flip;
+    this.syncUI();
+    showToast(this.state.flip ? "OLED Flipped 180° (Inverted Mount)" : "OLED Normal Orientation");
+    this.sendUpdate({ flip: this.state.flip });
+  }
+
+  togglePower() {
+    this.state.pwr = !this.state.pwr;
+    this.syncUI();
+    showToast(this.state.pwr ? "OLED Display Active (ON)" : "OLED Display Standby (SLEEP)");
+    this.sendUpdate({ pwr: this.state.pwr });
+  }
+
+  updateBannerText() {
+    const input = document.getElementById('oledBannerTextInput');
+    const text = input ? input.value.trim() : "";
+    if (text) {
+      this.state.text = text;
+      showToast(`OLED Banner Updated: "${text}"`);
+      this.sendUpdate({ text: this.state.text });
+    }
+  }
+
+  applyPreset(partial, name) {
+    Object.assign(this.state, partial);
+    this.syncUI();
+    showToast(`Applied OLED Preset: ${name}`);
+    this.sendUpdate(this.state);
+  }
+
+  updateScreenBrightnessVisual() {
+    if (!this.canvas) return;
+    const factor = Math.max(0.15, this.state.bri / 255);
+    this.canvas.style.opacity = factor.toFixed(2);
+    this.canvas.style.filter = `drop-shadow(0 0 ${(4 * factor).toFixed(1)}px rgba(0, 242, 254, ${(0.6 * factor).toFixed(2)}))`;
+    if (this.state.inv) {
+      this.canvas.classList.add('oled-inverted');
+    } else {
+      this.canvas.classList.remove('oled-inverted');
+    }
+  }
+
+  syncUI() {
+    // Mode cards
+    document.querySelectorAll('.oled-mode-card').forEach(card => {
+      const mode = parseInt(card.dataset.mode, 10);
+      card.classList.toggle('active', mode === this.state.mode);
+    });
+
+    // Navigation tab badge
+    const badge = document.getElementById('oledModeBadge');
+    if (badge) {
+      const labels = ["HUD", "CLOCK", "SPECTRUM", "AMBIENT", "BANNER"];
+      badge.textContent = labels[this.state.mode] || "OLED";
+    }
+
+    // Sub-customizer visibility
+    const musicCust = document.getElementById('oledMusicCustomizer');
+    const bannerCust = document.getElementById('oledBannerCustomizer');
+    if (musicCust) musicCust.classList.toggle('hide', this.state.mode !== 0);
+    if (bannerCust) bannerCust.classList.toggle('hide', this.state.mode !== 4);
+
+    // Art position chips
+    document.querySelectorAll('#oledArtPosChips .chip-sub-btn').forEach(btn => {
+      const p = parseInt(btn.dataset.artpos, 10);
+      btn.classList.toggle('active', p === this.state.artPos);
+    });
+
+    // Vis style chips
+    document.querySelectorAll('#oledVisStyleChips .chip-sub-btn').forEach(btn => {
+      const v = parseInt(btn.dataset.vis, 10);
+      btn.classList.toggle('active', v === this.state.vis);
+    });
+
+    // Checkboxes
+    const chkIcon = document.getElementById('oledToggleIcon');
+    if (chkIcon) chkIcon.checked = !!this.state.icon;
+    const chkProg = document.getElementById('oledToggleProgress');
+    if (chkProg) chkProg.checked = !!this.state.prog;
+    const chkDiv = document.getElementById('oledToggleDivider');
+    if (chkDiv) chkDiv.checked = !!this.state.div;
+    const chkAuto = document.getElementById('oledAutoSwitchToggle');
+    if (chkAuto) chkAuto.checked = !!this.state.auto;
+
+    // Contrast Slider
+    const contrastSlider = document.getElementById('oledContrastSlider');
+    const contrastVal = document.getElementById('oledContrastVal');
+    if (contrastSlider) contrastSlider.value = this.state.bri;
+    if (contrastVal) contrastVal.textContent = `${Math.round((this.state.bri / 255) * 100)}%`;
+
+    // Banner Text Input
+    const bannerInput = document.getElementById('oledBannerTextInput');
+    if (bannerInput && this.state.text) bannerInput.value = this.state.text;
+
+    // Quick Actions
+    const pwrIcon = document.getElementById('oledPwrIcon');
+    const pwrText = document.getElementById('oledPwrText');
+    const pwrBtn = document.getElementById('oledTogglePowerBtn');
+    if (pwrIcon) pwrIcon.textContent = this.state.pwr ? "⚡" : "💤";
+    if (pwrText) pwrText.textContent = this.state.pwr ? "Display ON" : "Display SLEEP";
+    if (pwrBtn) pwrBtn.classList.toggle('active-accent', !this.state.pwr);
+
+    // Canvas filters
+    if (this.canvas) {
+      this.canvas.classList.toggle('oled-inverted', !!this.state.inv);
+      this.canvas.classList.toggle('oled-flipped', !!this.state.flip);
+      this.updateScreenBrightnessVisual();
+    }
+  }
+
+  async fetchSettings() {
+    try {
+      const targetIp = APP_STATE.ip || defaultTargetIp;
+      const res = await fetch(`http://${targetIp}/oled`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        Object.assign(this.state, data);
+        this.syncUI();
+      }
+    } catch (e) {
+      // Offline fallback
+    }
+  }
+
+  async sendUpdate(partial) {
+    Object.assign(this.state, partial);
+    this.syncUI();
+    try {
+      const targetIp = APP_STATE.ip || defaultTargetIp;
+      await fetch(`http://${targetIp}/oled`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(this.state)
+      });
+    } catch (e) {
+      // Ignore network errors in demo/local mode
+    }
+  }
+
+  throttleSend(partial) {
+    Object.assign(this.state, partial);
+    if (this.sendThrottleTimer) return;
+    this.sendThrottleTimer = setTimeout(() => {
+      this.sendThrottleTimer = null;
+      this.sendUpdate(partial);
+    }, 60);
+  }
+
+  async pushFullSettings() {
+    try {
+      const targetIp = APP_STATE.ip || defaultTargetIp;
+      showToast("Synchronizing OLED Studio to ESP32...");
+      const res = await fetch(`http://${targetIp}/oled`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(this.state)
+      });
+      if (res.ok) {
+        showToast("OLED HUD synchronized to ESP32!");
+      } else {
+        showToast("Settings sent to ESP32");
+      }
+    } catch (e) {
+      showToast("OLED parameters applied locally");
+    }
+  }
+
+  startStatusPolling() {
+    if (this.pollTimer) clearInterval(this.pollTimer);
+    this.pollTimer = setInterval(async () => {
+      try {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        const res = await fetch(`http://${targetIp}/status`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.media_title) this.media.title = data.media_title;
+          if (data.media_artist) this.media.artist = data.media_artist;
+          if (data.media_app) this.media.app = data.media_app.toLowerCase();
+          if (data.media_pos !== undefined) this.media.pos = data.media_pos;
+          if (data.media_dur !== undefined) this.media.dur = data.media_dur;
+          if (data.media_playing !== undefined) this.media.playing = data.media_playing;
+          if (data.has_art !== undefined) this.media.hasArt = data.has_art;
+
+          if (data.oled_mode !== undefined && this.state.mode !== data.oled_mode) {
+            this.state.mode = data.oled_mode;
+            this.syncUI();
+          }
+          if (data.oled_bri !== undefined && Math.abs(this.state.bri - data.oled_bri) > 2) {
+            this.state.bri = data.oled_bri;
+            this.syncUI();
+          }
+        }
+      } catch (e) {}
+    }, 2500);
+  }
+
+  startRenderingLoop() {
+    const loop = (now) => {
+      this.frameCount++;
+      if (now - this.lastFpsUpdate >= 500) {
+        this.simFps = Math.round((this.frameCount * 1000) / (now - this.lastFpsUpdate));
+        this.frameCount = 0;
+        this.lastFpsUpdate = now;
+        const fpsEl = document.getElementById('oledSimFps');
+        if (fpsEl) fpsEl.textContent = `${this.simFps} FPS`;
+      }
+
+      this.updateAnimations();
+      this.render();
+      this.animId = requestAnimationFrame(loop);
+    };
+    this.animId = requestAnimationFrame(loop);
+  }
+
+  updateAnimations() {
+    this.animWave += 0.08;
+    this.vinylAngle += 0.035;
+    this.scrollOffset += 0.45;
+    this.bannerOffset += 0.65;
+    if (this.bannerOffset > 240) this.bannerOffset = -112;
+
+    // Peak Hold Physics for Spectrum Mode
+    for (let i = 0; i < 32; i++) {
+      if (this.peakBars[i] >= this.peakHold[i]) {
+        this.peakHold[i] = this.peakBars[i];
+        this.peakHoldSpeed[i] = 0;
+      } else {
+        this.peakHoldSpeed[i] += 0.08;
+        this.peakHold[i] = Math.max(2, this.peakHold[i] - this.peakHoldSpeed[i]);
+      }
+    }
+  }
+
+  render() {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const w = 128;
+    const h = 64;
+
+    // High contrast black background
+    ctx.fillStyle = '#010409';
+    ctx.fillRect(0, 0, w, h);
+
+    // If power is OFF
+    if (!this.state.pwr) {
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('STANDBY // SLEEP', 64, 32);
+      ctx.font = '6px monospace';
+      ctx.fillText('DISPLAY POWER OFF', 64, 42);
+      const blink = Math.floor(performance.now() / 600) % 2 === 0;
+      ctx.fillStyle = blink ? '#00f2fe' : '#1e293b';
+      ctx.fillRect(62, 48, 4, 2);
+      return;
+    }
+
+    let activeMode = this.state.mode;
+    if (this.state.auto) {
+      activeMode = this.media.playing ? 0 : 1;
+    }
+
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    switch (activeMode) {
+      case 1:
+        this.renderClockTelemetryHUD(ctx);
+        break;
+      case 2:
+        this.renderFullSpectrumHUD(ctx);
+        break;
+      case 3:
+        this.renderAmbientMirrorHUD(ctx);
+        break;
+      case 4:
+        this.renderCustomBannerHUD(ctx);
+        break;
+      case 0:
+      default:
+        this.renderMusicPlayerHUD(ctx);
+        break;
+    }
+  }
+
+  renderMusicPlayerHUD(ctx) {
+    const artPos = this.state.artPos;
+    const showDiv = this.state.div;
+    const showIcon = this.state.icon;
+    const showProg = this.state.prog;
+    const vis = this.state.vis;
+
+    // CASE A: Album Art Left (Maximized 64x64)
+    if (artPos === 0) {
+      this.drawVinylDisc(ctx, 32, 32, 28, this.vinylAngle);
+      if (showDiv) {
+        this.drawDottedVLine(ctx, 64, 0, 64);
+      }
+      this.drawTrackMetadata(ctx, 67, 59, showIcon, showProg, vis);
+    }
+    // CASE B: Album Art Right (64x64)
+    else if (artPos === 1) {
+      this.drawTrackMetadata(ctx, 2, 59, showIcon, showProg, vis);
+      if (showDiv) {
+        this.drawDottedVLine(ctx, 63, 0, 64);
+      }
+      this.drawVinylDisc(ctx, 96, 32, 28, this.vinylAngle);
+    }
+    // CASE C: Album Art Hidden (Full Width 128px)
+    else {
+      this.drawFullWidthMusic(ctx, 4, 120, showIcon, showProg, vis);
+    }
+  }
+
+  drawVinylDisc(ctx, cx, cy, radius, rot) {
+    // Outer Vinyl Edge
+    ctx.strokeStyle = '#00f2fe';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Concentric Grooves
+    const grooves = [25, 21, 18, 14];
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.45)';
+    grooves.forEach(r => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+
+    // Spinning Specular Sheen (Reflecting Desk Lamp)
+    ctx.fillStyle = 'rgba(0, 242, 254, 0.22)';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, rot, rot + 0.38);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, rot + Math.PI, rot + Math.PI + 0.38);
+    ctx.fill();
+
+    // Center Spindle Hub
+    ctx.fillStyle = '#00f2fe';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Spindle Center Hole
+    ctx.fillStyle = '#010409';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawDottedVLine(ctx, x, y1, y2) {
+    ctx.fillStyle = 'rgba(0, 242, 254, 0.55)';
+    for (let y = y1; y < y2; y += 2) {
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+
+  drawTrackMetadata(ctx, x, w, showIcon, showProg, vis) {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00f2fe';
+
+    // Header Row: App Icon & State
+    let textX = x;
+    if (showIcon) {
+      if (this.media.app.includes('spot')) {
+        this.drawSpotifyIcon(ctx, x, 1);
+      } else if (this.media.app.includes('you') || this.media.app.includes('tube')) {
+        this.drawYouTubeIcon(ctx, x, 1);
+      } else {
+        this.drawMusicNoteIcon(ctx, x, 1);
+      }
+      textX = x + 10;
+    }
+
+    ctx.font = '6px monospace';
+    ctx.fillText(this.media.playing ? "[PLAYING]" : "[PAUSED]", textX, 8);
+
+    // Title Marquee (y = 12..22)
+    ctx.font = 'bold 8px monospace';
+    const titleWidth = ctx.measureText(this.media.title).width;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, 10, w, 13);
+    ctx.clip();
+    if (titleWidth > w) {
+      const scrollPos = (this.scrollOffset % (titleWidth + 20));
+      ctx.fillText(this.media.title, x - scrollPos, 20);
+    } else {
+      ctx.fillText(this.media.title, x, 20);
+    }
+    ctx.restore();
+
+    // Artist (y = 29)
+    ctx.font = '6px monospace';
+    let artistStr = this.media.artist || "Unknown Artist";
+    if (ctx.measureText(artistStr).width > w) {
+      while (artistStr.length > 3 && ctx.measureText(artistStr + "..").width > w) {
+        artistStr = artistStr.slice(0, -1);
+      }
+      artistStr += "..";
+    }
+    ctx.fillText(artistStr, x, 29);
+
+    // Progress Bar (y = 34..45)
+    if (showProg) {
+      ctx.strokeStyle = '#00f2fe';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, 34, w - 1, 4);
+      const dur = this.media.dur > 0 ? this.media.dur : 240;
+      const pos = Math.min(this.media.pos, dur);
+      const barW = Math.max(1, Math.round(((w - 3) * pos) / dur));
+      ctx.fillRect(x + 1, 35, barW, 2);
+
+      ctx.font = '6px monospace';
+      const timeStr = `${this.formatTime(pos)}/${this.formatTime(dur)}`;
+      ctx.fillText(timeStr, x, 45);
+    }
+
+    // Dynamic Visualizer (y = 50..63)
+    if (vis !== 3) {
+      const startY = 62;
+      const visWidth = w - 1;
+      if (vis === 0) {
+        // Equalizer Bars
+        const numBars = Math.floor(visWidth / 4);
+        for (let b = 0; b < numBars; b++) {
+          const bx = x + b * 4;
+          const h = this.media.playing
+            ? Math.max(1, Math.min(13, Math.round(Math.abs(Math.sin(b * 0.45 + this.animWave) * 9) + 2)))
+            : 1;
+          ctx.fillRect(bx, startY - h, 2, h);
+        }
+      } else if (vis === 1) {
+        // Sine Waveform
+        ctx.strokeStyle = '#00f2fe';
+        ctx.beginPath();
+        for (let px = 0; px < visWidth; px += 2) {
+          const py = this.media.playing
+            ? Math.round(Math.sin((px * 0.22) + this.animWave) * 5)
+            : 0;
+          if (px === 0) ctx.moveTo(x + px, startY - 6 + py);
+          else ctx.lineTo(x + px, startY - 6 + py);
+        }
+        ctx.stroke();
+      } else if (vis === 2) {
+        // Floating Peak Dots
+        const numDots = Math.floor(visWidth / 4);
+        for (let d = 0; d < numDots; d++) {
+          const dx = x + d * 4;
+          const h = this.media.playing
+            ? Math.max(2, Math.min(12, Math.round(Math.abs(Math.sin(d * 0.5 + this.animWave * 1.2) * 10) + 2)))
+            : 2;
+          ctx.fillRect(dx, startY - h, 2, 2);
+        }
+      }
+    }
+  }
+
+  drawFullWidthMusic(ctx, x, w, showIcon, showProg, vis) {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00f2fe';
+
+    // Top Header
+    let tx = x;
+    if (showIcon) {
+      this.drawSpotifyIcon(ctx, x, 1);
+      tx = x + 11;
+    }
+    ctx.font = '6px monospace';
+    ctx.fillText(this.media.playing ? "[NOW PLAYING]" : "[PAUSED]", tx, 8);
+    ctx.textAlign = 'right';
+    ctx.fillText(`[LIGHT: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}]`, 126, 8);
+    ctx.textAlign = 'left';
+    ctx.fillRect(0, 10, 128, 1);
+
+    // Title (Large font)
+    ctx.font = 'bold 10px monospace';
+    const titleWidth = ctx.measureText(this.media.title).width;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, 12, w, 14);
+    ctx.clip();
+    if (titleWidth > w) {
+      const scrollPos = (this.scrollOffset % (titleWidth + 24));
+      ctx.fillText(this.media.title, x - scrollPos, 23);
+    } else {
+      ctx.fillText(this.media.title, x, 23);
+    }
+    ctx.restore();
+
+    // Artist
+    ctx.font = '6px monospace';
+    ctx.fillText("ARTIST: " + (this.media.artist || "Unknown"), x, 32);
+
+    // Full Width Progress Bar
+    if (showProg) {
+      ctx.strokeStyle = '#00f2fe';
+      ctx.strokeRect(x, 36, w, 4);
+      const dur = this.media.dur > 0 ? this.media.dur : 240;
+      const pos = Math.min(this.media.pos, dur);
+      const barW = Math.max(1, Math.round((w * pos) / dur));
+      ctx.fillRect(x, 36, barW, 4);
+
+      ctx.font = '6px monospace';
+      ctx.fillText(`${this.formatTime(pos)} / ${this.formatTime(dur)}`, x, 47);
+    }
+
+    // Wide Visualizer
+    if (vis !== 3) {
+      const startY = 62;
+      if (vis === 0) {
+        for (let bx = x; bx < x + w; bx += 4) {
+          const h = this.media.playing
+            ? Math.max(1, Math.min(13, Math.round(Math.abs(Math.sin(bx * 0.18 + this.animWave) * 10) + 2)))
+            : 1;
+          ctx.fillRect(bx, startY - h, 2, h);
+        }
+      } else if (vis === 1) {
+        ctx.strokeStyle = '#00f2fe';
+        ctx.beginPath();
+        for (let px = 0; px < w; px += 2) {
+          const py = this.media.playing
+            ? Math.round(Math.sin(px * 0.12 + this.animWave) * 6)
+            : 0;
+          if (px === 0) ctx.moveTo(x + px, startY - 6 + py);
+          else ctx.lineTo(x + px, startY - 6 + py);
+        }
+        ctx.stroke();
+      } else if (vis === 2) {
+        for (let dx = x; dx < x + w; dx += 4) {
+          const h = this.media.playing
+            ? Math.max(2, Math.min(12, Math.round(Math.abs(Math.sin(dx * 0.2 + this.animWave * 1.3) * 9) + 2)))
+            : 2;
+          ctx.fillRect(dx, startY - h, 2, 2);
+        }
+      }
+    }
+  }
+
+  renderClockTelemetryHUD(ctx) {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00f2fe';
+
+    // Top Header: Wi-Fi & RSSI
+    ctx.font = '6px monospace';
+    ctx.fillText("WIFI: " + (this.telemetry.ssid || "ichaos"), 2, 7);
+    ctx.textAlign = 'right';
+    const rssiVal = this.telemetry.rssi || -55;
+    ctx.fillText(`${rssiVal}dBm [${Math.min(100, Math.max(0, Math.round((rssiVal + 90) * 2)))}%]`, 126, 7);
+    ctx.textAlign = 'left';
+    ctx.fillRect(0, 9, 128, 1);
+
+    // Digital Clock in Center
+    ctx.strokeStyle = '#00f2fe';
+    ctx.strokeRect(12, 12, 104, 23);
+
+    const now = new Date();
+    const hr = String(now.getHours()).padStart(2, '0');
+    const mn = String(now.getMinutes()).padStart(2, '0');
+    const sc = String(now.getSeconds()).padStart(2, '0');
+    const timeStr = `${hr}:${mn}:${sc}`;
+
+    ctx.font = 'bold 15px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(timeStr, 64, 29);
+
+    // Mid Row: Uptime & Temperature
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText("UPTIME: " + this.telemetry.uptime, 4, 43);
+    ctx.textAlign = 'right';
+    ctx.fillText(`TEMP: ${this.telemetry.temp}°C`, 124, 43);
+
+    ctx.fillRect(0, 48, 128, 1);
+
+    // Bottom Row: Free Heap & Light
+    ctx.textAlign = 'left';
+    ctx.fillText(`HEAP: ${this.telemetry.heap}KB`, 4, 58);
+    ctx.textAlign = 'right';
+    ctx.fillText(`LIGHT: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 124, 58);
+  }
+
+  renderFullSpectrumHUD(ctx) {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00f2fe';
+    ctx.font = '6px monospace';
+    ctx.fillText("128-PX FULL SPECTRUM AUDIO ANALYZER", 2, 7);
+    ctx.textAlign = 'right';
+    ctx.fillText(this.media.playing ? "[ACTIVE]" : "[IDLE]", 126, 7);
+    ctx.textAlign = 'left';
+    ctx.fillRect(0, 9, 128, 1);
+
+    // 32-Band Equalizer across full 128px
+    const startY = 62;
+    for (let i = 0; i < 32; i++) {
+      const bx = i * 4;
+      let h = 2;
+      if (this.media.playing) {
+        const f1 = Math.sin(i * 0.35 + this.animWave) * 16;
+        const f2 = Math.cos(i * 0.18 - this.animWave * 1.4) * 10;
+        const f3 = Math.sin(i * 0.62 + this.animWave * 0.8) * 8;
+        h = Math.max(2, Math.min(48, Math.round(Math.abs(f1 + f2 + f3) + 2)));
+      }
+      this.peakBars[i] = h;
+
+      // Draw Bar (3px wide)
+      ctx.fillRect(bx, startY - h, 3, h);
+
+      // Draw Floating Peak Dot (3px wide, 1px high)
+      const peakY = Math.round(this.peakHold[i]);
+      if (peakY > 3) {
+        ctx.fillRect(bx, startY - peakY - 2, 3, 1);
+      }
+    }
+  }
+
+  renderAmbientMirrorHUD(ctx) {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00f2fe';
+    ctx.font = '6px monospace';
+    ctx.fillText("DESK LIGHTING AMBIENT MIRROR", 2, 7);
+    ctx.fillRect(0, 9, 128, 1);
+
+    // FX Name
+    const effNames = ["Solid Glow", "Rainbow Flow", "Cyber Breathe", "Color Chase", "Fire Flicker", "Party Strobe"];
+    const activeFxName = APP_STATE.effectsList[APP_STATE.currentFx] || effNames[APP_STATE.currentFx % effNames.length] || "Dynamic FX";
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText(`FX: ${activeFxName}`, 4, 21);
+
+    // 59-LED Strip Simulated Lightbar
+    ctx.strokeStyle = '#00f2fe';
+    ctx.strokeRect(2, 26, 124, 9);
+    if (APP_STATE.power && APP_STATE.brightness > 5) {
+      for (let l = 0; l < 59; l += 2) {
+        const px = 4 + l * 2;
+        if (px < 122) {
+          ctx.fillRect(px, 28, 2, 5);
+        }
+      }
+    }
+
+    // RGB & Hex
+    ctx.font = '6px monospace';
+    const c = APP_STATE.colors[0] || [255, 0, 85];
+    ctx.fillText(`RGB: (${c[0]},${c[1]},${c[2]})`, 4, 44);
+    const hex = `#${((1 << 24) + (c[0] << 16) + (c[1] << 8) + c[2]).toString(16).slice(1).toUpperCase()}`;
+    ctx.textAlign = 'right';
+    ctx.fillText(hex, 124, 44);
+    ctx.textAlign = 'left';
+
+    // Brightness Gauge Bar
+    ctx.strokeStyle = '#00f2fe';
+    ctx.strokeRect(4, 52, 85, 6);
+    const bW = APP_STATE.power ? Math.round((83 * APP_STATE.brightness) / 255) : 0;
+    if (bW > 0) ctx.fillRect(5, 53, bW, 4);
+
+    ctx.fillText(APP_STATE.power ? `${Math.round((APP_STATE.brightness / 255) * 100)}%` : "OFF", 94, 58);
+  }
+
+  renderCustomBannerHUD(ctx) {
+    ctx.strokeStyle = '#00f2fe';
+    ctx.strokeRect(0, 0, 128, 64);
+    ctx.strokeRect(2, 2, 124, 60);
+
+    // Cyberpunk Corner Markers
+    ctx.fillStyle = '#00f2fe';
+    ctx.fillRect(0, 0, 5, 5);
+    ctx.fillRect(123, 0, 5, 5);
+    ctx.fillRect(0, 59, 5, 5);
+    ctx.fillRect(123, 59, 5, 5);
+
+    // Tech Labels
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText("★ LUMIOS HUD ★", 64, 9);
+    ctx.fillText("• DESK STUDIO •", 64, 58);
+
+    // Center Marquee Text
+    ctx.font = 'bold 10px monospace';
+    const bannerText = this.state.text || "LumiOS Smart Desk";
+    const msgW = ctx.measureText(bannerText).width;
+
+    if (msgW <= 112) {
+      ctx.fillText(bannerText, 64, 36);
+    } else {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(5, 14, 118, 36);
+      ctx.clip();
+      ctx.textAlign = 'left';
+      ctx.fillText(bannerText, 6 - Math.round(this.bannerOffset), 36);
+      ctx.restore();
+    }
+  }
+
+  drawSpotifyIcon(ctx, x, y) {
+    ctx.fillStyle = '#00f2fe';
+    ctx.beginPath();
+    ctx.arc(x + 4, y + 4, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#010409';
+    ctx.fillRect(x + 2, y + 2, 4, 1);
+    ctx.fillRect(x + 2, y + 4, 4, 1);
+    ctx.fillRect(x + 3, y + 6, 2, 1);
+    ctx.fillStyle = '#00f2fe';
+  }
+
+  drawYouTubeIcon(ctx, x, y) {
+    ctx.fillStyle = '#00f2fe';
+    ctx.fillRect(x, y + 1, 8, 6);
+    ctx.fillStyle = '#010409';
+    ctx.beginPath();
+    ctx.moveTo(x + 3, y + 2);
+    ctx.lineTo(x + 6, y + 4);
+    ctx.lineTo(x + 3, y + 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#00f2fe';
+  }
+
+  drawMusicNoteIcon(ctx, x, y) {
+    ctx.fillStyle = '#00f2fe';
+    ctx.fillRect(x + 1, y + 1, 6, 1);
+    ctx.fillRect(x + 1, y + 1, 1, 5);
+    ctx.fillRect(x + 6, y + 1, 1, 5);
+    ctx.fillRect(x, y + 5, 2, 2);
+    ctx.fillRect(x + 5, y + 5, 2, 2);
+  }
+
+  formatTime(sec) {
+    if (!sec || isNaN(sec) || sec < 0) return "00:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+}
+
+const oledStudio = new OledStudioManager();
+
 // Window globals for debugging & synchronization
 window._wled = wled;
 window._movieSync = movieSync;
 window._musicSync = musicSync;
+window._oledStudio = oledStudio;
 window.setAmbilightMode = (m) => movieSync.setMode(m);
 
 function bootApp() {
@@ -4572,6 +5524,7 @@ function bootApp() {
   try { initEventListeners(); } catch (e) { console.error('initEventListeners error:', e); }
   try { initPinnedScenes(); } catch (e) { console.error('initPinnedScenes error:', e); }
   try { initPortalTheme(); } catch (e) { console.error('initPortalTheme error:', e); }
+  try { oledStudio.init(); } catch (e) { console.error('oledStudio init error:', e); }
   try { wled.connect(); } catch (e) { console.error('wled connect error:', e); }
   try { wled.fetchInitialData(); } catch (e) { console.error('wled fetchInitialData error:', e); }
 }

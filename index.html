@@ -166,6 +166,12 @@
         <span class="live-pill hide" id="musicActiveBadge">LIVE</span>
       </button>
 
+      <button class="nav-tab-btn" id="tabBtnOled" data-tab="tabOled">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span>OLED Display Studio</span>
+        <span class="live-pill" id="oledModeBadge">HUD</span>
+      </button>
+
       <button class="nav-tab-btn" id="tabBtnPresets" data-tab="tabPresets">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <span>Presets & Scenes</span>
@@ -1059,6 +1065,221 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           TAB: OLED DISPLAY STUDIO & CUSTOMIZATION
+           ======================================================== -->
+      <section class="tab-panel" id="tabOled">
+        <div class="oled-studio-container">
+          
+          <!-- Top Overview Banner -->
+          <div class="glass-card oled-hero-card">
+            <div class="oled-hero-header">
+              <div class="oled-title-group">
+                <div class="oled-badge-icon">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div>
+                  <h2>OLED Hardware HUD & Display Studio</h2>
+                  <p class="card-subtitle">Real-time control over the 1.3" SH1106 OLED: display modes, layout positioning, visualizer styles & telemetry</p>
+                </div>
+              </div>
+              <div class="oled-quick-actions">
+                <button class="btn-secondary" id="oledInvertBtn" title="Invert Display Colors">
+                  <span>☯</span> Invert Colors
+                </button>
+                <button class="btn-secondary" id="oledFlipBtn" title="Rotate 180 Degrees">
+                  <span>🔄</span> Flip 180°
+                </button>
+                <button class="btn-secondary" id="oledTogglePowerBtn" title="Toggle Display Sleep/Wake">
+                  <span id="oledPwrIcon">⚡</span> <span id="oledPwrText">Display ON</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="oled-studio-grid">
+
+            <!-- Left Column: Live Interactive OLED Emulator -->
+            <div class="glass-card oled-preview-card">
+              <div class="card-header">
+                <h3>Live Hardware Screen Mirror</h3>
+                <span class="oled-live-badge"><span class="pulse-dot"></span> 128×64 Fast-Mode (0x3C)</span>
+              </div>
+
+              <!-- Retro OLED Screen Bezel -->
+              <div class="oled-screen-bezel">
+                <div class="oled-screen-housing">
+                  <div class="oled-screen-glass">
+                    <canvas id="oledVirtualCanvas" width="128" height="64"></canvas>
+                  </div>
+                </div>
+                <div class="oled-bezel-footer">
+                  <span class="oled-chip-tag">SH1106 OLED 400kHz</span>
+                  <span class="oled-fps-tag" id="oledSimFps">30 FPS</span>
+                </div>
+              </div>
+
+              <!-- Hardware Brightness / Contrast Slider -->
+              <div class="oled-control-group">
+                <div class="slider-header">
+                  <label for="oledContrastSlider">Hardware Display Brightness / Contrast</label>
+                  <span class="slider-val" id="oledContrastVal">100%</span>
+                </div>
+                <input type="range" id="oledContrastSlider" min="0" max="255" value="255" class="range-slider">
+              </div>
+
+              <!-- Smart Auto-Switching Toggle -->
+              <div class="oled-feature-box">
+                <div class="feature-toggle-left">
+                  <label class="switch">
+                    <input type="checkbox" id="oledAutoSwitchToggle">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <div class="feature-info">
+                  <strong>Smart Media Auto-Switching</strong>
+                  <p>Shows Music HUD during active playback; switches automatically to Clock & System Telemetry when paused.</p>
+                </div>
+              </div>
+
+              <!-- Quick Presets -->
+              <div class="oled-control-group">
+                <label>Quick Display Themes</label>
+                <div class="preset-chips-row">
+                  <button class="chip-preset-btn" id="oledPresetMusicDefault">🎵 Music Standard</button>
+                  <button class="chip-preset-btn" id="oledPresetClockMinimal">🕒 Desk Clock</button>
+                  <button class="chip-preset-btn" id="oledPresetWideSpectrum">📊 Wide Spectrum</button>
+                  <button class="chip-preset-btn" id="oledPresetAmbientMirror">💡 LED Mirror</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Mode Selection & Layout Customization -->
+            <div class="glass-card oled-settings-card">
+              <div class="card-header">
+                <h3>Display Modes (What to Show)</h3>
+              </div>
+
+              <!-- 5 Display Mode Selector Cards -->
+              <div class="oled-modes-selector-grid">
+                
+                <div class="oled-mode-card active" data-mode="0">
+                  <div class="mode-card-radio"></div>
+                  <div class="mode-card-icon">🎵</div>
+                  <div class="mode-card-body">
+                    <strong>Now Playing Music HUD</strong>
+                    <p>Live 64×64 Album Art, track title marquee, artist, duration bar, and dynamic audio visualizer</p>
+                  </div>
+                </div>
+
+                <div class="oled-mode-card" data-mode="1">
+                  <div class="mode-card-radio"></div>
+                  <div class="mode-card-icon">🕒</div>
+                  <div class="mode-card-body">
+                    <strong>Digital Clock & System Telemetry</strong>
+                    <p>Bold 24h digital time, Wi-Fi RSSI signal meter, CPU temperature, free heap, and uptime</p>
+                  </div>
+                </div>
+
+                <div class="oled-mode-card" data-mode="2">
+                  <div class="mode-card-radio"></div>
+                  <div class="mode-card-icon">📊</div>
+                  <div class="mode-card-body">
+                    <strong>Full-Width 128px Audio Spectrum</strong>
+                    <p>High-density 32-band graphic equalizer with animated floating peak hold dots</p>
+                  </div>
+                </div>
+
+                <div class="oled-mode-card" data-mode="3">
+                  <div class="mode-card-radio"></div>
+                  <div class="mode-card-icon">💡</div>
+                  <div class="mode-card-body">
+                    <strong>Desk Lighting Ambient Mirror</strong>
+                    <p>Virtual 59-LED strip lightbar, active effect name, RGB hex values, and brightness</p>
+                  </div>
+                </div>
+
+                <div class="oled-mode-card" data-mode="4">
+                  <div class="mode-card-radio"></div>
+                  <div class="mode-card-icon">📢</div>
+                  <div class="mode-card-body">
+                    <strong>Custom Banner & Marquee Ticker</strong>
+                    <p>Custom user announcement or desk headline with cybernetic decorative borders</p>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Mode-Specific Layout Customizations -->
+              <div class="oled-dynamic-customizer" id="oledMusicCustomizer">
+                <div class="customizer-divider"></div>
+                <h4>Now Playing Layout Customization</h4>
+
+                <!-- Album Art Position -->
+                <div class="oled-subgroup">
+                  <label>Album Artwork Position</label>
+                  <div class="btn-group-chips" id="oledArtPosChips">
+                    <button class="chip-sub-btn active" data-artpos="0">Left (Maximized)</button>
+                    <button class="chip-sub-btn" data-artpos="1">Right Side</button>
+                    <button class="chip-sub-btn" data-artpos="2">Hidden (Full Width)</button>
+                  </div>
+                </div>
+
+                <!-- Visualizer Engine -->
+                <div class="oled-subgroup">
+                  <label>Dynamic Visualizer Style</label>
+                  <div class="btn-group-chips" id="oledVisStyleChips">
+                    <button class="chip-sub-btn active" data-vis="0">Equalizer Bars</button>
+                    <button class="chip-sub-btn" data-vis="1">Sine Waveform</button>
+                    <button class="chip-sub-btn" data-vis="2">Floating Peak Dots</button>
+                    <button class="chip-sub-btn" data-vis="3">Disabled (Flat)</button>
+                  </div>
+                </div>
+
+                <!-- Element Toggles -->
+                <div class="oled-subgroup">
+                  <label>Visible Elements</label>
+                  <div class="pill-toggles-grid">
+                    <label class="checkbox-tag">
+                      <input type="checkbox" id="oledToggleIcon" checked>
+                      <span>App Icon (Spotify / YT)</span>
+                    </label>
+                    <label class="checkbox-tag">
+                      <input type="checkbox" id="oledToggleProgress" checked>
+                      <span>Duration & Timestamps</span>
+                    </label>
+                    <label class="checkbox-tag">
+                      <input type="checkbox" id="oledToggleDivider" checked>
+                      <span>Center Divider Line</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Banner Input (for Mode 4) -->
+              <div class="oled-dynamic-customizer hide" id="oledBannerCustomizer">
+                <div class="customizer-divider"></div>
+                <h4>Custom Banner Message</h4>
+                <div class="banner-input-row">
+                  <input type="text" id="oledBannerTextInput" placeholder="Enter headline text..." value="LumiOS Smart Desk" class="glass-input">
+                  <button class="btn-primary" id="oledUpdateBannerBtn">Update Ticker</button>
+                </div>
+              </div>
+
+              <!-- Apply / Save Button -->
+              <div class="oled-apply-row">
+                <button class="btn-glow-primary" id="oledSaveSettingsBtn">
+                  <span>💾</span> Save & Push to ESP32
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
       </section>
 

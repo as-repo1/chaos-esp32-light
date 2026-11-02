@@ -214,6 +214,43 @@ curl -X POST -H "Content-Type: text/plain" -d "000000000000..." http://172.20.10
 - **Hex Representation**: 2 hex characters per byte $\times 512\text{ bytes} = \mathbf{1024\text{ ASCII characters}}$.
 - **Format**: Standard XBM LSB-first bit order within each byte.
 
+### OLED Hardware Display Studio Control (`/oled`)
+- **GET `http://<IP>/oled`**: Retrieves the active OLED hardware configuration state.
+- **POST `http://<IP>/oled`**: Updates display modes, layout positioning, visualizer styles, and hardware parameters in real time via JSON payload or query parameters.
+
+#### Request JSON Payload
+```json
+{
+  "mode": 0,
+  "artPos": 0,
+  "vis": 0,
+  "icon": true,
+  "prog": true,
+  "div": true,
+  "bri": 255,
+  "inv": false,
+  "flip": false,
+  "pwr": true,
+  "auto": false,
+  "text": "LumiOS Smart Desk"
+}
+```
+
+| Field | Type | Options / Range | Description |
+| :--- | :--- | :--- | :--- |
+| `mode` | integer | `0` (Music HUD), `1` (Clock/Telemetry), `2` (128px Spectrum), `3` (Ambient Mirror), `4` (Custom Banner) | Active OLED screen layout |
+| `artPos` | integer | `0` (Left maximized), `1` (Right), `2` (Hidden full width) | 64×64 album art placement |
+| `vis` | integer | `0` (Equalizer bars), `1` (Sine wave), `2` (Floating peak dots), `3` (Off) | Audio visualizer animation style |
+| `icon` | boolean | `true` / `false` | Show Spotify / YouTube / Music app icon |
+| `prog` | boolean | `true` / `false` | Show track progress bar and duration timestamps |
+| `div` | boolean | `true` / `false` | Show vertical divider between album art and text |
+| `bri` | integer | `0` to `255` | Hardware contrast & brightness |
+| `inv` | boolean | `true` (Inverted monochrome) / `false` (Normal dark) | Hardware display color invert command (`0xA7` / `0xA6`) |
+| `flip` | boolean | `true` (Rotated 180°) / `false` (Standard orientation) | Display orientation rotation for upside-down mounts |
+| `pwr` | boolean | `true` (Display ON) / `false` (Display Sleep / Standby) | Hardware display power-save toggle |
+| `auto` | boolean | `true` / `false` | Smart auto-switch: Music HUD when playing, Clock when idle |
+| `text` | string | User-defined string | Custom scrolling marquee ticker text for Mode 4 |
+
 ---
 
 ## 7. Bluetooth Low Energy (BLE) HID Media Dial Protocol
