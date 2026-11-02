@@ -22,7 +22,7 @@ This guide provides exhaustive schematics, electrical calculations, logic level 
 | **Microcontroller** | ESP32-S3 DevKitC-1 N16R8 (Dual USB-C) | Central controller running FreeRTOS, BLE, WebSocket & OLED HUD | 240MHz dual-core, 16MB Flash, 8MB PSRAM |
 | **LED Strip** | WS2812B Addressable LED Strip (59 LEDs calibrated) | 800kHz perimeter / cinema ambilight lighting | 5V operated, single-wire DIN |
 | **Rotary Encoder** | HW-040 (EC11) Rotary Encoder with Push Button | Hardware media dial & brightness/power dial | 20 detents/rev with integrated tactile switch |
-| **OLED Display** | 1.3" I2C SH1106 / SSD1306 (128×64) | Dedicated Now Playing HUD with 48×48 Album Art | Hardware I2C (Fast Mode 400kHz) |
+| **OLED Display** | 1.3" I2C SH1106 / SSD1306 (128×64) | Dedicated Now Playing HUD with 64×64 Maximized Album Art | Hardware I2C (Fast Mode 400kHz) |
 | **Power Supply** | 5V 5A to 10A DC Switching Power Supply | Stable current for ESP32 and LEDs | Mean Well LRS series or quality adapter |
 | **Data Resistor** | 330Ω to 470Ω, 1/4W Metal Film | Dampens line reflections on high-speed data line | Place near DIN input of first LED |
 | **Hookup Wire** | 18 AWG to 20 AWG (Power), 22 AWG (Data) | Carries current and signals | Stranded copper wire |

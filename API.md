@@ -17,7 +17,7 @@ This document provides the complete API specification for interfacing with ESP32
 5. [UDP Real-Time Sync Protocol (Port 21324)](#5-udp-real-time-sync-protocol-port-21324)
 6. [Now Playing & Media HUD Endpoints](#6-now-playing--media-hud-endpoints)
    - [Now Playing Metadata (`/media`)](#now-playing-metadata-media)
-   - [48×48 Album Artwork Upload (`/art`)](#4848-album-artwork-upload-art)
+   - [64×64 Maximized Album Artwork Upload (`/art`)](#6464-maximized-album-artwork-upload-art)
 7. [Bluetooth Low Energy (BLE) HID Media Dial Protocol](#7-bluetooth-low-energy-ble-hid-media-dial-protocol)
 8. [Acknowledgments & Credits](#8-acknowledgments--credits)
 
@@ -176,7 +176,7 @@ WLED listens and broadcasts real-time sync packets on UDP port **21324**.
 
 ## 6. Now Playing & Media HUD Endpoints
 
-LumiOS ESP32-S3 firmware provides dedicated REST endpoints to feed real-time music playback telemetry and 48×48 dithered album artwork directly to the 1.3" OLED display.
+LumiOS ESP32-S3 firmware provides dedicated REST endpoints to feed real-time music playback telemetry and 64×64 maximized dithered album artwork directly to the 1.3" OLED display (with zero padding on top, left, and bottom edges).
 
 ### Now Playing Metadata (`/media`)
 - **POST `http://<IP>/media`**: Pushes active track metadata.
@@ -194,24 +194,24 @@ LumiOS ESP32-S3 firmware provides dedicated REST endpoints to feed real-time mus
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `title` | string | Track title (marqee scrolls if > 11 chars) |
-| `artist` | string | Artist or channel name (truncated to 14 chars) |
+| `artist` | string | Artist or channel name (truncated to 15 chars) |
 | `album` | string | Album or playlist title |
 | `duration` | integer | Total track length in seconds (renders as `MM:SS`) |
 | `position` | integer | Current playback timestamp in seconds (renders as `MM:SS`) |
 | `playing` | boolean | `true` = Playing (runs animated EQ visualizer); `false` = Paused |
 | `source` | string | Media source: `"spotify"`, `"youtube"`, `"zen"`, or `"music"` |
 
-### 48×48 Album Artwork Upload (`/art`)
-- **POST `http://<IP>/art`**: Uploads a 1-bit monochrome XBM bitmap formatted as a 576-character uppercase/lowercase hexadecimal ASCII payload.
+### 64×64 Maximized Album Artwork Upload (`/art`)
+- **POST `http://<IP>/art`**: Uploads a 1-bit monochrome XBM bitmap formatted as a 1024-character hexadecimal ASCII payload (512 bytes). Also accepts legacy 576-character payload (288 bytes for 48×48).
 
 ```bash
-# Upload 576-character XBM hex string (48x48 bits = 288 bytes)
+# Upload 1024-character XBM hex string (64x64 bits = 512 bytes)
 curl -X POST -H "Content-Type: text/plain" -d "000000000000..." http://172.20.10.5/art
 ```
 
-- **Dimensions**: $48 \times 48\text{ pixels}$.
-- **Storage**: Row-major horizontal bit encoding ($48 \div 8 = 6\text{ bytes per row} \times 48\text{ rows} = 288\text{ bytes}$).
-- **Hex Representation**: 2 hex characters per byte $\times 288\text{ bytes} = \mathbf{576\text{ ASCII characters}}$.
+- **Dimensions**: $64 \times 64\text{ pixels}$ (Occupies $(0,0)$ to $(63,63)$ without top, left, or bottom padding).
+- **Storage**: Row-major horizontal bit encoding ($64 \div 8 = 8\text{ bytes per row} \times 64\text{ rows} = 512\text{ bytes}$).
+- **Hex Representation**: 2 hex characters per byte $\times 512\text{ bytes} = \mathbf{1024\text{ ASCII characters}}$.
 - **Format**: Standard XBM LSB-first bit order within each byte.
 
 ---

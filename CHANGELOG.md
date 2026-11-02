@@ -8,11 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.4.0] - 2026-11-02
 
 ### Added
-- **Dedicated 1.3" OLED Now Playing HUD with 48×48 Album Art**:
-  - Displays live 48×48 dithered monochrome Album Art streamed from active media players (Spotify, YouTube/Brave/Zen, VLC).
-  - Embedded fallback 48×48 Vinyl Record with concentric grooves and center spindle hole.
-  - 10×10 application icon, playback state indicator (`[PLAY ▶]` / `[PAUSED]`), and Bluetooth connection badge (`[BT:OK]`).
-  - Track title with automatic marquee scrolling for long titles, artist subtitle, elapsed/total duration bar (`01:23 / 03:45`), and live animated audio spectrum visualizer.
+- **Dedicated 1.3" OLED Now Playing HUD with 64×64 Maximized Album Art**:
+  - Displays live 64×64 dithered monochrome Album Art streamed from active media players with zero padding on top, left, and down sides.
+  - Removed "ALBUM ART" text labels and outer box frame, dedicating the entire $(0,0)$ to $(63,63)$ left panel to maximized album artwork.
+  - Embedded fallback 64×64 Vinyl Record with concentric grooves and center spindle hole.
+  - 10×10 application icon, playback state indicator (`[PLAY]` / `[PAUSE]`), and Bluetooth connection badge (`[BT]`).
+  - Track title with automatic marquee scrolling, artist subtitle, elapsed/total duration bar (`01:23 / 03:45`), and live animated audio spectrum visualizer.
   - High-contrast OSD overlay banners (`VOL ▲`, `VOL ▼`, `PLAY ▶`, `PAUSE ⏸`, `NEXT ⏭`).
 - **Bluetooth Low Energy (BLE HID) Media Dial (`LumiOS Media Dial`)**:
   - Full volume control, single-click Play/Pause, and double-click Track Skip.
@@ -21,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Built-in multi-AP support for both `ichaos` (Hotspot) and `v20p` (Router) with password `honululu`.
   - Automatic background reconnection and seamless failover.
 - **Python Companion Daemon (`media_sync.py`)**:
-  - Reads active MPRIS players via DBus, extracts album art, downsamples to 48×48, applies Floyd-Steinberg dithering, and pushes to ESP32 over HTTP.
+  - Reads active MPRIS players via DBus, extracts album art, downsamples to 64×64, applies Floyd-Steinberg dithering, and pushes to ESP32 over HTTP.
   - Dynamic IP auto-discovery supporting mDNS (`esp32-light.local`) and local subnet scanning.
 
 ### Fixed
