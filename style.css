@@ -3059,16 +3059,22 @@ input:checked + .slider.round:before {
   font-size: 12px;
 }
 
-.wiring-select {
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.08);
+select, .wiring-select, .glass-select {
+  padding: 6px 12px;
+  background: #12182e !important;
   border: 1px solid var(--border-glass);
   border-radius: 8px;
-  color: #fff;
+  color: #f8fafc !important;
   font-family: var(--font-sans);
   font-size: 12px;
   outline: none;
   cursor: pointer;
+}
+
+select option, .wiring-select option, .glass-select option {
+  background-color: #12182e !important;
+  color: #f8fafc !important;
+  padding: 8px 12px;
 }
 
 /* Custom Ratio / Division Input */

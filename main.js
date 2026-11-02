@@ -4,13 +4,31 @@
    ==================================================================== */
 
 // Configuration & Default State
-const defaultIp = (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-  ? window.location.hostname
-  : '10.109.101.60';
+const defaultTargetIp = '10.142.252.233';
+let detectedHost = defaultTargetIp;
+try {
+  const hn = typeof window !== 'undefined' && window.location ? window.location.hostname : '';
+  if (hn && hn !== 'localhost' && hn !== '127.0.0.1' && hn !== '0.0.0.0' && hn !== '[::]' && hn.includes('.')) {
+    detectedHost = hn;
+  }
+} catch (e) {}
+
+let initialIp = defaultTargetIp;
+try {
+  const stored = localStorage.getItem('wled_ip');
+  if (stored && stored !== '0.0.0.0' && stored !== 'localhost' && stored !== '127.0.0.1' && stored !== '10.109.101.60') {
+    initialIp = stored;
+  } else {
+    localStorage.setItem('wled_ip', detectedHost);
+    initialIp = detectedHost;
+  }
+} catch (e) {
+  initialIp = defaultTargetIp;
+}
 
 const APP_STATE = {
-  ip: localStorage.getItem('wled_ip') || defaultIp,
-  ledCount: parseInt(localStorage.getItem('wled_led_count') || '60', 10),
+  ip: initialIp,
+  ledCount: parseInt(localStorage.getItem('wled_led_count') || '59', 10),
   activeSlot: 0,
   colors: [
     [255, 0, 85],   // Primary
@@ -174,18 +192,26 @@ class WLEDClient {
   }
 
   setIp(ip) {
+    if (!ip || ip === '0.0.0.0' || ip === 'localhost' || ip === '127.0.0.1' || ip === '[::]') {
+      ip = '10.142.252.233';
+    }
     this.ip = ip;
-    localStorage.setItem('wled_ip', ip);
+    APP_STATE.ip = ip;
+    try { localStorage.setItem('wled_ip', ip); } catch (e) {}
     this.disconnect();
     this.connect();
     this.fetchInitialData();
   }
 
   connect() {
+    if (!this.ip || this.ip === '0.0.0.0' || this.ip === 'localhost' || this.ip === '127.0.0.1' || this.ip === '[::]') {
+      this.ip = '10.142.252.233';
+      APP_STATE.ip = this.ip;
+    }
     clearTimeout(this.reconnectTimer);
     clearInterval(this.pingTimer);
 
-    const wsUrl = `ws://${this.ip}/ws`;
+    const wsUrl = `ws://${this.ip}:81/`;
     updateStatus('Connecting...', false);
 
     try {
@@ -524,9 +550,11 @@ class WLEDClient {
   }
 
   _transmit(payload) {
+    if (!this.ip || this.ip === '0.0.0.0' || this.ip === 'localhost' || this.ip === '127.0.0.1' || this.ip === '[::]') {
+      this.ip = '10.142.252.233';
+      APP_STATE.ip = this.ip;
+    }
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      // Congestion control: if socket buffer has backpressure, drop streaming frames
-      // to avoid TCP buffer bloat, latency spikes, and burst delivery.
       if (this.ws.bufferedAmount > 2048) {
         if (payload.isStream || payload.seg?.i) {
           return; // Drop frame gracefully
@@ -538,13 +566,7 @@ class WLEDClient {
       } catch (e) {}
     }
 
-    // NEVER fallback to HTTP POST for streaming frames!
-    // Firing 30-60 HTTP POSTs per second to an ESP32 web server causes lwIP socket
-    // and heap exhaustion, triggering a watchdog timeout (WDT) and device reboot.
-    if (payload.isStream || payload.seg?.i) {
-      return;
-    }
-
+    // Direct HTTP POST fallback when WebSocket is not connected
     fetch(`http://${this.ip}/json/state`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1257,8 +1279,10 @@ class MovieSyncEngine {
       ];
     } else if (this.mode === '4-edges') {
       options = [
+        { val: 'brtl', label: 'Bottom ➔ Right ➔ Up ➔ Left' },
         { val: 'cw', label: 'Top ➔ Right ➔ Bottom ➔ Left (Clockwise)' },
         { val: 'ccw', label: 'Left ➔ Bottom ➔ Right ➔ Top (Counter-Clockwise)' },
+        { val: 'bltr', label: 'Bottom ➔ Left ➔ Up ➔ Right' },
         { val: 'bl_cw', label: 'Bottom-Left ➔ Top ➔ Right ➔ Bottom' }
       ];
     } else if (this.mode === '2-sides') {
@@ -1499,6 +1523,14 @@ class MovieSyncEngine {
 
   async start() {
     try {
+      if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
+        if (typeof window !== 'undefined' && window.location.hostname === '0.0.0.0') {
+          window.location.hostname = 'localhost';
+          return;
+        }
+        showToast('Screen capture requires http://localhost:8080 or HTTPS!');
+        return;
+      }
       this.stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: 'monitor',
@@ -1986,24 +2018,58 @@ class MovieSyncEngine {
       });
 
       const [cTop, cRight, cBot, cLeft] = this.getZoneCounts();
+
+      let z0, z1, z2, z3;
+      if (this.wiringDirection === 'brtl') {
+        // Bottom ➔ Right ➔ Up ➔ Left
+        z0 = { name: 'Bottom Edge', rgb: this.zoneColors.bottom, count: cBot };
+        z1 = { name: 'Right Edge', rgb: this.zoneColors.right, count: cRight };
+        z2 = { name: 'Top Edge', rgb: this.zoneColors.top, count: cTop };
+        z3 = { name: 'Left Edge', rgb: this.zoneColors.left, count: cLeft };
+      } else if (this.wiringDirection === 'ccw') {
+        // Left ➔ Bottom ➔ Right ➔ Top (Counter-Clockwise)
+        z0 = { name: 'Left Edge', rgb: this.zoneColors.left, count: cLeft };
+        z1 = { name: 'Bottom Edge', rgb: this.zoneColors.bottom, count: cBot };
+        z2 = { name: 'Right Edge', rgb: this.zoneColors.right, count: cRight };
+        z3 = { name: 'Top Edge', rgb: this.zoneColors.top, count: cTop };
+      } else if (this.wiringDirection === 'bltr') {
+        // Bottom ➔ Left ➔ Up ➔ Right
+        z0 = { name: 'Bottom Edge', rgb: this.zoneColors.bottom, count: cBot };
+        z1 = { name: 'Left Edge', rgb: this.zoneColors.left, count: cLeft };
+        z2 = { name: 'Top Edge', rgb: this.zoneColors.top, count: cTop };
+        z3 = { name: 'Right Edge', rgb: this.zoneColors.right, count: cRight };
+      } else if (this.wiringDirection === 'bl_cw') {
+        // Bottom-Left ➔ Top ➔ Right ➔ Bottom
+        z0 = { name: 'Left Edge', rgb: this.zoneColors.left, count: cLeft };
+        z1 = { name: 'Top Edge', rgb: this.zoneColors.top, count: cTop };
+        z2 = { name: 'Right Edge', rgb: this.zoneColors.right, count: cRight };
+        z3 = { name: 'Bottom Edge', rgb: this.zoneColors.bottom, count: cBot };
+      } else {
+        // Default cw: Top ➔ Right ➔ Bottom ➔ Left (Clockwise)
+        z0 = { name: 'Top Edge', rgb: this.zoneColors.top, count: cTop };
+        z1 = { name: 'Right Edge', rgb: this.zoneColors.right, count: cRight };
+        z2 = { name: 'Bottom Edge', rgb: this.zoneColors.bottom, count: cBot };
+        z3 = { name: 'Left Edge', rgb: this.zoneColors.left, count: cLeft };
+      }
+
       const p1 = 0;
-      const p2 = cTop;
-      const p3 = p2 + cRight;
-      const p4 = p3 + cBot;
+      const p2 = z0.count;
+      const p3 = p2 + z1.count;
+      const p4 = p3 + z2.count;
       const p5 = ledCount;
 
       const ledColors = new Array(ledCount);
-      for (let i = p1; i < p2; i++) ledColors[i] = [Math.round(this.zoneColors.top[0] * masterBriFactor), Math.round(this.zoneColors.top[1] * masterBriFactor), Math.round(this.zoneColors.top[2] * masterBriFactor)];
-      for (let i = p2; i < p3; i++) ledColors[i] = [Math.round(this.zoneColors.right[0] * masterBriFactor), Math.round(this.zoneColors.right[1] * masterBriFactor), Math.round(this.zoneColors.right[2] * masterBriFactor)];
-      for (let i = p3; i < p4; i++) ledColors[i] = [Math.round(this.zoneColors.bottom[0] * masterBriFactor), Math.round(this.zoneColors.bottom[1] * masterBriFactor), Math.round(this.zoneColors.bottom[2] * masterBriFactor)];
-      for (let i = p4; i < p5; i++) ledColors[i] = [Math.round(this.zoneColors.left[0] * masterBriFactor), Math.round(this.zoneColors.left[1] * masterBriFactor), Math.round(this.zoneColors.left[2] * masterBriFactor)];
+      for (let i = p1; i < p2; i++) ledColors[i] = [Math.round(z0.rgb[0] * masterBriFactor), Math.round(z0.rgb[1] * masterBriFactor), Math.round(z0.rgb[2] * masterBriFactor)];
+      for (let i = p2; i < p3; i++) ledColors[i] = [Math.round(z1.rgb[0] * masterBriFactor), Math.round(z1.rgb[1] * masterBriFactor), Math.round(z1.rgb[2] * masterBriFactor)];
+      for (let i = p3; i < p4; i++) ledColors[i] = [Math.round(z2.rgb[0] * masterBriFactor), Math.round(z2.rgb[1] * masterBriFactor), Math.round(z2.rgb[2] * masterBriFactor)];
+      for (let i = p4; i < p5; i++) ledColors[i] = [Math.round(z3.rgb[0] * masterBriFactor), Math.round(z3.rgb[1] * masterBriFactor), Math.round(z3.rgb[2] * masterBriFactor)];
       virtualStrip.setMultiLed(ledColors);
 
       this.updateZoneInspector([
-        { name: 'Top Edge', rgb: this.zoneColors.top, leds: cTop, startIdx: p1, endIdx: p2 },
-        { name: 'Right Edge', rgb: this.zoneColors.right, leds: cRight, startIdx: p2, endIdx: p3 },
-        { name: 'Bottom Edge', rgb: this.zoneColors.bottom, leds: cBot, startIdx: p3, endIdx: p4 },
-        { name: 'Left Edge', rgb: this.zoneColors.left, leds: cLeft, startIdx: p4, endIdx: p5 }
+        { name: z0.name, rgb: z0.rgb, leds: z0.count, startIdx: p1, endIdx: p2 },
+        { name: z1.name, rgb: z1.rgb, leds: z1.count, startIdx: p2, endIdx: p3 },
+        { name: z2.name, rgb: z2.rgb, leds: z2.count, startIdx: p3, endIdx: p4 },
+        { name: z3.name, rgb: z3.rgb, leds: z3.count, startIdx: p4, endIdx: p5 }
       ]);
 
       const avgR = Math.round((this.zoneColors.top[0] + this.zoneColors.right[0] + this.zoneColors.bottom[0] + this.zoneColors.left[0]) / 4);
@@ -2025,10 +2091,10 @@ class MovieSyncEngine {
         transition: 0,
         seg: {
           i: [
-            p1, p2, this.zoneColors.top,
-            p2, p3, this.zoneColors.right,
-            p3, p4, this.zoneColors.bottom,
-            p4, p5, this.zoneColors.left
+            p1, p2, z0.rgb,
+            p2, p3, z1.rgb,
+            p3, p4, z2.rgb,
+            p4, p5, z3.rgb
           ]
         }
       });
@@ -2373,6 +2439,14 @@ class MusicSyncEngine {
 
   async start() {
     try {
+      if ((this.audioSourceType === 'mic' || this.audioSourceType === 'system') && (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function')) {
+        if (typeof window !== 'undefined' && window.location.hostname === '0.0.0.0') {
+          window.location.hostname = 'localhost';
+          return;
+        }
+        showToast('Microphone/audio capture requires http://localhost:8080 or HTTPS!');
+        return;
+      }
       this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (this.audioCtx.state === 'suspended') {
         await this.audioCtx.resume();
