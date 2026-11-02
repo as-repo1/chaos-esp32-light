@@ -4581,10 +4581,10 @@ class OledStudioManager {
     this.state = {
       mode: 0,        // 0: Music HUD, 1: Clock & Telemetry, 2: Spectrum 128px, 3: Ambient Mirror, 4: Banner
       artPos: 0,      // 0: Left, 1: Right, 2: Hidden
-      vis: 0,         // 0: Bars, 1: Wave, 2: Peak Dots, 3: Off
+      vis: 1,         // 0: Bars, 1: Wave (Default: Oscilloscope Sine Wave), 2: Peak Dots, 3: Off
       icon: true,
       prog: true,
-      div: true,
+      div: false,     // Default: Seamless borderless clean gap
       bri: 255,
       inv: false,
       flip: false,
@@ -5130,34 +5130,37 @@ class OledStudioManager {
     let textX = x;
     if (showIcon) {
       if (this.media.app.includes('spot')) {
-        this.drawSpotifyIcon(ctx, x, 1);
+        this.drawSpotifyIcon(ctx, x, 0);
       } else if (this.media.app.includes('you') || this.media.app.includes('tube')) {
-        this.drawYouTubeIcon(ctx, x, 1);
+        this.drawYouTubeIcon(ctx, x, 0);
       } else {
-        this.drawMusicNoteIcon(ctx, x, 1);
+        this.drawMusicNoteIcon(ctx, x, 0);
       }
       textX = x + 10;
     }
 
     ctx.font = '6px monospace';
-    ctx.fillText(this.media.playing ? "[PLAYING]" : "[PAUSED]", textX, 8);
+    ctx.fillText(this.media.playing ? "PLAYING" : "PAUSED", textX, 7);
+    ctx.textAlign = 'right';
+    ctx.fillText(APP_STATE.power ? `${Math.round(APP_STATE.brightness / 2.55)}%` : "OFF", x + w, 7);
+    ctx.textAlign = 'left';
 
-    // Title Marquee (y = 12..22)
+    // Title (Compact & sharp font)
     ctx.font = 'bold 8px monospace';
     const titleWidth = ctx.measureText(this.media.title).width;
     ctx.save();
     ctx.beginPath();
-    ctx.rect(x, 10, w, 13);
+    ctx.rect(x, 9, w, 11);
     ctx.clip();
     if (titleWidth > w) {
-      const scrollPos = (this.scrollOffset % (titleWidth + 20));
-      ctx.fillText(this.media.title, x - scrollPos, 20);
+      const scrollPos = (this.scrollOffset % (titleWidth + 16));
+      ctx.fillText(this.media.title, x - scrollPos, 18);
     } else {
-      ctx.fillText(this.media.title, x, 20);
+      ctx.fillText(this.media.title, x, 18);
     }
     ctx.restore();
 
-    // Artist (y = 29)
+    // Artist (Compact sub-line)
     ctx.font = '6px monospace';
     let artistStr = this.media.artist || "Unknown Artist";
     if (ctx.measureText(artistStr).width > w) {
@@ -5166,59 +5169,66 @@ class OledStudioManager {
       }
       artistStr += "..";
     }
-    ctx.fillText(artistStr, x, 29);
+    ctx.fillText(artistStr, x, 26);
 
-    // Progress Bar (y = 34..45)
+    // Progress Bar (Sleek modern 2px track)
     if (showProg) {
-      ctx.strokeStyle = '#00f2fe';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x, 34, w - 1, 4);
+      ctx.fillStyle = 'rgba(0, 242, 254, 0.3)';
+      ctx.fillRect(x, 29, w, 2);
+      ctx.fillStyle = '#00f2fe';
       const dur = this.media.dur > 0 ? this.media.dur : 240;
       const pos = Math.min(this.media.pos, dur);
-      const barW = Math.max(1, Math.round(((w - 3) * pos) / dur));
-      ctx.fillRect(x + 1, 35, barW, 2);
+      const barW = Math.max(1, Math.round((w * pos) / dur));
+      ctx.fillRect(x, 28, barW, 3);
 
       ctx.font = '6px monospace';
       const timeStr = `${this.formatTime(pos)}/${this.formatTime(dur)}`;
-      ctx.fillText(timeStr, x, 45);
+      ctx.fillText(timeStr, x, 37);
     }
 
-    // Dynamic Visualizer (y = 50..63)
-    if (vis !== 3) {
-      const startY = 62;
-      const visWidth = w - 1;
-      if (vis === 0) {
-        // Equalizer Bars
-        const numBars = Math.floor(visWidth / 4);
-        for (let b = 0; b < numBars; b++) {
-          const bx = x + b * 4;
-          const h = this.media.playing
-            ? Math.max(1, Math.min(13, Math.round(Math.abs(Math.sin(b * 0.45 + this.animWave) * 9) + 2)))
-            : 1;
-          ctx.fillRect(bx, startY - h, 2, h);
-        }
-      } else if (vis === 1) {
-        // Sine Waveform
-        ctx.strokeStyle = '#00f2fe';
-        ctx.beginPath();
-        for (let px = 0; px < visWidth; px += 2) {
-          const py = this.media.playing
-            ? Math.round(Math.sin((px * 0.22) + this.animWave) * 5)
-            : 0;
-          if (px === 0) ctx.moveTo(x + px, startY - 6 + py);
-          else ctx.lineTo(x + px, startY - 6 + py);
-        }
-        ctx.stroke();
-      } else if (vis === 2) {
-        // Floating Peak Dots
-        const numDots = Math.floor(visWidth / 4);
-        for (let d = 0; d < numDots; d++) {
-          const dx = x + d * 4;
-          const h = this.media.playing
-            ? Math.max(2, Math.min(12, Math.round(Math.abs(Math.sin(d * 0.5 + this.animWave * 1.2) * 10) + 2)))
-            : 2;
-          ctx.fillRect(dx, startY - h, 2, 2);
-        }
+    // Rich Flowing Sine Waveform Oscilloscope (y = 40..63 — 24px height!)
+    if (vis === 1) {
+      const centerY = 51;
+      const amp = this.media.playing ? 9.0 : 1.0;
+
+      // Subtle dashed baseline
+      ctx.fillStyle = 'rgba(0, 242, 254, 0.25)';
+      for (let bx = x; bx < x + w; bx += 4) {
+        ctx.fillRect(bx, centerY, 1, 1);
+      }
+
+      // Smooth Continuous Waveform
+      ctx.strokeStyle = '#00f2fe';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      for (let px = 0; px <= w; px++) {
+        const w1 = Math.sin((px * 0.26) + this.animWave);
+        const w2 = Math.sin((px * 0.12) - (this.animWave * 1.3)) * 0.45;
+        const wy = centerY + (w1 + w2) * amp;
+        const clampedY = Math.max(40, Math.min(63, wy));
+        if (px === 0) ctx.moveTo(x + px, clampedY);
+        else ctx.lineTo(x + px, clampedY);
+      }
+      ctx.stroke();
+    } else if (vis === 0) {
+      // Dynamic Equalizer Bars
+      const numBars = Math.floor(w / 4);
+      for (let b = 0; b < numBars; b++) {
+        const bx = x + b * 4;
+        const h = this.media.playing
+          ? Math.max(2, Math.min(22, Math.round(Math.abs(Math.sin(b * 0.45 + this.animWave) * 18) + 2)))
+          : 2;
+        ctx.fillRect(bx, 63 - h, 3, h);
+      }
+    } else if (vis === 2) {
+      // Floating Peak Dots
+      const numDots = Math.floor(w / 4);
+      for (let d = 0; d < numDots; d++) {
+        const dx = x + d * 4;
+        const h = this.media.playing
+          ? Math.max(2, Math.min(20, Math.round(Math.abs(Math.sin(d * 0.5 + this.animWave * 1.2) * 16) + 2)))
+          : 2;
+        ctx.fillRect(dx, 63 - h, 2, 2);
       }
     }
   }
@@ -5230,76 +5240,81 @@ class OledStudioManager {
     // Top Header
     let tx = x;
     if (showIcon) {
-      this.drawSpotifyIcon(ctx, x, 1);
+      this.drawSpotifyIcon(ctx, x, 0);
       tx = x + 11;
     }
     ctx.font = '6px monospace';
-    ctx.fillText(this.media.playing ? "[NOW PLAYING]" : "[PAUSED]", tx, 8);
+    ctx.fillText(this.media.playing ? "NOW PLAYING" : "PAUSED", tx, 7);
     ctx.textAlign = 'right';
-    ctx.fillText(`[LIGHT: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}]`, 126, 8);
+    ctx.fillText(`LIGHT: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 126, 7);
     ctx.textAlign = 'left';
-    ctx.fillRect(0, 10, 128, 1);
+    ctx.fillRect(0, 9, 128, 1);
 
-    // Title (Large font)
+    // Title (Large clean font)
     ctx.font = 'bold 10px monospace';
     const titleWidth = ctx.measureText(this.media.title).width;
     ctx.save();
     ctx.beginPath();
-    ctx.rect(x, 12, w, 14);
+    ctx.rect(x, 11, w, 14);
     ctx.clip();
     if (titleWidth > w) {
       const scrollPos = (this.scrollOffset % (titleWidth + 24));
-      ctx.fillText(this.media.title, x - scrollPos, 23);
+      ctx.fillText(this.media.title, x - scrollPos, 22);
     } else {
-      ctx.fillText(this.media.title, x, 23);
+      ctx.fillText(this.media.title, x, 22);
     }
     ctx.restore();
 
     // Artist
     ctx.font = '6px monospace';
-    ctx.fillText("ARTIST: " + (this.media.artist || "Unknown"), x, 32);
+    ctx.fillText("ARTIST: " + (this.media.artist || "Unknown"), x, 30);
 
-    // Full Width Progress Bar
+    // Full Width Progress Bar (2px sleek line)
     if (showProg) {
-      ctx.strokeStyle = '#00f2fe';
-      ctx.strokeRect(x, 36, w, 4);
+      ctx.fillStyle = 'rgba(0, 242, 254, 0.3)';
+      ctx.fillRect(x, 34, w, 2);
+      ctx.fillStyle = '#00f2fe';
       const dur = this.media.dur > 0 ? this.media.dur : 240;
       const pos = Math.min(this.media.pos, dur);
       const barW = Math.max(1, Math.round((w * pos) / dur));
-      ctx.fillRect(x, 36, barW, 4);
+      ctx.fillRect(x, 33, barW, 3);
 
       ctx.font = '6px monospace';
-      ctx.fillText(`${this.formatTime(pos)} / ${this.formatTime(dur)}`, x, 47);
+      ctx.fillText(`${this.formatTime(pos)} / ${this.formatTime(dur)}`, x, 42);
     }
 
-    // Wide Visualizer
-    if (vis !== 3) {
-      const startY = 62;
-      if (vis === 0) {
-        for (let bx = x; bx < x + w; bx += 4) {
-          const h = this.media.playing
-            ? Math.max(1, Math.min(13, Math.round(Math.abs(Math.sin(bx * 0.18 + this.animWave) * 10) + 2)))
-            : 1;
-          ctx.fillRect(bx, startY - h, 2, h);
-        }
-      } else if (vis === 1) {
-        ctx.strokeStyle = '#00f2fe';
-        ctx.beginPath();
-        for (let px = 0; px < w; px += 2) {
-          const py = this.media.playing
-            ? Math.round(Math.sin(px * 0.12 + this.animWave) * 6)
-            : 0;
-          if (px === 0) ctx.moveTo(x + px, startY - 6 + py);
-          else ctx.lineTo(x + px, startY - 6 + py);
-        }
-        ctx.stroke();
-      } else if (vis === 2) {
-        for (let dx = x; dx < x + w; dx += 4) {
-          const h = this.media.playing
-            ? Math.max(2, Math.min(12, Math.round(Math.abs(Math.sin(dx * 0.2 + this.animWave * 1.3) * 9) + 2)))
-            : 2;
-          ctx.fillRect(dx, startY - h, 2, 2);
-        }
+    // Full Width Oscilloscope Waveform (y = 44..63)
+    if (vis === 1) {
+      const centerY = 53;
+      const amp = this.media.playing ? 9.0 : 1.0;
+      ctx.fillStyle = 'rgba(0, 242, 254, 0.25)';
+      for (let bx = 0; bx < 128; bx += 4) ctx.fillRect(bx, centerY, 1, 1);
+
+      ctx.strokeStyle = '#00f2fe';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      for (let px = 0; px <= 128; px++) {
+        const w1 = Math.sin((px * 0.18) + this.animWave);
+        const w2 = Math.sin((px * 0.08) - (this.animWave * 1.2)) * 0.45;
+        const wy = centerY + (w1 + w2) * amp;
+        const clampedY = Math.max(44, Math.min(63, wy));
+        if (px === 0) ctx.moveTo(px, clampedY);
+        else ctx.lineTo(px, clampedY);
+      }
+      ctx.stroke();
+    } else if (vis === 0) {
+      for (let bx = 0; bx < 128; bx += 4) {
+        const h = this.media.playing
+          ? Math.max(2, Math.min(18, Math.round(Math.abs(Math.sin(bx * 0.22 + this.animWave) * 16) + 2)))
+          : 2;
+        ctx.fillRect(bx, 63 - h, 3, h);
+      }
+    } else if (vis === 2) {
+      for (let dx = 0; dx < 128; dx += 4) {
+        const h = this.media.playing
+          ? Math.max(2, Math.min(18, Math.round(Math.abs(Math.sin(dx * 0.25 + this.animWave * 1.3) * 16) + 2)))
+          : 2;
+        ctx.fillRect(dx, 63 - h, 2, 2);
       }
     }
   }
@@ -5317,10 +5332,7 @@ class OledStudioManager {
     ctx.textAlign = 'left';
     ctx.fillRect(0, 9, 128, 1);
 
-    // Digital Clock in Center
-    ctx.strokeStyle = '#00f2fe';
-    ctx.strokeRect(12, 12, 104, 23);
-
+    // Big Minimalist 24h Clock in center (HH:MM:SS) with live ticking seconds
     const now = new Date();
     const hr = String(now.getHours()).padStart(2, '0');
     const mn = String(now.getMinutes()).padStart(2, '0');
@@ -5329,22 +5341,24 @@ class OledStudioManager {
 
     ctx.font = 'bold 15px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(timeStr, 64, 29);
+    ctx.fillText(timeStr, 64, 28);
+
+    ctx.font = '6px monospace';
+    ctx.fillText("DESK TELEMETRY", 64, 38);
 
     // Mid Row: Uptime & Temperature
-    ctx.font = '6px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText("UPTIME: " + this.telemetry.uptime, 4, 43);
+    ctx.fillText("UPTIME: " + this.telemetry.uptime, 4, 46);
     ctx.textAlign = 'right';
-    ctx.fillText(`TEMP: ${this.telemetry.temp}°C`, 124, 43);
+    ctx.fillText(`TEMP: ${this.telemetry.temp}°C`, 124, 46);
 
-    ctx.fillRect(0, 48, 128, 1);
+    ctx.fillRect(0, 49, 128, 1);
 
     // Bottom Row: Free Heap & Light
     ctx.textAlign = 'left';
-    ctx.fillText(`HEAP: ${this.telemetry.heap}KB`, 4, 58);
+    ctx.fillText(`HEAP: ${this.telemetry.heap}KB`, 4, 59);
     ctx.textAlign = 'right';
-    ctx.fillText(`LIGHT: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 124, 58);
+    ctx.fillText(`LIGHT: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 124, 59);
   }
 
   renderFullSpectrumHUD(ctx) {
