@@ -19,70 +19,88 @@ This guide provides exhaustive schematics, electrical calculations, logic level 
 
 | Component | Recommended Part / Model | Purpose | Notes |
 | :--- | :--- | :--- | :--- |
-| **Microcontroller** | ESP32 DevKit V1 (30-pin or 38-pin, ESP-WROOM-32) | Runs WLED firmware & handles WebSocket / UDP telemetry | 240MHz dual-core, 2.4GHz Wi-Fi |
-| **LED Strip** | WS2812B, WS2811, or SK6812 (60 LEDs/m) | RGB or RGBW addressable perimeter lighting | 5V DC operated |
-| **Power Supply** | 5V 5A to 10A DC Switching Power Supply | Supplies stable current to ESP32 and LEDs | Mean Well LRS series or quality adapter |
-| **Logic Level Shifter** | 74AHCT125 or SN74AHCT245 (DIP-14) | Converts ESP32 3.3V GPIO signal to 5V CMOS signal | Critical for signal integrity |
-| **Filter Capacitor** | 1000 µF, 6.3V–16V Electrolytic | Absorbs initial inrush current and voltage sags | Connect across +5V and GND at strip |
+| **Microcontroller** | ESP32-S3 DevKitC-1 N16R8 (Dual USB-C) | Central controller running FreeRTOS, BLE, WebSocket & OLED HUD | 240MHz dual-core, 16MB Flash, 8MB PSRAM |
+| **LED Strip** | WS2812B Addressable LED Strip (59 LEDs calibrated) | 800kHz perimeter / cinema ambilight lighting | 5V operated, single-wire DIN |
+| **Rotary Encoder** | HW-040 (EC11) Rotary Encoder with Push Button | Hardware media dial & brightness/power dial | 20 detents/rev with integrated tactile switch |
+| **OLED Display** | 1.3" I2C SH1106 / SSD1306 (128×64) | Dedicated Now Playing HUD with 48×48 Album Art | Hardware I2C (Fast Mode 400kHz) |
+| **Power Supply** | 5V 5A to 10A DC Switching Power Supply | Stable current for ESP32 and LEDs | Mean Well LRS series or quality adapter |
 | **Data Resistor** | 330Ω to 470Ω, 1/4W Metal Film | Dampens line reflections on high-speed data line | Place near DIN input of first LED |
-| **Hookup Wire** | 18 AWG to 20 AWG (Power), 22 AWG (Data) | Carries high current and data signals | Stranded copper wire |
-| **Corner Connectors** | 3-pin solderless L-joints or 22 AWG wire jumpers | Bridges 90° monitor corners | Solder joints recommended |
+| **Hookup Wire** | 18 AWG to 20 AWG (Power), 22 AWG (Data) | Carries current and signals | Stranded copper wire |
 
 ---
 
 ## 2. Electrical Schematic & Pinout
 
-```
-                           +----------------------------+
-                           |  5V 10A DC Power Supply   |
-                           +--------------+-------------+
-                                          |
-                        +5V (18 AWG Red)  |  GND (18 AWG Black)
-                 +------------------------+------------------------+
-                 |                                                 |
-                 |                                                 |
-             +---+---+                                         +---+---+
-             |  VIN  |                                         |  GND  |
-             |       |                                         |       |
-             | ESP32 |                                         | ESP32 |
-             | DevKit|                                         | DevKit|
-             |       |                                         +---+---+
-             | GPIO2 +---------------+                             |
-             +-------+               |                             |
-                                     |                             |
-                               3.3V Data                           |
-                                     |                             |
-                         +-----------v-----------+                 |
-                         |  74AHCT125 Pin 2 (1A) |                 |
-                         |                       |                 |
-     +5V Power ----------+ Pin 14 (VCC)          |                 |
-                         |                       |                 |
-     Common GND ---------+ Pin 7 (GND)           |                 |
-     Common GND ---------+ Pin 1 (1OE Enable)    |                 |
-                         |                       |                 |
-                         |  74AHCT125 Pin 3 (1Y) |                 |
-                         +-----------+-----------+                 |
-                                     |                             |
-                                5V Data Out                        |
-                                     |                             |
-                                  [ 330Ω ] Resistor                |
-                                     |                             |
-                 +-------------------v-----------------------------+
-                 |                   |                             |
-             +---+---+           +---+---+                     +---+---+
-             |  +5V  |           |  DIN  |                     |  GND  |
-             +-------+           +-------+                     +-------+
-             |         First LED on WS2812B / SK6812 Strip             |
-             +---------------------------------------------------------+
-                 ▲                                                 ▲
-                 |         1000 µF 16V Filter Capacitor            |
-                 +----------------[ + || - ]-----------------------+
+```text
+                            +-----------------------------+
+                            |     5V DC Power Source      |
+                            +--------------+--------------+
+                                           |
+                                    +5V / VIN (Red)
+                +--------------------------+--------------------------+
+                |                                                     |
+            +---+---+                                             +---+---+
+            |  5V   |                                             |  GND  |
+            |       |                                             |       |
+            |       |   [ESP32-S3-DevKitC-1 N16R8 Dual USB-C]     |       |
+            |       |                                             +---+---+
+            | GPIO1 +----------------+                                | Common GND
+            |       |                | 800kHz WS2812B Signal          | (Black)
+            | GPIO4 +----------+     |                                |
+            |       |          |     |                                |
+            | GPIO5 +-----+    |     |                                |
+            |       |     |    |     |                                |
+            | GPIO7 +--+  |    |     |                                |
+            |       |  |  |    |     |                                |
+            | GPIO6 +-)|--|----+     | I2C SCL (Clock)                |
+            |       | ||  |    |     |                                |
+            | GPIO8 +-)|--|----+     | I2C SDA (Data)                 |
+            |       | ||  |    |     |                                |
+            |  3V3  +-)|--|----+     | 3.3V Logic Rail                |
+            +---+---+ ||  |    |     |                                |
+                |     ||  |    |     |                                |
+       3.3V Rail|     ||  |    |     |                                |
+       +--------+     ||  |    |     |                                |
+       |              ||  |    |     |                                |
+   +---+---+          ||  |    |     |                                |
+   |  VCC  |          ||  |    |     |                                |
+   |       |          ||  |    |     |                                |
+   | 1.3"  |          ||  |    |     |                                |
+   | OLED  |  SDA <---+|  |    |     |                                |
+   |SH1106 |  SCL <----+  |    |     |                                |
+   |  GND  +--------------|----+-----|--------------------------------+
+   +-------+              |    |     |                                |
+                          |    |     |                                |
+   +-------+              |    |     |                                |
+   |  CLK  <--------------+    |     | (Phase A - Falling Interrupt)  |
+   |  DT   <-------------------+     | (Phase B - Direction Sense)    |
+   |  SW   <-------------------------+ (Momentary Push Button)        |
+   |  +    <-- 3.3V Rail                                              |
+   |  GND  +----------------------------------------------------------+
+   | HW-040|                                                          |
+   |Rotary |                                                          |
+   +-------+                                                          |
+                                                                      |
+   +------------------------------------------------------------------+
+   |                       WS2812B Addressable LED Strip              |
+   |   [ +5V / 3V3 ] <--- Power (Red Wire)                            |
+   |   [    DIN    ] <--- GPIO 1 (Green Wire)                         |
+   |   [    GND    ] <--- Common Ground (White Wire) -----------------+
+   +------------------------------------------------------------------+
 ```
 
-### ESP32 Pin Connections Summary
-- **ESP32 VIN**: Connected to `+5V` from power supply.
-- **ESP32 GND**: Connected to common power supply `GND`.
-- **ESP32 GPIO 2** (or GPIO 16): Connected to Level Shifter Pin 2 (`1A`).
+### Complete ESP32-S3 Pinout Allocation
+
+| Peripheral | ESP32-S3 Pin | Hardware Signal | Electrical Characteristic |
+| :--- | :--- | :--- | :--- |
+| **WS2812B Data** | **GPIO 1** | Single-wire NRZ | 800 kHz, 40mA push-pull (`GPIO_DRIVE_CAP_3`) |
+| **Rotary CLK** | **GPIO 4** | Quadrature Phase A | Falling edge interrupt, 8ms refractory debounce |
+| **Rotary DT** | **GPIO 5** | Quadrature Phase B | Sampled on CLK edge for direction |
+| **Rotary SW** | **GPIO 7** | Tactile Push Switch | Active LOW (`INPUT_PULLUP`), Single/Double/Long-press |
+| **OLED SCL** | **GPIO 6** | I2C Clock | 400 kHz Fast-Mode Hardware I2C |
+| **OLED SDA** | **GPIO 8** | I2C Data | 400 kHz Fast-Mode Hardware I2C |
+| **System Power** | **5V / VIN & 3V3** | DC Power Rails | 5.0V for high current, 3.3V for logic pullups |
+| **Ground** | **GND** | 0V Reference | Common Ground across ESP32, LEDs, OLED, and HW-040 |
 
 ---
 

@@ -5,6 +5,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.4.0] - 2026-11-02
+
+### Added
+- **Dedicated 1.3" OLED Now Playing HUD with 48×48 Album Art**:
+  - Displays live 48×48 dithered monochrome Album Art streamed from active media players (Spotify, YouTube/Brave/Zen, VLC).
+  - Embedded fallback 48×48 Vinyl Record with concentric grooves and center spindle hole.
+  - 10×10 application icon, playback state indicator (`[PLAY ▶]` / `[PAUSED]`), and Bluetooth connection badge (`[BT:OK]`).
+  - Track title with automatic marquee scrolling for long titles, artist subtitle, elapsed/total duration bar (`01:23 / 03:45`), and live animated audio spectrum visualizer.
+  - High-contrast OSD overlay banners (`VOL ▲`, `VOL ▼`, `PLAY ▶`, `PAUSE ⏸`, `NEXT ⏭`).
+- **Bluetooth Low Energy (BLE HID) Media Dial (`LumiOS Media Dial`)**:
+  - Full volume control, single-click Play/Pause, and double-click Track Skip.
+  - Balanced 12ms keydown / 12ms keyup pacing preventing NimBLE buffer exhaustion and eliminating repeated disconnect/reconnect cycles.
+- **Dual Wi-Fi Automatic Failover (`WiFiMulti`)**:
+  - Built-in multi-AP support for both `ichaos` (Hotspot) and `v20p` (Router) with password `honululu`.
+  - Automatic background reconnection and seamless failover.
+- **Python Companion Daemon (`media_sync.py`)**:
+  - Reads active MPRIS players via DBus, extracts album art, downsamples to 48×48, applies Floyd-Steinberg dithering, and pushes to ESP32 over HTTP.
+  - Dynamic IP auto-discovery supporting mDNS (`esp32-light.local`) and local subnet scanning.
+
+### Fixed
+- **Rotary Encoder Fast/Normal Spin Direction Confusion**:
+  - Implemented single-edge `FALLING` interrupt on `ENC_CLK` (GPIO 4) protected by an 8 ms refractory lockout debounce.
+  - Samples `ENC_DT` (GPIO 5) at the exact falling edge instant, completely absorbing mechanical contact bounce and eliminating reverse jumps during fast spins.
+- **Hardware Pin Assignment Standardization**:
+  - WS2812B Data: **GPIO 1** (`GPIO_DRIVE_CAP_3`, 40mA push-pull).
+  - Rotary Encoder: **GPIO 4 (CLK)**, **GPIO 5 (DT)**, **GPIO 7 (SW)**.
+  - OLED Display: **GPIO 6 (SCL)**, **GPIO 8 (SDA)** over 400kHz Fast I2C.
+
+---
+
 ## [1.3.2] - 2026-10-21
 
 ### Fixed

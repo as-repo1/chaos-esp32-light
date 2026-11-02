@@ -29,15 +29,21 @@ Welcome to the comprehensive user manual for **Chaos ESP32 Light** (Powered by W
 ## 1. Initial Connection & Setup
 
 ### Connecting to Your ESP32
-1. Power on your ESP32 controller.
-2. If your ESP32 is running in Access Point (AP) mode, connect your computer to:
-   - **SSID**: `pk` (or `WLED-AP`)
-   - **Password**: `00000000` (or `wled1234`)
-3. Open your browser and navigate to `http://10.109.101.60/` (or your ESP32's assigned local IP).
+1. Power on your ESP32-S3 controller.
+2. The firmware automatically connects to either configured network via `WiFiMulti`:
+   - **Hotspot**: `ichaos` (`pwd: honululu`)
+   - **Router**: `v20p` (`pwd: honululu`)
+3. Access the web interface at:
+   - `http://172.20.10.5/` (when connected to `ichaos`)
+   - `http://10.142.252.233/` (when connected to `v20p`)
+   - `http://esp32-light.local/` (via local mDNS hostname)
 4. Look at the top navigation bar:
    - **Green status dot**: WebSocket connected and streaming telemetry.
    - **Ping latency**: Real-time round-trip latency to your ESP32 (typically 5–25ms on Wi-Fi).
-   - **Live Hardware Mirror**: 60-LED animated virtual strip reflecting actual hardware state at 60 FPS.
+   - **Live Hardware Mirror**: Animated virtual strip reflecting actual hardware state at 60 FPS.
+5. **Bluetooth Media Dial**:
+   - The device automatically advertises as **`LumiOS Media Dial`**.
+   - Pair via your PC or phone Bluetooth menu to control volume (turn knob), play/pause (single click), and skip tracks (double click).
 
 ---
 

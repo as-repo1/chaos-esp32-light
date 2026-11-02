@@ -53,20 +53,23 @@ graph TB
         end
     end
 
-    subgraph ESP32 ["ESP32 Hardware Controller (10.109.101.60)"]
-        WSEndpoint["WLED AsyncWebServer /ws"]
+    subgraph ESP32 ["ESP32-S3 Hardware Controller (172.20.10.5 / 10.142.252.233)"]
+        WSEndpoint["WLED AsyncWebServer /ws & WebSocket:81"]
         RangeParser["WLED JSON Segment Range Parser"]
-        FastLED["FastLED / NeoPixelBus Engine"]
+        FastLED["Adafruit_NeoPixel RMT Engine (GPIO 1)"]
         UDPServer["UDP Broadcast Sync (Port 21324)"]
-        FlashFS["LittleFS Storage (/index.htm)"]
+        BLEHID["NimBLE Media Dial (LumiOS Media Dial)"]
+        OLEDHUD["SH1106 1.3\" OLED Dedicated Media HUD (I2C 8/6)"]
+        FlashFS["LittleFS / PROGMEM Web Studio"]
     end
 
     WS -->|"Range JSON /ws (<15ms)"| WSEndpoint
-    WSEndpoint --> RangeParser --> FastLED --> LEDs["WS2812B / SK6812 Strip"]
+    WSEndpoint --> RangeParser --> FastLED --> LEDs["WS2812B 59-LED Strip (GPIO 1)"]
     WSEndpoint -.->|"Sync Broadcast"| UDPServer
     UDPServer -.-> NodeB["Secondary WLED Node"]
     UDPServer -.-> NodeC["Tertiary WLED Node"]
     FlashFS -->|"Serves self-contained UI"| Client
+    BLEHID -->|"BLE HID Volume & Media Keys"| Client
 ```
 
 ---

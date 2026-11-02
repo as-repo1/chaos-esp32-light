@@ -167,35 +167,81 @@ Open **`http://<YOUR_ESP32_IP>/`** in your browser and you're good to go! 🎉
 * **Microcontroller**: ESP32 DevKit V1 (30-pin or 38-pin)
 * **LED Strip**: WS2812B, WS2811, or SK6812 (60 LEDs/meter recommended)
 * **Power Supply**: 5V DC (3A–10A depending on LED count)
-* **Level Shifter**: 74AHCT125 or SN74HCT245 (converts ESP32 3.3V logic to 5V data)
+* **Microcontroller**: ESP32-S3 (Dual-core 240MHz, 16MB Flash, 8MB PSRAM, USB-CDC)
+* **Addressable LEDs**: WS2812B, WS2811, or SK6812 (59 LEDs calibrated default)
+* **Rotary Dial & Media Input**: HW-040 Quadrature Encoder + Tactile Button
+* **Display HUD**: 1.3" I2C SH1106 / SSD1306 128×64 OLED (Dedicated Album Art HUD)
+* **Power Supply**: 5V 5A–10A DC switching power supply (or 5V USB rail with active current limiter)
 * **Capacitor & Resistor**: 1000 µF electrolytic capacitor across 5V/GND, 330Ω–470Ω resistor on data line
 
-### Circuit Schematic
+### ESP32-S3 Hardware Pin Diagram & Schematic
 ```text
-          +-------------------+
-          |  5V 10A DC Power  |
-          +---+-----------+---+
-              |           |
-              | +5V       | GND
-              |           |
-    +---------+-----------+-------------------------+
-    |         |           |                         |
-    |         |           | +5V                     | GND
-    |         |        +--+--+                   +--+--+
-    |         |        | VCC |                   | +5V |
-    |      +--+--+     |     |  Level Shifter    |     |  WS2812B Strip
-    |      | VIN |     |     |  (74AHCT125)      | DIN |◄--[ 330Ω Resistor ]
-    |      |     |     |     +----[ 5V Data ]----+     |         ▲
-    |      |ESP32|     | 1A  |                   | GND |         |
-    |      |     |     +--+--+                   +--+--+         |
-    |      |GPIO2+--------+ (3.3V Data)             |            |
-    |      |     |                                  |            |
-    |      | GND |                                  |            |
-    |      +--+--+                                  |            |
-    |         |                                     |            |
-    +---------+-------------------------------------+------------+
-                         COMMON GROUND
+                            +-----------------------------+
+                            |     5V DC Power Source      |
+                            +--------------+--------------+
+                                           |
+                                    +5V / VIN (Red)
+                +--------------------------+--------------------------+
+                |                                                     |
+            +---+---+                                             +---+---+
+            |  5V   |                                             |  GND  |
+            |       |                                             |       |
+            |       |   [ESP32-S3-DevKitC-1 N16R8 Dual USB-C]     |       |
+            |       |                                             +---+---+
+            | GPIO1 +----------------+                                | Common GND
+            |       |                | 800kHz WS2812B Signal          | (Black)
+            | GPIO4 +----------+     |                                |
+            |       |          |     |                                |
+            | GPIO5 +-----+    |     |                                |
+            |       |     |    |     |                                |
+            | GPIO7 +--+  |    |     |                                |
+            |       |  |  |    |     |                                |
+            | GPIO6 +-)|--|----+     | I2C SCL (Clock)                |
+            |       | ||  |    |     |                                |
+            | GPIO8 +-)|--|----+     | I2C SDA (Data)                 |
+            |       | ||  |    |     |                                |
+            |  3V3  +-)|--|----+     | 3.3V Logic Rail                |
+            +---+---+ ||  |    |     |                                |
+                |     ||  |    |     |                                |
+       3.3V Rail|     ||  |    |     |                                |
+       +--------+     ||  |    |     |                                |
+       |              ||  |    |     |                                |
+   +---+---+          ||  |    |     |                                |
+   |  VCC  |          ||  |    |     |                                |
+   |       |          ||  |    |     |                                |
+   | 1.3"  |          ||  |    |     |                                |
+   | OLED  |  SDA <---+|  |    |     |                                |
+   |SH1106 |  SCL <----+  |    |     |                                |
+   |  GND  +--------------|----+-----|--------------------------------+
+   +-------+              |    |     |                                |
+                          |    |     |                                |
+   +-------+              |    |     |                                |
+   |  CLK  <--------------+    |     | (Phase A - Falling Interrupt)  |
+   |  DT   <-------------------+     | (Phase B - Direction Sense)    |
+   |  SW   <-------------------------+ (Momentary Push Button)        |
+   |  +    <-- 3.3V Rail                                              |
+   |  GND  +----------------------------------------------------------+
+   | HW-040|                                                          |
+   |Rotary |                                                          |
+   +-------+                                                          |
+                                                                      |
+   +------------------------------------------------------------------+
+   |                       WS2812B Addressable LED Strip              |
+   |   [ +5V / 3V3 ] <--- Power (Red Wire)                            |
+   |   [    DIN    ] <--- GPIO 1 (Green Wire)                         |
+   |   [    GND    ] <--- Common Ground (White Wire) -----------------+
+   +------------------------------------------------------------------+
 ```
+
+| Pin / Function | GPIO | Connection | Specification |
+| :--- | :--- | :--- | :--- |
+| **LED Strip Data** | **GPIO 1** | WS2812B `DIN` | 800 kHz NRZ, 40mA Drive Strength |
+| **Rotary CLK** | **GPIO 4** | HW-040 `CLK` | Falling Edge Interrupt with 8ms Debounce |
+| **Rotary DT** | **GPIO 5** | HW-040 `DT` | Direction Sampling |
+| **Rotary SW** | **GPIO 7** | HW-040 `SW` | Tactile Button (Click: Play/Pause, Hold: Mode) |
+| **OLED SCL** | **GPIO 6** | SH1106 `SCL` | 400 kHz Fast I2C Clock |
+| **OLED SDA** | **GPIO 8** | SH1106 `SDA` | 400 kHz Fast I2C Data |
+| **Power Rails** | **3V3 & 5V** | OLED, HW-040, LEDs | Common Ground (`GND`) with power source |
 > [!IMPORTANT]
 > **Common Ground**: Always connect the ground (`GND`) pin of the ESP32, power supply, and LED strip together to prevent erratic flickering.
 
