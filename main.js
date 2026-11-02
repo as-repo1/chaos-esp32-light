@@ -5,6 +5,14 @@
 
 // Configuration & Default State
 const defaultTargetIp = '10.142.252.233';
+
+function sanitizeIp(ip) {
+  if (!ip || ip === '0.0.0.0' || ip === 'localhost' || ip === '127.0.0.1' || ip === '[::]' || ip === '10.109.101.60') {
+    return defaultTargetIp;
+  }
+  return ip.trim();
+}
+
 let detectedHost = defaultTargetIp;
 try {
   const hn = typeof window !== 'undefined' && window.location ? window.location.hostname : '';
@@ -16,12 +24,8 @@ try {
 let initialIp = defaultTargetIp;
 try {
   const stored = localStorage.getItem('wled_ip');
-  if (stored && stored !== '0.0.0.0' && stored !== 'localhost' && stored !== '127.0.0.1' && stored !== '10.109.101.60') {
-    initialIp = stored;
-  } else {
-    localStorage.setItem('wled_ip', detectedHost);
-    initialIp = detectedHost;
-  }
+  initialIp = sanitizeIp(stored || detectedHost);
+  localStorage.setItem('wled_ip', initialIp);
 } catch (e) {
   initialIp = defaultTargetIp;
 }
@@ -192,22 +196,17 @@ class WLEDClient {
   }
 
   setIp(ip) {
-    if (!ip || ip === '0.0.0.0' || ip === 'localhost' || ip === '127.0.0.1' || ip === '[::]') {
-      ip = '10.142.252.233';
-    }
-    this.ip = ip;
-    APP_STATE.ip = ip;
-    try { localStorage.setItem('wled_ip', ip); } catch (e) {}
+    this.ip = sanitizeIp(ip);
+    APP_STATE.ip = this.ip;
+    try { localStorage.setItem('wled_ip', this.ip); } catch (e) {}
     this.disconnect();
     this.connect();
     this.fetchInitialData();
   }
 
   connect() {
-    if (!this.ip || this.ip === '0.0.0.0' || this.ip === 'localhost' || this.ip === '127.0.0.1' || this.ip === '[::]') {
-      this.ip = '10.142.252.233';
-      APP_STATE.ip = this.ip;
-    }
+    this.ip = sanitizeIp(this.ip);
+    APP_STATE.ip = this.ip;
     clearTimeout(this.reconnectTimer);
     clearInterval(this.pingTimer);
 
@@ -550,10 +549,8 @@ class WLEDClient {
   }
 
   _transmit(payload) {
-    if (!this.ip || this.ip === '0.0.0.0' || this.ip === 'localhost' || this.ip === '127.0.0.1' || this.ip === '[::]') {
-      this.ip = '10.142.252.233';
-      APP_STATE.ip = this.ip;
-    }
+    this.ip = sanitizeIp(this.ip);
+    APP_STATE.ip = this.ip;
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       if (this.ws.bufferedAmount > 2048) {
         if (payload.isStream || payload.seg?.i) {
@@ -3207,7 +3204,7 @@ function updateSyncUI(send, recv) {
 }
 
 function renderDiscoveredNodes(nodes) {
-  const container = document.getElementById('discoveredNodesGrid');
+  const container = document.getElementById('discoveredNodesList') || document.getElementById('discoveredNodesGrid');
   const countBadge = document.getElementById('nodesCountBadge');
   if (!container) return;
   container.innerHTML = '';
@@ -4232,7 +4229,8 @@ function initEventListeners() {
   });
 
   document.getElementById('btnSwitchTargetIp')?.addEventListener('click', () => {
-    const targetIp = document.getElementById('switchTargetIpInput')?.value.trim();
+    const targetInput = document.getElementById('inputSwitchTargetIp') || document.getElementById('switchTargetIpInput');
+    const targetIp = targetInput?.value.trim();
     if (targetIp) {
       wled.setIp(targetIp);
       const ipInput = document.getElementById('wledIpInput');
@@ -4247,9 +4245,17 @@ function initEventListeners() {
     wled.saveWifi(ssid, pwd);
   });
 
+  document.getElementById('btnToggleWifiPwd')?.addEventListener('click', () => {
+    const pwdInput = document.getElementById('wifiPasswordInput');
+    if (pwdInput) {
+      pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
+    }
+  });
+
   // Add Custom Device Modal
   const modalAddDev = document.getElementById('addDeviceModal');
-  document.getElementById('btnAddCustomDevice')?.addEventListener('click', () => {
+  const btnAddDev = document.getElementById('btnAddCustomDeviceModalBtn') || document.getElementById('btnAddCustomDevice');
+  btnAddDev?.addEventListener('click', () => {
     modalAddDev?.classList.remove('hide');
   });
   document.getElementById('btnCloseAddDevModal')?.addEventListener('click', () => {
