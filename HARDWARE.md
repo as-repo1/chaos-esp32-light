@@ -113,7 +113,7 @@ The ESP32 outputs digital logic at **3.3V**. Addressable LED strips (WS2812B, WS
 
 ### 74AHCT125 Pinout
 - **Pin 1 (`1OE`)**: Connect to `GND` (enables buffer gate 1).
-- **Pin 2 (`1A`)**: Connect to ESP32 GPIO2 (3.3V input).
+- **Pin 2 (`1A`)**: Connect to ESP32 GPIO 1 (3.3V input).
 - **Pin 3 (`1Y`)**: Connect via 330Ω resistor to LED Strip `DIN` (5V output).
 - **Pin 7 (`GND`)**: Connect to Common `GND`.
 - **Pin 14 (`VCC`)**: Connect to `+5V`.

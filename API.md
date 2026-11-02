@@ -15,6 +15,11 @@ This document provides the complete API specification for interfacing with ESP32
    - [Wi-Fi Configuration (`/json/cfg`)](#wi-fi-configuration-jsoncfg)
    - [LittleFS Upload (`/upload`)](#littlefs-upload-upload)
 5. [UDP Real-Time Sync Protocol (Port 21324)](#5-udp-real-time-sync-protocol-port-21324)
+6. [Now Playing & Media HUD Endpoints](#6-now-playing--media-hud-endpoints)
+   - [Now Playing Metadata (`/media`)](#now-playing-metadata-media)
+   - [48×48 Album Artwork Upload (`/art`)](#4848-album-artwork-upload-art)
+7. [Bluetooth Low Energy (BLE) HID Media Dial Protocol](#7-bluetooth-low-energy-ble-hid-media-dial-protocol)
+8. [Acknowledgments & Credits](#8-acknowledgments--credits)
 
 ---
 
@@ -169,7 +174,71 @@ WLED listens and broadcasts real-time sync packets on UDP port **21324**.
 
 ---
 
-## 6. Acknowledgments & Credits
+## 6. Now Playing & Media HUD Endpoints
+
+LumiOS ESP32-S3 firmware provides dedicated REST endpoints to feed real-time music playback telemetry and 48×48 dithered album artwork directly to the 1.3" OLED display.
+
+### Now Playing Metadata (`/media`)
+- **POST `http://<IP>/media`**: Pushes active track metadata.
+```json
+{
+  "title": "GhorGari (ঘোরগাড়ী)",
+  "artist": "HIGHWAY",
+  "album": "Train",
+  "duration": 382,
+  "position": 31,
+  "playing": true,
+  "source": "youtube"
+}
+```
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `title` | string | Track title (marqee scrolls if > 11 chars) |
+| `artist` | string | Artist or channel name (truncated to 14 chars) |
+| `album` | string | Album or playlist title |
+| `duration` | integer | Total track length in seconds (renders as `MM:SS`) |
+| `position` | integer | Current playback timestamp in seconds (renders as `MM:SS`) |
+| `playing` | boolean | `true` = Playing (runs animated EQ visualizer); `false` = Paused |
+| `source` | string | Media source: `"spotify"`, `"youtube"`, `"zen"`, or `"music"` |
+
+### 48×48 Album Artwork Upload (`/art`)
+- **POST `http://<IP>/art`**: Uploads a 1-bit monochrome XBM bitmap formatted as a 576-character uppercase/lowercase hexadecimal ASCII payload.
+
+```bash
+# Upload 576-character XBM hex string (48x48 bits = 288 bytes)
+curl -X POST -H "Content-Type: text/plain" -d "000000000000..." http://172.20.10.5/art
+```
+
+- **Dimensions**: $48 \times 48\text{ pixels}$.
+- **Storage**: Row-major horizontal bit encoding ($48 \div 8 = 6\text{ bytes per row} \times 48\text{ rows} = 288\text{ bytes}$).
+- **Hex Representation**: 2 hex characters per byte $\times 288\text{ bytes} = \mathbf{576\text{ ASCII characters}}$.
+- **Format**: Standard XBM LSB-first bit order within each byte.
+
+---
+
+## 7. Bluetooth Low Energy (BLE) HID Media Dial Protocol
+
+The ESP32-S3 advertises as a standard Human Interface Device (HID) over GATT:
+- **Device Name**: `LumiOS Media Dial`
+- **HID Profile**: Bluetooth Low Energy Consumer Control (Keyboard / Media Keypad)
+- **Report Map**: Standard USB HID Consumer Usage Page (`0x0C`)
+
+### Media Key Mappings
+| User Action | Firmware Function | HID Consumer Keycode | Usage |
+| :--- | :--- | :--- | :--- |
+| **Rotate Clockwise (CW)** | Rotary Encoder | `KEY_MEDIA_VOLUME_UP` (`0xE9`) | Increase system master volume |
+| **Rotate Counter-Clockwise (CCW)** | Rotary Encoder | `KEY_MEDIA_VOLUME_DOWN` (`0xEA`) | Decrease system master volume |
+| **Single Click Push Button** | HW-040 Switch | `KEY_MEDIA_PLAY_PAUSE` (`0xCD`) | Toggle audio/video playback |
+| **Double Click Push Button** | HW-040 Switch | `KEY_MEDIA_NEXT_TRACK` (`0xB5`) | Skip to next song/track |
+| **Long Press (> 800ms)** | HW-040 Switch | *Internal Mode Toggle* | Switches dial to Desk Light Brightness Mode |
+
+### Anti-Bounce & BLE Pacing
+- **Encoder ISR**: Single `FALLING` edge interrupt on `GPIO 4` with an 8ms (`8000 µs`) hardware lockout to eliminate contact bounce.
+- **BLE Notification Pacing**: 12ms keydown / 12ms keyup delay with maximum 2 steps per loop cycle prevents buffer overruns and connection drops on host OS.
+
+---
+
+## 8. Acknowledgments & Credits
 
 Chaos ESP32 Light interfaces with the open-source **[WLED Project](https://github.com/Aircoookie/WLED)** created by Christian Schwinne (Aircoookie).
 All JSON API schemas, WebSocket frame specifications, and UDP sync protocols are defined and maintained by WLED.

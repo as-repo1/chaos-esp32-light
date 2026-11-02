@@ -45,6 +45,19 @@ Welcome to the comprehensive user manual for **Chaos ESP32 Light** (Powered by W
    - The device automatically advertises as **`LumiOS Media Dial`**.
    - Pair via your PC or phone Bluetooth menu to control volume (turn knob), play/pause (single click), and skip tracks (double click).
 
+### Hardware Pinout & Wiring Quick Reference
+
+| Peripheral | Board Pin | ESP32-S3 GPIO | Wire Color (Typical) | Function |
+| :--- | :--- | :--- | :--- | :--- |
+| **WS2812B LEDs** | `IO1` | **GPIO 1** | Green | 800kHz NRZ Signal (`GPIO_DRIVE_CAP_3`, 40mA drive) |
+| **Rotary CLK** | `IO4` | **GPIO 4** | Yellow / Orange | Falling edge interrupt (8ms refractory lockout debounce) |
+| **Rotary DT** | `IO5` | **GPIO 5** | Green / Blue | Direction sense (sampled on CLK fall) |
+| **Rotary SW** | `IO7` | **GPIO 7** | Purple / Gray | Tactile push button (Click = Play/Pause; Double = Next; Hold = Mode) |
+| **OLED SCL** | `IO6` | **GPIO 6** | Yellow | Hardware I2C Clock (400 kHz Fast Mode) |
+| **OLED SDA** | `IO8` | **GPIO 8** | Blue | Hardware I2C Data (400 kHz Fast Mode) |
+| **Power Rails** | `3V3` / `5V`| `3V3` / `5V` | Red | 3.3V logic pullups; 5.0V LED strip power rail |
+| **Ground** | `GND` | `GND` | Black / White | Common Ground reference across all components |
+
 ---
 
 ## 2. Lighting Studio (Manual Controls)
