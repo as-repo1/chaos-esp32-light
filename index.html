@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#070913" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
   <title>Chaos ESP32 Light — Smart Cinema & Music Reactive Studio</title>
   <script>
     if (typeof window !== "undefined" && (window.location.hostname === "0.0.0.0" || window.location.hostname === "[::]")) {
@@ -394,6 +399,23 @@
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" fill="currentColor"/></svg>
                 <span>Stop Screen Sync</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Secure Context Notice for Screen Capture -->
+          <div class="secure-context-banner hide" id="screencapLocalhostAlert">
+            <div class="secure-alert-icon">🔒</div>
+            <div class="secure-alert-content">
+              <h4>Screen Capture Requires Localhost (Browser Security Policy)</h4>
+              <p>
+                Browsers restrict <code>getDisplayMedia</code> to secure origins. Launch the Web Studio on <strong>http://localhost:8080/</strong> for unrestricted 60 FPS monitor and window capture.
+              </p>
+              <div class="secure-alert-actions">
+                <a href="http://localhost:8080/?autostart=movie" target="_blank" class="glass-btn btn-prominent" id="btnOpenLocalhostStudio">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  <span>Launch on http://localhost:8080</span>
+                </a>
+              </div>
             </div>
           </div>
 
@@ -1257,6 +1279,59 @@
                     </label>
                   </div>
                 </div>
+
+                <!-- Album Art Upload & Instant Dither -->
+                <div class="oled-subgroup">
+                  <label>Custom Album Artwork (64×64 1-bit Dither)</label>
+                  <div class="art-upload-controls">
+                    <input type="file" id="oledArtFileInput" accept="image/*" class="hide">
+                    <button class="btn-secondary" id="oledUploadArtBtn" type="button">
+                      <span>🖼️</span> Upload Custom Cover Art
+                    </button>
+                    <button class="btn-secondary" id="oledResetArtBtn" type="button" title="Restore Default Vinyl Artwork">
+                      <span>💿</span> Reset to Vinyl
+                    </button>
+                  </div>
+                  <p class="setting-hint">Uploads and dithers any photo or album cover into 64×64 1-bit monochrome directly to the OLED.</p>
+                </div>
+              </div>
+
+              <!-- Watch Face Customizer (for Mode 1: Clock) -->
+              <div class="oled-dynamic-customizer" id="oledClockCustomizer">
+                <div class="customizer-divider"></div>
+                <h4>Modern Watch Face Aesthetic</h4>
+                <p class="setting-hint">Select a handcrafted, modern watch face for your OLED display (or hold Button 4 on your desk):</p>
+                <div class="watchface-selector-grid" id="oledWatchFaceGrid">
+                  <div class="watchface-card active" data-face="0">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">📐</span>
+                      <span class="watchface-name">Studio Minimal</span>
+                      <span class="watchface-badge">Default</span>
+                    </div>
+                    <p class="watchface-desc">Braun & Teenage Engineering aesthetic: condensed numerals, superscript seconds, 60s timeline track, and date.</p>
+                  </div>
+                  <div class="watchface-card" data-face="1">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">⏱️</span>
+                      <span class="watchface-name">Chronos Duo</span>
+                    </div>
+                    <p class="watchface-desc">Precision horology: 58px circular analog dial on left, paired with digital stack, day badge, and telemetry on right.</p>
+                  </div>
+                  <div class="watchface-card" data-face="2">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">🏛️</span>
+                      <span class="watchface-name">Bauhaus Typo</span>
+                    </div>
+                    <p class="watchface-desc">Swiss architectural typography: giant stacked HH:MM numerals, vertical rule, inverted day banner, and seconds gauge.</p>
+                  </div>
+                  <div class="watchface-card" data-face="3">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">🛸</span>
+                      <span class="watchface-name">Cyber Orbit HUD</span>
+                    </div>
+                    <p class="watchface-desc">Sci-Fi workstation terminal: tactical corner brackets, framed digital readout, dual RAM/Temp meters, and telemetry.</p>
+                  </div>
+                </div>
               </div>
 
               <!-- Banner Input (for Mode 4) -->
@@ -1710,6 +1785,80 @@
                   <a href="http://10.109.101.60/settings" target="_blank" class="glass-btn btn-small link-btn" id="linkConfigWled">WLED Hardware Config</a>
                   <a href="http://10.109.101.60/settings/ui" target="_blank" class="glass-btn btn-small link-btn" id="linkUiConfigWled">UI Settings</a>
                 </div>
+              </div>
+            </div>
+
+            <!-- LED Hardware Color Calibration & Order -->
+            <div class="glass-card hardware-calib-card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h2>LED Hardware Calibration & Color Order</h2>
+                  <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4);">Color Calibration</span>
+                </div>
+                <span class="card-subtitle">Fix inverted red/green color channels and eliminate the persistent green tint of 5050 LED diodes</span>
+              </div>
+
+              <!-- Hardware Color Order Selector -->
+              <div class="setting-group">
+                <label class="setting-title">Hardware Color Order (WS2812B / WS2811 Pin Protocol)</label>
+                <div class="color-order-pills" id="colorOrderSelector">
+                  <button class="order-pill-btn active" data-order="GRB">
+                    <strong>GRB</strong>
+                    <span>Standard WS2812B (Default)</span>
+                  </button>
+                  <button class="order-pill-btn" data-order="RGB">
+                    <strong>RGB</strong>
+                    <span>WS2811 / Inverted Red-Green</span>
+                  </button>
+                  <button class="order-pill-btn" data-order="BRG">
+                    <strong>BRG</strong>
+                    <span>Common 12V WS2811</span>
+                  </button>
+                  <button class="order-pill-btn" data-order="RBG">
+                    <strong>RBG</strong>
+                    <span>Alternative Strip</span>
+                  </button>
+                </div>
+                <p class="setting-hint">💡 <em>If your LEDs look green when you select red, tap <strong>RGB</strong> above to instantly invert Red and Green.</em></p>
+              </div>
+
+              <!-- Instant Diagnostic Color Test Buttons -->
+              <div class="setting-group">
+                <label class="setting-title">Hardware Verification Test (Tap to confirm diode response)</label>
+                <div class="test-colors-row">
+                  <button class="test-btn test-red" id="btnTestRed">
+                    <span class="test-dot" style="background: #ef4444;"></span>
+                    <span>Test Red</span>
+                  </button>
+                  <button class="test-btn test-green" id="btnTestGreen">
+                    <span class="test-dot" style="background: #22c55e;"></span>
+                    <span>Test Green</span>
+                  </button>
+                  <button class="test-btn test-blue" id="btnTestBlue">
+                    <span class="test-dot" style="background: #3b82f6;"></span>
+                    <span>Test Blue</span>
+                  </button>
+                  <button class="test-btn test-white" id="btnTestWhite">
+                    <span class="test-dot" style="background: #ffffff; border: 1px solid #ccc;"></span>
+                    <span>Test White</span>
+                  </button>
+                </div>
+                <p class="setting-hint" id="orderTestHint">Verify that each button lights up its exact matching color on your physical strip.</p>
+              </div>
+
+              <!-- Green Channel Attenuation & White Balance Filter -->
+              <div class="setting-group">
+                <div class="capsule-label-row">
+                  <label class="setting-title" style="margin: 0;">Green Phosphor Compensation (Anti-Green Filter)</label>
+                  <span class="capsule-value" id="calibGValueText">76% (Anti-Green SMD5050)</span>
+                </div>
+                <div class="wb-presets-row">
+                  <button class="glass-btn btn-small active" id="btnWbClean" data-scale="195">🛡️ Clean Neutral (76% Anti-Green)</button>
+                  <button class="glass-btn btn-small" id="btnWbWarm" data-scale="150">🕯️ Warm 3200K (59%)</button>
+                  <button class="glass-btn btn-small" id="btnWbRaw" data-scale="255">⚡ Raw 1:1 (100% Unfiltered)</button>
+                </div>
+                <input type="range" min="100" max="255" value="195" id="sliderCalibG" class="glass-slider" style="margin-top: 10px;" />
+                <p class="setting-hint">5050 Green diodes produce ~2.5x more photopic lumens than red/blue, causing a natural green cast on pure whites. This filter scales down green to achieve genuine neutral/warm white.</p>
               </div>
             </div>
 

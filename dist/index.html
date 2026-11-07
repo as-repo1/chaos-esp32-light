@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#070913" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
   <title>Chaos ESP32 Light — Smart Cinema & Music Reactive Studio</title>
   <script>
     if (typeof window !== "undefined" && (window.location.hostname === "0.0.0.0" || window.location.hostname === "[::]")) {
@@ -218,7 +223,9 @@ html, body {
   top: 0;
   left: 0;
   width: 100vw;
+  width: 100dvw;
   height: 100vh;
+  height: 100dvh;
   pointer-events: none;
   z-index: 0;
   background: var(--theme-glow-bg);
@@ -3912,6 +3919,468 @@ select option, .wiring-select option, .glass-select option {
   box-shadow: 0 0 30px rgba(0, 242, 254, 0.7);
 }
 
+/* ====================================================================
+   COMPREHENSIVE MOBILE & TABLET OPTIMIZATIONS (iOS & Android)
+   ==================================================================== */
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* Touch targets & touch gestures (iOS & Android coarse pointer) */
+@media (pointer: coarse) {
+  button, 
+  .btn, 
+  .nav-tab-btn, 
+  .connection-badge, 
+  .power-toggle-btn,
+  .profile-chip-btn,
+  .quick-action-btn,
+  .color-slot-pill {
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .glass-slider,
+  .header-slider {
+    touch-action: pan-y;
+    height: 10px;
+  }
+
+  .glass-slider::-webkit-slider-thumb,
+  .header-slider::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Tablets and Mobile Phones (< 768px) */
+@media (max-width: 768px) {
+  .app-container {
+    padding-top: calc(12px + var(--safe-top));
+    padding-bottom: calc(50px + var(--safe-bottom));
+    padding-left: calc(12px + var(--safe-left));
+    padding-right: calc(12px + var(--safe-right));
+    gap: 14px;
+  }
+
+  /* Header mobile restructuring */
+  .glass-header {
+    padding: 12px 14px;
+    gap: 8px;
+    border-radius: 18px;
+  }
+
+  .header-brand {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .logo-text h1 {
+    font-size: clamp(16px, 4.5vw, 19px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tagline {
+    display: none; /* Hide long tagline on mobile to keep header clean */
+  }
+
+  .header-controls {
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .header-bri-pill {
+    padding: 4px 8px;
+  }
+
+  .header-slider {
+    width: 70px;
+  }
+
+  .virtual-strip-wrapper {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-top: 4px;
+    padding: 6px 10px;
+  }
+
+  /* Navigation Tabs: Horizontal scroll with touch momentum and snap */
+  .glass-nav-tabs {
+    padding: 5px;
+    gap: 6px;
+    border-radius: 16px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+  }
+
+  .nav-tab-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  /* Studio & Tab Layouts */
+  .grid-layout-studio {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .oled-studio-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* OLED Screen Housing: Responsive Aspect Ratio (Prevents horizontal overflow) */
+  .oled-screen-bezel {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 12px 8px;
+  }
+
+  .oled-screen-housing {
+    width: 100%;
+    max-width: 384px;
+    box-sizing: border-box;
+  }
+
+  .oled-screen-glass {
+    width: 100%;
+    max-width: 384px;
+    aspect-ratio: 2 / 1;
+    height: auto;
+  }
+
+  #oledVirtualCanvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .oled-bezel-footer {
+    width: 100%;
+    max-width: 384px;
+    font-size: 10px;
+  }
+
+  /* Prevent iOS Safari 16px input auto-zoom */
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Modal & dialog sheets */
+  .modal-glass-card {
+    width: 95vw;
+    max-width: 95vw;
+    margin: 10px auto;
+    padding: 16px;
+    max-height: 85dvh;
+    overflow-y: auto;
+  }
+}
+
+/* Small Phones (< 480px, e.g. iPhone SE, iPhone standard, Android) */
+@media (max-width: 480px) {
+  .app-container {
+    padding-left: calc(10px + var(--safe-left));
+    padding-right: calc(10px + var(--safe-right));
+  }
+
+  .header-brand .logo-sparkle {
+    font-size: 20px;
+  }
+
+  .header-bri-pill {
+    display: none; /* Master brightness is available in the main Lighting tab */
+  }
+
+  .quick-profiles-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .palette-grid,
+  .effects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+    gap: 8px;
+  }
+
+  .color-slots-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .color-slot-pill {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .banner-input-row {
+    flex-direction: column;
+  }
+
+  .banner-input-row button {
+    width: 100%;
+  }
+
+  .oled-hero-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .oled-quick-actions {
+    width: 100%;
+  }
+
+  .oled-quick-actions button {
+    flex: 1;
+  }
+}
+
+/* ====================================================================
+   MODERN WATCH FACE CARDS & ALBUM ART CONTROLS
+   ==================================================================== */
+.watchface-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .watchface-selector-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.watchface-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.watchface-card:hover {
+  background: rgba(0, 242, 254, 0.05);
+  border-color: rgba(0, 242, 254, 0.3);
+  transform: translateY(-2px);
+}
+
+.watchface-card.active {
+  background: rgba(0, 242, 254, 0.1);
+  border-color: #00f2fe;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.2);
+}
+
+.watchface-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.watchface-icon {
+  font-size: 18px;
+}
+
+.watchface-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  flex: 1;
+}
+
+.watchface-badge {
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(0, 242, 254, 0.2);
+  color: #00f2fe;
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.watchface-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+.art-upload-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.art-upload-controls .btn-secondary {
+  flex: 1;
+  min-width: 140px;
+  padding: 9px 12px;
+  font-size: 12px;
+}
+
+/* ====================================================================
+   SECURE CONTEXT / LOCALHOST SCREEN CAPTURE BANNER
+   ==================================================================== */
+.secure-context-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(0, 242, 254, 0.12) 100%);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 242, 254, 0.1);
+}
+
+.secure-alert-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.secure-alert-content {
+  flex: 1;
+}
+
+.secure-alert-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.secure-alert-content p {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.secure-alert-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.secure-alert-actions .btn-prominent {
+  padding: 8px 14px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+/* Color Calibration & Hardware Order */
+.color-order-pills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.order-pill-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.order-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-indigo);
+}
+
+.order-pill-btn.active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: var(--accent-indigo);
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.35);
+}
+
+.order-pill-btn strong {
+  font-size: 15px;
+  color: #fff;
+}
+
+.order-pill-btn span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.test-colors-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.test-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  padding: 8px 16px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.test-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.test-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.wb-presets-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+
 
 
 
@@ -4303,6 +4772,23 @@ select option, .wiring-select option, .glass-select option {
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" fill="currentColor"/></svg>
                 <span>Stop Screen Sync</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Secure Context Notice for Screen Capture -->
+          <div class="secure-context-banner hide" id="screencapLocalhostAlert">
+            <div class="secure-alert-icon">🔒</div>
+            <div class="secure-alert-content">
+              <h4>Screen Capture Requires Localhost (Browser Security Policy)</h4>
+              <p>
+                Browsers restrict <code>getDisplayMedia</code> to secure origins. Launch the Web Studio on <strong>http://localhost:8080/</strong> for unrestricted 60 FPS monitor and window capture.
+              </p>
+              <div class="secure-alert-actions">
+                <a href="http://localhost:8080/?autostart=movie" target="_blank" class="glass-btn btn-prominent" id="btnOpenLocalhostStudio">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  <span>Launch on http://localhost:8080</span>
+                </a>
+              </div>
             </div>
           </div>
 
@@ -5166,6 +5652,59 @@ select option, .wiring-select option, .glass-select option {
                     </label>
                   </div>
                 </div>
+
+                <!-- Album Art Upload & Instant Dither -->
+                <div class="oled-subgroup">
+                  <label>Custom Album Artwork (64×64 1-bit Dither)</label>
+                  <div class="art-upload-controls">
+                    <input type="file" id="oledArtFileInput" accept="image/*" class="hide">
+                    <button class="btn-secondary" id="oledUploadArtBtn" type="button">
+                      <span>🖼️</span> Upload Custom Cover Art
+                    </button>
+                    <button class="btn-secondary" id="oledResetArtBtn" type="button" title="Restore Default Vinyl Artwork">
+                      <span>💿</span> Reset to Vinyl
+                    </button>
+                  </div>
+                  <p class="setting-hint">Uploads and dithers any photo or album cover into 64×64 1-bit monochrome directly to the OLED.</p>
+                </div>
+              </div>
+
+              <!-- Watch Face Customizer (for Mode 1: Clock) -->
+              <div class="oled-dynamic-customizer" id="oledClockCustomizer">
+                <div class="customizer-divider"></div>
+                <h4>Modern Watch Face Aesthetic</h4>
+                <p class="setting-hint">Select a handcrafted, modern watch face for your OLED display (or hold Button 4 on your desk):</p>
+                <div class="watchface-selector-grid" id="oledWatchFaceGrid">
+                  <div class="watchface-card active" data-face="0">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">📐</span>
+                      <span class="watchface-name">Studio Minimal</span>
+                      <span class="watchface-badge">Default</span>
+                    </div>
+                    <p class="watchface-desc">Braun & Teenage Engineering aesthetic: condensed numerals, superscript seconds, 60s timeline track, and date.</p>
+                  </div>
+                  <div class="watchface-card" data-face="1">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">⏱️</span>
+                      <span class="watchface-name">Chronos Duo</span>
+                    </div>
+                    <p class="watchface-desc">Precision horology: 58px circular analog dial on left, paired with digital stack, day badge, and telemetry on right.</p>
+                  </div>
+                  <div class="watchface-card" data-face="2">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">🏛️</span>
+                      <span class="watchface-name">Bauhaus Typo</span>
+                    </div>
+                    <p class="watchface-desc">Swiss architectural typography: giant stacked HH:MM numerals, vertical rule, inverted day banner, and seconds gauge.</p>
+                  </div>
+                  <div class="watchface-card" data-face="3">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">🛸</span>
+                      <span class="watchface-name">Cyber Orbit HUD</span>
+                    </div>
+                    <p class="watchface-desc">Sci-Fi workstation terminal: tactical corner brackets, framed digital readout, dual RAM/Temp meters, and telemetry.</p>
+                  </div>
+                </div>
               </div>
 
               <!-- Banner Input (for Mode 4) -->
@@ -5622,6 +6161,80 @@ select option, .wiring-select option, .glass-select option {
               </div>
             </div>
 
+            <!-- LED Hardware Color Calibration & Order -->
+            <div class="glass-card hardware-calib-card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h2>LED Hardware Calibration & Color Order</h2>
+                  <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4);">Color Calibration</span>
+                </div>
+                <span class="card-subtitle">Fix inverted red/green color channels and eliminate the persistent green tint of 5050 LED diodes</span>
+              </div>
+
+              <!-- Hardware Color Order Selector -->
+              <div class="setting-group">
+                <label class="setting-title">Hardware Color Order (WS2812B / WS2811 Pin Protocol)</label>
+                <div class="color-order-pills" id="colorOrderSelector">
+                  <button class="order-pill-btn active" data-order="GRB">
+                    <strong>GRB</strong>
+                    <span>Standard WS2812B (Default)</span>
+                  </button>
+                  <button class="order-pill-btn" data-order="RGB">
+                    <strong>RGB</strong>
+                    <span>WS2811 / Inverted Red-Green</span>
+                  </button>
+                  <button class="order-pill-btn" data-order="BRG">
+                    <strong>BRG</strong>
+                    <span>Common 12V WS2811</span>
+                  </button>
+                  <button class="order-pill-btn" data-order="RBG">
+                    <strong>RBG</strong>
+                    <span>Alternative Strip</span>
+                  </button>
+                </div>
+                <p class="setting-hint">💡 <em>If your LEDs look green when you select red, tap <strong>RGB</strong> above to instantly invert Red and Green.</em></p>
+              </div>
+
+              <!-- Instant Diagnostic Color Test Buttons -->
+              <div class="setting-group">
+                <label class="setting-title">Hardware Verification Test (Tap to confirm diode response)</label>
+                <div class="test-colors-row">
+                  <button class="test-btn test-red" id="btnTestRed">
+                    <span class="test-dot" style="background: #ef4444;"></span>
+                    <span>Test Red</span>
+                  </button>
+                  <button class="test-btn test-green" id="btnTestGreen">
+                    <span class="test-dot" style="background: #22c55e;"></span>
+                    <span>Test Green</span>
+                  </button>
+                  <button class="test-btn test-blue" id="btnTestBlue">
+                    <span class="test-dot" style="background: #3b82f6;"></span>
+                    <span>Test Blue</span>
+                  </button>
+                  <button class="test-btn test-white" id="btnTestWhite">
+                    <span class="test-dot" style="background: #ffffff; border: 1px solid #ccc;"></span>
+                    <span>Test White</span>
+                  </button>
+                </div>
+                <p class="setting-hint" id="orderTestHint">Verify that each button lights up its exact matching color on your physical strip.</p>
+              </div>
+
+              <!-- Green Channel Attenuation & White Balance Filter -->
+              <div class="setting-group">
+                <div class="capsule-label-row">
+                  <label class="setting-title" style="margin: 0;">Green Phosphor Compensation (Anti-Green Filter)</label>
+                  <span class="capsule-value" id="calibGValueText">76% (Anti-Green SMD5050)</span>
+                </div>
+                <div class="wb-presets-row">
+                  <button class="glass-btn btn-small active" id="btnWbClean" data-scale="195">🛡️ Clean Neutral (76% Anti-Green)</button>
+                  <button class="glass-btn btn-small" id="btnWbWarm" data-scale="150">🕯️ Warm 3200K (59%)</button>
+                  <button class="glass-btn btn-small" id="btnWbRaw" data-scale="255">⚡ Raw 1:1 (100% Unfiltered)</button>
+                </div>
+                <input type="range" min="100" max="255" value="195" id="sliderCalibG" class="glass-slider" style="margin-top: 10px;" />
+                <p class="setting-hint">5050 Green diodes produce ~2.5x more photopic lumens than red/blue, causing a natural green cast on pure whites. This filter scales down green to achieve genuine neutral/warm white.</p>
+              </div>
+            </div>
+
             <!-- Hardware Diagnostics & Telemetry -->
             <div class="glass-card">
               <div class="card-header">
@@ -5804,13 +6417,23 @@ try {
   }
 } catch (e) {}
 
+let queryIp = '';
+try {
+  if (typeof window !== 'undefined' && window.location && window.location.search) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('ip')) queryIp = urlParams.get('ip');
+    else if (urlParams.has('target')) queryIp = urlParams.get('target');
+    else if (urlParams.has('wled')) queryIp = urlParams.get('wled');
+  }
+} catch (e) {}
+
 let initialIp = defaultTargetIp;
 try {
   const stored = localStorage.getItem('wled_ip');
-  initialIp = sanitizeIp(stored || detectedHost);
+  initialIp = sanitizeIp(queryIp || stored || detectedHost);
   localStorage.setItem('wled_ip', initialIp);
 } catch (e) {
-  initialIp = defaultTargetIp;
+  initialIp = queryIp || defaultTargetIp;
 }
 
 const APP_STATE = {
@@ -6083,6 +6706,9 @@ class WLEDClient {
       await this.fetchPresets();
       if (typeof oledStudio !== 'undefined' && oledStudio.fetchSettings) {
         oledStudio.fetchSettings();
+      }
+      if (typeof colorCalibrationStudio !== 'undefined' && colorCalibrationStudio.fetchSettings) {
+        colorCalibrationStudio.fetchSettings();
       }
     } catch (err) {
       console.warn('Failed to load initial WLED data via REST:', err);
@@ -7318,12 +7944,17 @@ class MovieSyncEngine {
 
   async start() {
     try {
-      if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
-        if (typeof window !== 'undefined' && window.location.hostname === '0.0.0.0') {
-          window.location.hostname = 'localhost';
-          return;
-        }
-        showToast('Screen capture requires http://localhost:8080 or HTTPS!');
+      const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      const isSecure = typeof window !== 'undefined' && (window.isSecureContext || isLocalhost);
+
+      if (!isSecure || !navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        const localUrl = `http://localhost:8080/?ip=${targetIp}&autostart=movie`;
+        showToast('Screen capture requires localhost. Redirecting to http://localhost:8080...', 4000);
+        setTimeout(() => {
+          const opened = window.open(localUrl, '_blank');
+          if (!opened) window.location.href = localUrl;
+        }, 500);
         return;
       }
       this.stream = await navigator.mediaDevices.getDisplayMedia({
@@ -8234,12 +8865,17 @@ class MusicSyncEngine {
 
   async start() {
     try {
-      if ((this.audioSourceType === 'mic' || this.audioSourceType === 'system') && (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function')) {
-        if (typeof window !== 'undefined' && window.location.hostname === '0.0.0.0') {
-          window.location.hostname = 'localhost';
-          return;
-        }
-        showToast('Microphone/audio capture requires http://localhost:8080 or HTTPS!');
+      const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      const isSecure = typeof window !== 'undefined' && (window.isSecureContext || isLocalhost);
+
+      if ((this.audioSourceType === 'mic' || this.audioSourceType === 'system') && (!isSecure || !navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function')) {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        const localUrl = `http://localhost:8080/?ip=${targetIp}&autostart=music`;
+        showToast('Microphone/System audio requires localhost. Redirecting to http://localhost:8080...', 4000);
+        setTimeout(() => {
+          const opened = window.open(localUrl, '_blank');
+          if (!opened) window.location.href = localUrl;
+        }, 500);
         return;
       }
       this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -9559,6 +10195,7 @@ function initEventListeners() {
       btn.classList.add('active');
       const targetPanel = document.getElementById(btn.dataset.tab);
       if (targetPanel) targetPanel.classList.add('active');
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     });
   });
 
@@ -10362,7 +10999,8 @@ class OledStudioManager {
 
     // Hardware State Mirror
     this.state = {
-      mode: 0,        // 0: Music HUD, 1: Clock & Telemetry, 2: Spectrum 128px, 3: Ambient Mirror, 4: Banner
+      mode: 1,        // Default: 1 = Clock & Modern Watch Face (0: Music HUD, 2: Spectrum, 3: Ambient, 4: Banner)
+      face: 0,        // 0: Studio Minimalist, 1: Chronos Duo, 2: Bauhaus Typography, 3: Cyber Orbit HUD
       artPos: 0,      // 0: Left, 1: Right, 2: Hidden
       vis: 1,         // 0: Bars, 1: Wave (Default: Oscilloscope Sine Wave), 2: Peak Dots, 3: Off
       icon: true,
@@ -10372,9 +11010,11 @@ class OledStudioManager {
       inv: false,
       flip: false,
       pwr: true,
-      auto: false,
+      auto: true,     // Default: Smart Auto-Switching ENABLED (auto-shows Album Art & Music HUD when playing)
       text: "LumiOS Smart Desk"
     };
+
+    this.uploadedArtCanvas = null;
 
     // Live Media Cache from ESP32 /status or media sync daemon
     this.media = {
@@ -10508,6 +11148,117 @@ class OledStudioManager {
     document.getElementById('oledSaveSettingsBtn')?.addEventListener('click', () => {
       this.pushFullSettings();
     });
+
+    // Modern Watch Face Selector Cards
+    document.querySelectorAll('#oledWatchFaceGrid .watchface-card').forEach(card => {
+      card.addEventListener('click', () => {
+        this.setWatchFace(card.dataset.face);
+      });
+    });
+
+    // Album Art File Uploader & Dither Converter
+    const artFileInput = document.getElementById('oledArtFileInput');
+    document.getElementById('oledUploadArtBtn')?.addEventListener('click', () => {
+      artFileInput?.click();
+    });
+    artFileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) this.handleArtUpload(file);
+    });
+    document.getElementById('oledResetArtBtn')?.addEventListener('click', () => {
+      this.resetArtToDefault();
+    });
+  }
+
+  setWatchFace(face) {
+    this.state.face = parseInt(face, 10);
+    this.state.mode = 1; // Ensure clock mode is active
+    this.syncUI();
+    const faceNames = ["Studio Minimalist", "Chronos Duo Horology", "Bauhaus Typography", "Cyber Orbit HUD"];
+    showToast(`Watch Face: ${faceNames[this.state.face] || face}`);
+    this.sendUpdate({ mode: 1, face: this.state.face });
+  }
+
+  handleArtUpload(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      showToast('Please select a valid image file');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = 64;
+        c.height = 64;
+        const ctx = c.getContext('2d');
+        const minDim = Math.min(img.width, img.height);
+        const sx = (img.width - minDim) / 2;
+        const sy = (img.height - minDim) / 2;
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 64, 64);
+
+        const imgData = ctx.getImageData(0, 0, 64, 64);
+        const d = imgData.data;
+        const gray = new Float32Array(64 * 64);
+        for (let i = 0; i < 64 * 64; i++) {
+          const idx = i * 4;
+          gray[i] = 0.299 * d[idx] + 0.587 * d[idx + 1] + 0.114 * d[idx + 2];
+        }
+
+        const bytes = new Uint8Array(512);
+        for (let y = 0; y < 64; y++) {
+          for (let x = 0; x < 64; x++) {
+            const idx = y * 64 + x;
+            const oldVal = gray[idx];
+            const newVal = oldVal < 128 ? 0 : 255;
+            const err = oldVal - newVal;
+
+            if (x + 1 < 64) gray[idx + 1] += err * (7 / 16);
+            if (y + 1 < 64) {
+              if (x > 0) gray[(y + 1) * 64 + (x - 1)] += err * (3 / 16);
+              gray[(y + 1) * 64 + x] += err * (5 / 16);
+              if (x + 1 < 64) gray[(y + 1) * 64 + (x + 1)] += err * (1 / 16);
+            }
+
+            if (newVal > 128) {
+              const byteIdx = y * 8 + Math.floor(x / 8);
+              bytes[byteIdx] |= (1 << (x % 8));
+            }
+          }
+        }
+
+        let hex = '';
+        for (let b = 0; b < 512; b++) {
+          hex += bytes[b].toString(16).padStart(2, '0');
+        }
+
+        this.uploadedArtCanvas = c;
+        this.media.hasArt = true;
+        this.syncUI();
+
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        showToast('Uploading 64×64 Album Art to ESP32...');
+        fetch(`http://${targetIp}/art`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: hex
+        }).then(res => {
+          if (res.ok) showToast('64×64 Album Art Uploaded Successfully!');
+          else showToast('Art applied to display preview');
+        }).catch(() => {
+          showToast('Art cached in Web Studio');
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  resetArtToDefault() {
+    this.uploadedArtCanvas = null;
+    this.media.hasArt = false;
+    this.syncUI();
+    showToast('Album Artwork reset to Default Vinyl Record');
   }
 
   setMode(mode) {
@@ -10600,9 +11351,17 @@ class OledStudioManager {
 
     // Sub-customizer visibility
     const musicCust = document.getElementById('oledMusicCustomizer');
+    const clockCust = document.getElementById('oledClockCustomizer');
     const bannerCust = document.getElementById('oledBannerCustomizer');
     if (musicCust) musicCust.classList.toggle('hide', this.state.mode !== 0);
+    if (clockCust) clockCust.classList.toggle('hide', this.state.mode !== 1);
     if (bannerCust) bannerCust.classList.toggle('hide', this.state.mode !== 4);
+
+    // Watch Face Cards
+    document.querySelectorAll('#oledWatchFaceGrid .watchface-card').forEach(card => {
+      const f = parseInt(card.dataset.face, 10);
+      card.classList.toggle('active', f === (this.state.face || 0));
+    });
 
     // Art position chips
     document.querySelectorAll('#oledArtPosChips .chip-sub-btn').forEach(btn => {
@@ -10729,6 +11488,10 @@ class OledStudioManager {
             this.state.mode = data.oled_mode;
             this.syncUI();
           }
+          if (data.oled_face !== undefined && this.state.face !== data.oled_face) {
+            this.state.face = data.oled_face;
+            this.syncUI();
+          }
           if (data.oled_bri !== undefined && Math.abs(this.state.bri - data.oled_bri) > 2) {
             this.state.bri = data.oled_bri;
             this.syncUI();
@@ -10801,7 +11564,7 @@ class OledStudioManager {
 
     let activeMode = this.state.mode;
     if (this.state.auto) {
-      activeMode = this.media.playing ? 0 : 1;
+      activeMode = this.media.playing ? 0 : this.state.mode;
     }
 
     ctx.fillStyle = '#00f2fe';
@@ -10836,7 +11599,11 @@ class OledStudioManager {
 
     // CASE A: Album Art Left (Maximized 64x64)
     if (artPos === 0) {
-      this.drawVinylDisc(ctx, 32, 32, 28, this.vinylAngle);
+      if (this.uploadedArtCanvas && this.media.hasArt) {
+        ctx.drawImage(this.uploadedArtCanvas, 0, 0, 64, 64);
+      } else {
+        this.drawVinylDisc(ctx, 32, 32, 28, this.vinylAngle);
+      }
       if (showDiv) {
         this.drawDottedVLine(ctx, 64, 0, 64);
       }
@@ -10848,7 +11615,11 @@ class OledStudioManager {
       if (showDiv) {
         this.drawDottedVLine(ctx, 63, 0, 64);
       }
-      this.drawVinylDisc(ctx, 96, 32, 28, this.vinylAngle);
+      if (this.uploadedArtCanvas && this.media.hasArt) {
+        ctx.drawImage(this.uploadedArtCanvas, 64, 0, 64, 64);
+      } else {
+        this.drawVinylDisc(ctx, 96, 32, 28, this.vinylAngle);
+      }
     }
     // CASE C: Album Art Hidden (Full Width 128px)
     else {
@@ -11103,45 +11874,249 @@ class OledStudioManager {
   }
 
   renderClockTelemetryHUD(ctx) {
+    switch (this.state.face) {
+      case 1:
+        this.renderWatchFaceChronos(ctx);
+        break;
+      case 2:
+        this.renderWatchFaceBauhaus(ctx);
+        break;
+      case 3:
+        this.renderWatchFaceCyberHUD(ctx);
+        break;
+      case 0:
+      default:
+        this.renderWatchFaceStudio(ctx);
+        break;
+    }
+  }
+
+  getClockTimeComponents() {
+    const now = new Date();
+    const hr = now.getHours();
+    const mn = now.getMinutes();
+    const sc = now.getSeconds();
+    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const dayStr = days[now.getDay()];
+    const monStr = months[now.getMonth()];
+    const dateNum = String(now.getDate()).padStart(2, '0');
+    const hrStr = String(hr).padStart(2, '0');
+    const mnStr = String(mn).padStart(2, '0');
+    const scStr = String(sc).padStart(2, '0');
+    return {
+      hr, mn, sc,
+      timeStr: `${hrStr}:${mnStr}`,
+      secStr: scStr,
+      fullTimeStr: `${hrStr}:${mnStr}:${scStr}`,
+      dateStr: `${dayStr}, ${dateNum} ${monStr}`,
+      dayStr,
+      monStr,
+      fullDateStr: `${dateNum}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`
+    };
+  }
+
+  renderWatchFaceStudio(ctx) {
+    const t = this.getClockTimeComponents();
     ctx.textAlign = 'left';
     ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
 
-    // Top Header: Wi-Fi & RSSI
+    // Top status bar
     ctx.font = '6px monospace';
-    ctx.fillText("WIFI: " + (this.telemetry.ssid || "ichaos"), 2, 7);
+    ctx.fillText("WIFI 94%", 2, 7);
     ctx.textAlign = 'right';
-    const rssiVal = this.telemetry.rssi || -55;
-    ctx.fillText(`${rssiVal}dBm [${Math.min(100, Math.max(0, Math.round((rssiVal + 90) * 2)))}%]`, 126, 7);
-    ctx.textAlign = 'left';
-    ctx.fillRect(0, 9, 128, 1);
+    ctx.fillText(`DESK: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 126, 7);
+    ctx.fillRect(0, 8, 128, 1);
 
-    // Big Minimalist 24h Clock in center (HH:MM:SS) with live ticking seconds
-    const now = new Date();
-    const hr = String(now.getHours()).padStart(2, '0');
-    const mn = String(now.getMinutes()).padStart(2, '0');
-    const sc = String(now.getSeconds()).padStart(2, '0');
-    const timeStr = `${hr}:${mn}:${sc}`;
-
-    ctx.font = 'bold 15px monospace';
+    // Large Condensed Modern Numerals
+    ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(timeStr, 64, 28);
+    ctx.fillText(t.timeStr, 54, 34);
+
+    // Superscript seconds
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.secStr, 92, 23);
+    ctx.beginPath();
+    ctx.arc(98, 30, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 60-Second Timeline Track
+    ctx.fillRect(16, 42, 96, 1);
+    const secFill = (t.sc * 96) / 60;
+    if (secFill > 0) ctx.fillRect(16, 41, secFill, 3);
+    ctx.beginPath();
+    ctx.arc(16 + secFill, 42, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Date
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(t.dateStr, 64, 55);
+
+    // Telemetry footer
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${this.telemetry.temp}°C`, 2, 63);
+    ctx.textAlign = 'right';
+    ctx.fillText(this.telemetry.uptime, 126, 63);
+  }
+
+  renderWatchFaceChronos(ctx) {
+    const t = this.getClockTimeComponents();
+    const cx = 31, cy = 31, r = 28;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Dial ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 12 ticks
+    ctx.fillRect(cx - 0.5, cy - r + 2, 1, 3);
+    ctx.fillRect(cx - 0.5, cy + r - 5, 1, 3);
+    ctx.fillRect(cx + r - 5, cy - 0.5, 3, 1);
+    ctx.fillRect(cx - r + 2, cy - 0.5, 3, 1);
+
+    // Hour hand
+    const hAngle = (t.hr % 12 + t.mn / 60) * 30 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(hAngle) * 14, cy + Math.sin(hAngle) * 14);
+    ctx.stroke();
+
+    // Minute hand
+    const mAngle = (t.mn + t.sc / 60) * 6 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(mAngle) * 22, cy + Math.sin(mAngle) * 22);
+    ctx.stroke();
+
+    // Second pip
+    const sAngle = t.sc * 6 * (Math.PI / 180) - Math.PI / 2;
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(sAngle) * 23, cy + Math.sin(sAngle) * 23, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Center pivot
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dashed divider
+    for (let y = 2; y < 62; y += 3) ctx.fillRect(64, y, 1, 1);
+
+    // Right digital stack
+    ctx.fillRect(68, 4, 56, 12);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${t.dayStr} ${t.secStr}`, 96, 13);
+
+    ctx.fillStyle = '#00f2fe';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.timeStr, 69, 32);
+
+    ctx.font = '8px monospace';
+    ctx.fillText(`:${t.secStr} ${t.monStr}`, 69, 44);
+    ctx.fillRect(68, 48, 56, 1);
 
     ctx.font = '6px monospace';
-    ctx.fillText("DESK TELEMETRY", 64, 38);
+    ctx.fillText(`TMP ${this.telemetry.temp}°C`, 69, 56);
+    ctx.fillText(`DESK ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 69, 63);
+  }
 
-    // Mid Row: Uptime & Temperature
+  renderWatchFaceBauhaus(ctx) {
+    const t = this.getClockTimeComponents();
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Left giant numerals
+    ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText("UPTIME: " + this.telemetry.uptime, 4, 46);
-    ctx.textAlign = 'right';
-    ctx.fillText(`TEMP: ${this.telemetry.temp}°C`, 124, 46);
+    const hrStr = String(t.hr).padStart(2, '0');
+    const mnStr = String(t.mn).padStart(2, '0');
+    ctx.fillText(hrStr, 4, 26);
+    ctx.fillText(mnStr, 4, 56);
 
-    ctx.fillRect(0, 49, 128, 1);
+    // Vertical rule
+    ctx.fillRect(48, 3, 2, 58);
 
-    // Bottom Row: Free Heap & Light
+    // Inverted day badge
+    ctx.fillRect(54, 4, 70, 13);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`• ${t.dayStr} •`, 89, 14);
+
+    ctx.fillStyle = '#00f2fe';
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText(t.fullDateStr, 89, 29);
+
+    // Seconds bar
+    ctx.strokeRect(54, 35, 70, 7);
+    const sW = (t.sc * 66) / 60;
+    if (sW > 0) ctx.fillRect(56, 37, sW, 3);
+
+    ctx.font = '6px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`HEAP: ${this.telemetry.heap}KB`, 4, 59);
+    ctx.fillText(`SECOND ${t.secStr}/60`, 54, 51);
+    ctx.fillText(`LIGHT ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 54, 61);
     ctx.textAlign = 'right';
-    ctx.fillText(`LIGHT: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 124, 59);
+    ctx.fillText(`${this.telemetry.temp}°C`, 124, 61);
+  }
+
+  renderWatchFaceCyberHUD(ctx) {
+    const t = this.getClockTimeComponents();
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // 4 tactical brackets
+    ctx.fillRect(0, 0, 8, 1);
+    ctx.fillRect(0, 0, 1, 8);
+    ctx.fillRect(120, 0, 8, 1);
+    ctx.fillRect(127, 0, 1, 8);
+    ctx.fillRect(0, 63, 8, 1);
+    ctx.fillRect(0, 56, 1, 8);
+    ctx.fillRect(120, 63, 8, 1);
+    ctx.fillRect(127, 56, 1, 8);
+
+    // Header
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText("SYS:ONLINE", 12, 6);
+    ctx.textAlign = 'right';
+    ctx.fillText("WIFI:94%", 116, 6);
+
+    // Center framed viewport
+    ctx.strokeRect(10, 10, 108, 28);
+    ctx.strokeRect(12, 12, 104, 24);
+
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(t.fullTimeStr, 64, 28);
+
+    // Dual meters
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText("RAM", 10, 45);
+    ctx.strokeRect(28, 41, 40, 5);
+    ctx.fillRect(29, 42, 28, 3);
+
+    ctx.fillText("TMP", 72, 45);
+    ctx.strokeRect(90, 41, 28, 5);
+    ctx.fillRect(91, 42, 18, 3);
+
+    ctx.fillRect(10, 50, 108, 1);
+    ctx.fillText(t.dateStr, 12, 59);
+    ctx.textAlign = 'right';
+    ctx.fillText(`LED: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 116, 59);
   }
 
   renderFullSpectrumHUD(ctx) {
@@ -11301,11 +12276,148 @@ class OledStudioManager {
 
 const oledStudio = new OledStudioManager();
 
+// ====================================================================
+// Hardware LED Calibration & Color Order Studio
+// ====================================================================
+const colorCalibrationStudio = {
+  currentOrder: 'GRB',
+  calibG: 195,
+
+  init() {
+    this.bindEvents();
+    this.fetchSettings();
+  },
+
+  async fetchSettings() {
+    try {
+      const res = await fetch(`http://${APP_STATE.ip}/status`, { signal: AbortSignal.timeout(2500) });
+      const data = await res.json();
+      if (data.order) {
+        this.currentOrder = data.order.toUpperCase();
+        this.updateOrderUI(this.currentOrder);
+      }
+      if (data.calib_g !== undefined) {
+        this.calibG = data.calib_g;
+        this.updateCalibGUI(this.calibG);
+      }
+    } catch (e) {
+      console.warn('Could not fetch hardware calibration status:', e);
+    }
+  },
+
+  updateOrderUI(order) {
+    this.currentOrder = order;
+    document.querySelectorAll('#colorOrderSelector .order-pill-btn').forEach(btn => {
+      if (btn.dataset.order === order) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  },
+
+  updateCalibGUI(val) {
+    this.calibG = val;
+    const slider = document.getElementById('sliderCalibG');
+    const label = document.getElementById('calibGValueText');
+    if (slider) slider.value = val;
+    if (label) {
+      const pct = Math.round((val / 255) * 100);
+      if (val >= 250) {
+        label.textContent = `${pct}% (Raw 1:1 Unfiltered)`;
+      } else if (val <= 165) {
+        label.textContent = `${pct}% (Warm Candle 3200K)`;
+      } else {
+        label.textContent = `${pct}% (Anti-Green SMD5050)`;
+      }
+    }
+
+    document.querySelectorAll('.wb-presets-row button').forEach(btn => {
+      const s = parseInt(btn.dataset.scale, 10);
+      if (Math.abs(s - val) <= 5) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  },
+
+  bindEvents() {
+    // 1. Color Order Buttons
+    document.querySelectorAll('#colorOrderSelector .order-pill-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ord = btn.dataset.order;
+        this.updateOrderUI(ord);
+        try {
+          await fetch(`http://${APP_STATE.ip}/set?order=${ord}`);
+          showToast(`Color Order set to ${ord}`);
+        } catch (e) {
+          showToast(`Failed to set color order: ${e.message}`, 2500);
+        }
+      });
+    });
+
+    // 2. Hardware Test Buttons
+    const testButtons = [
+      { id: 'btnTestRed', r: 255, g: 0, b: 0, name: 'Red' },
+      { id: 'btnTestGreen', r: 0, g: 255, b: 0, name: 'Green' },
+      { id: 'btnTestBlue', r: 0, g: 0, b: 255, name: 'Blue' },
+      { id: 'btnTestWhite', r: 255, g: 255, b: 255, name: 'White' }
+    ];
+
+    testButtons.forEach(t => {
+      document.getElementById(t.id)?.addEventListener('click', async () => {
+        try {
+          await fetch(`http://${APP_STATE.ip}/set?r=${t.r}&g=${t.g}&b=${t.b}&fx=0`);
+          APP_STATE.power = true;
+          updatePowerUI(true);
+          showToast(`Testing ${t.name}: LED strip should be ${t.name}!`);
+        } catch (e) {
+          showToast(`Test error: ${e.message}`);
+        }
+      });
+    });
+
+    // 3. Green Balance Slider
+    const sliderG = document.getElementById('sliderCalibG');
+    if (sliderG) {
+      sliderG.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        this.updateCalibGUI(val);
+      });
+      sliderG.addEventListener('change', async (e) => {
+        const val = parseInt(e.target.value, 10);
+        try {
+          await fetch(`http://${APP_STATE.ip}/set?calib_g=${val}`);
+          showToast(`Green Balance: ${Math.round((val / 255) * 100)}%`);
+        } catch (e) {
+          showToast(`Calibration error: ${e.message}`);
+        }
+      });
+    }
+
+    // 4. White Balance Presets
+    document.querySelectorAll('.wb-presets-row button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const scale = parseInt(btn.dataset.scale, 10);
+        this.updateCalibGUI(scale);
+        try {
+          await fetch(`http://${APP_STATE.ip}/set?calib_g=${scale}`);
+          showToast(`Anti-Green Filter: ${btn.textContent.trim()}`);
+        } catch (e) {
+          showToast(`Preset error: ${e.message}`);
+        }
+      });
+    });
+  }
+};
+
 // Window globals for debugging & synchronization
 window._wled = wled;
 window._movieSync = movieSync;
 window._musicSync = musicSync;
 window._oledStudio = oledStudio;
+window._colorCalib = colorCalibrationStudio;
 window.setAmbilightMode = (m) => movieSync.setMode(m);
 
 function bootApp() {
@@ -11322,8 +12434,42 @@ function bootApp() {
   try { initPinnedScenes(); } catch (e) { console.error('initPinnedScenes error:', e); }
   try { initPortalTheme(); } catch (e) { console.error('initPortalTheme error:', e); }
   try { oledStudio.init(); } catch (e) { console.error('oledStudio init error:', e); }
+  try { colorCalibrationStudio.init(); } catch (e) { console.error('colorCalibrationStudio init error:', e); }
   try { wled.connect(); } catch (e) { console.error('wled connect error:', e); }
   try { wled.fetchInitialData(); } catch (e) { console.error('wled fetchInitialData error:', e); }
+
+  // Localhost Secure Context check for Screen Capture & Audio
+  try {
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const isSecure = typeof window !== 'undefined' && (window.isSecureContext || isLocal);
+    const alertEl = document.getElementById('screencapLocalhostAlert');
+    if (alertEl) {
+      if (!isSecure) {
+        alertEl.classList.remove('hide');
+        const link = document.getElementById('btnOpenLocalhostStudio');
+        if (link) link.href = `http://localhost:8080/?ip=${APP_STATE.ip}&autostart=movie`;
+      } else {
+        alertEl.classList.add('hide');
+      }
+    }
+  } catch (e) {}
+
+  // Handle URL query autostart parameter (?autostart=movie or ?autostart=music)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const autostart = urlParams.get('autostart');
+    if (autostart === 'movie') {
+      setTimeout(() => {
+        document.getElementById('tabBtnMovie')?.click();
+        movieSync.start();
+      }, 700);
+    } else if (autostart === 'music') {
+      setTimeout(() => {
+        document.getElementById('tabBtnMusic')?.click();
+        musicSync.start();
+      }, 700);
+    }
+  } catch (e) {}
 }
 
 if (document.readyState === 'loading') {

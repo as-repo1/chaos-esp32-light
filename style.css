@@ -206,7 +206,9 @@ html, body {
   top: 0;
   left: 0;
   width: 100vw;
+  width: 100dvw;
   height: 100vh;
+  height: 100dvh;
   pointer-events: none;
   z-index: 0;
   background: var(--theme-glow-bg);
@@ -3899,6 +3901,468 @@ select option, .wiring-select option, .glass-select option {
   transform: translateY(-2px);
   box-shadow: 0 0 30px rgba(0, 242, 254, 0.7);
 }
+
+/* ====================================================================
+   COMPREHENSIVE MOBILE & TABLET OPTIMIZATIONS (iOS & Android)
+   ==================================================================== */
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* Touch targets & touch gestures (iOS & Android coarse pointer) */
+@media (pointer: coarse) {
+  button, 
+  .btn, 
+  .nav-tab-btn, 
+  .connection-badge, 
+  .power-toggle-btn,
+  .profile-chip-btn,
+  .quick-action-btn,
+  .color-slot-pill {
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .glass-slider,
+  .header-slider {
+    touch-action: pan-y;
+    height: 10px;
+  }
+
+  .glass-slider::-webkit-slider-thumb,
+  .header-slider::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Tablets and Mobile Phones (< 768px) */
+@media (max-width: 768px) {
+  .app-container {
+    padding-top: calc(12px + var(--safe-top));
+    padding-bottom: calc(50px + var(--safe-bottom));
+    padding-left: calc(12px + var(--safe-left));
+    padding-right: calc(12px + var(--safe-right));
+    gap: 14px;
+  }
+
+  /* Header mobile restructuring */
+  .glass-header {
+    padding: 12px 14px;
+    gap: 8px;
+    border-radius: 18px;
+  }
+
+  .header-brand {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .logo-text h1 {
+    font-size: clamp(16px, 4.5vw, 19px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tagline {
+    display: none; /* Hide long tagline on mobile to keep header clean */
+  }
+
+  .header-controls {
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .header-bri-pill {
+    padding: 4px 8px;
+  }
+
+  .header-slider {
+    width: 70px;
+  }
+
+  .virtual-strip-wrapper {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-top: 4px;
+    padding: 6px 10px;
+  }
+
+  /* Navigation Tabs: Horizontal scroll with touch momentum and snap */
+  .glass-nav-tabs {
+    padding: 5px;
+    gap: 6px;
+    border-radius: 16px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+  }
+
+  .nav-tab-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  /* Studio & Tab Layouts */
+  .grid-layout-studio {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .oled-studio-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* OLED Screen Housing: Responsive Aspect Ratio (Prevents horizontal overflow) */
+  .oled-screen-bezel {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 12px 8px;
+  }
+
+  .oled-screen-housing {
+    width: 100%;
+    max-width: 384px;
+    box-sizing: border-box;
+  }
+
+  .oled-screen-glass {
+    width: 100%;
+    max-width: 384px;
+    aspect-ratio: 2 / 1;
+    height: auto;
+  }
+
+  #oledVirtualCanvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .oled-bezel-footer {
+    width: 100%;
+    max-width: 384px;
+    font-size: 10px;
+  }
+
+  /* Prevent iOS Safari 16px input auto-zoom */
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Modal & dialog sheets */
+  .modal-glass-card {
+    width: 95vw;
+    max-width: 95vw;
+    margin: 10px auto;
+    padding: 16px;
+    max-height: 85dvh;
+    overflow-y: auto;
+  }
+}
+
+/* Small Phones (< 480px, e.g. iPhone SE, iPhone standard, Android) */
+@media (max-width: 480px) {
+  .app-container {
+    padding-left: calc(10px + var(--safe-left));
+    padding-right: calc(10px + var(--safe-right));
+  }
+
+  .header-brand .logo-sparkle {
+    font-size: 20px;
+  }
+
+  .header-bri-pill {
+    display: none; /* Master brightness is available in the main Lighting tab */
+  }
+
+  .quick-profiles-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .palette-grid,
+  .effects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+    gap: 8px;
+  }
+
+  .color-slots-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .color-slot-pill {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .banner-input-row {
+    flex-direction: column;
+  }
+
+  .banner-input-row button {
+    width: 100%;
+  }
+
+  .oled-hero-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .oled-quick-actions {
+    width: 100%;
+  }
+
+  .oled-quick-actions button {
+    flex: 1;
+  }
+}
+
+/* ====================================================================
+   MODERN WATCH FACE CARDS & ALBUM ART CONTROLS
+   ==================================================================== */
+.watchface-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .watchface-selector-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.watchface-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.watchface-card:hover {
+  background: rgba(0, 242, 254, 0.05);
+  border-color: rgba(0, 242, 254, 0.3);
+  transform: translateY(-2px);
+}
+
+.watchface-card.active {
+  background: rgba(0, 242, 254, 0.1);
+  border-color: #00f2fe;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.2);
+}
+
+.watchface-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.watchface-icon {
+  font-size: 18px;
+}
+
+.watchface-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  flex: 1;
+}
+
+.watchface-badge {
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(0, 242, 254, 0.2);
+  color: #00f2fe;
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.watchface-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+.art-upload-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.art-upload-controls .btn-secondary {
+  flex: 1;
+  min-width: 140px;
+  padding: 9px 12px;
+  font-size: 12px;
+}
+
+/* ====================================================================
+   SECURE CONTEXT / LOCALHOST SCREEN CAPTURE BANNER
+   ==================================================================== */
+.secure-context-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(0, 242, 254, 0.12) 100%);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 242, 254, 0.1);
+}
+
+.secure-alert-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.secure-alert-content {
+  flex: 1;
+}
+
+.secure-alert-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.secure-alert-content p {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.secure-alert-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.secure-alert-actions .btn-prominent {
+  padding: 8px 14px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+/* Color Calibration & Hardware Order */
+.color-order-pills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.order-pill-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.order-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-indigo);
+}
+
+.order-pill-btn.active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: var(--accent-indigo);
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.35);
+}
+
+.order-pill-btn strong {
+  font-size: 15px;
+  color: #fff;
+}
+
+.order-pill-btn span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.test-colors-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.test-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  padding: 8px 16px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.test-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.test-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.wb-presets-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
 
 
 

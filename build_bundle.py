@@ -7,6 +7,8 @@ with open(os.path.join(root_dir, "index.html"), "r", encoding="utf-8") as f:
     html = f.read()
 with open(os.path.join(root_dir, "style.css"), "r", encoding="utf-8") as f:
     css = f.read()
+with open(os.path.join(root_dir, "qrcode.min.js"), "r", encoding="utf-8") as f:
+    qrcode_js = f.read()
 with open(os.path.join(root_dir, "main.js"), "r", encoding="utf-8") as f:
     js = f.read()
 
@@ -14,8 +16,8 @@ with open(os.path.join(root_dir, "main.js"), "r", encoding="utf-8") as f:
 html = html.replace("<link rel=\"stylesheet\" href=\"style.css\" />", f"<style>\n{css}\n</style>")
 html = html.replace("<link rel=\"stylesheet\" href=\"style.css\">", f"<style>\n{css}\n</style>")
 
-# Replace js script with inline script
-html = html.replace("<script type=\"module\" src=\"main.js\"></script>", f"<script>\n{js}\n</script>")
+# Replace js script with inline script (including offline qrcode.min.js)
+html = html.replace("<script type=\"module\" src=\"main.js\"></script>", f"<script>\n{qrcode_js}\n</script>\n<script>\n{js}\n</script>")
 
 dist_dir = os.path.join(root_dir, "dist")
 os.makedirs(dist_dir, exist_ok=True)

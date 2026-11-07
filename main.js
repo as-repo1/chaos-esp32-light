@@ -21,13 +21,23 @@ try {
   }
 } catch (e) {}
 
+let queryIp = '';
+try {
+  if (typeof window !== 'undefined' && window.location && window.location.search) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('ip')) queryIp = urlParams.get('ip');
+    else if (urlParams.has('target')) queryIp = urlParams.get('target');
+    else if (urlParams.has('wled')) queryIp = urlParams.get('wled');
+  }
+} catch (e) {}
+
 let initialIp = defaultTargetIp;
 try {
   const stored = localStorage.getItem('wled_ip');
-  initialIp = sanitizeIp(stored || detectedHost);
+  initialIp = sanitizeIp(queryIp || stored || detectedHost);
   localStorage.setItem('wled_ip', initialIp);
 } catch (e) {
-  initialIp = defaultTargetIp;
+  initialIp = queryIp || defaultTargetIp;
 }
 
 const APP_STATE = {
@@ -300,6 +310,9 @@ class WLEDClient {
       await this.fetchPresets();
       if (typeof oledStudio !== 'undefined' && oledStudio.fetchSettings) {
         oledStudio.fetchSettings();
+      }
+      if (typeof colorCalibrationStudio !== 'undefined' && colorCalibrationStudio.fetchSettings) {
+        colorCalibrationStudio.fetchSettings();
       }
     } catch (err) {
       console.warn('Failed to load initial WLED data via REST:', err);
@@ -1535,12 +1548,17 @@ class MovieSyncEngine {
 
   async start() {
     try {
-      if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
-        if (typeof window !== 'undefined' && window.location.hostname === '0.0.0.0') {
-          window.location.hostname = 'localhost';
-          return;
-        }
-        showToast('Screen capture requires http://localhost:8080 or HTTPS!');
+      const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      const isSecure = typeof window !== 'undefined' && (window.isSecureContext || isLocalhost);
+
+      if (!isSecure || !navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        const localUrl = `http://localhost:8080/?ip=${targetIp}&autostart=movie`;
+        showToast('Screen capture requires localhost. Redirecting to http://localhost:8080...', 4000);
+        setTimeout(() => {
+          const opened = window.open(localUrl, '_blank');
+          if (!opened) window.location.href = localUrl;
+        }, 500);
         return;
       }
       this.stream = await navigator.mediaDevices.getDisplayMedia({
@@ -2451,12 +2469,17 @@ class MusicSyncEngine {
 
   async start() {
     try {
-      if ((this.audioSourceType === 'mic' || this.audioSourceType === 'system') && (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function')) {
-        if (typeof window !== 'undefined' && window.location.hostname === '0.0.0.0') {
-          window.location.hostname = 'localhost';
-          return;
-        }
-        showToast('Microphone/audio capture requires http://localhost:8080 or HTTPS!');
+      const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      const isSecure = typeof window !== 'undefined' && (window.isSecureContext || isLocalhost);
+
+      if ((this.audioSourceType === 'mic' || this.audioSourceType === 'system') && (!isSecure || !navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function')) {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        const localUrl = `http://localhost:8080/?ip=${targetIp}&autostart=music`;
+        showToast('Microphone/System audio requires localhost. Redirecting to http://localhost:8080...', 4000);
+        setTimeout(() => {
+          const opened = window.open(localUrl, '_blank');
+          if (!opened) window.location.href = localUrl;
+        }, 500);
         return;
       }
       this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3776,6 +3799,7 @@ function initEventListeners() {
       btn.classList.add('active');
       const targetPanel = document.getElementById(btn.dataset.tab);
       if (targetPanel) targetPanel.classList.add('active');
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     });
   });
 
@@ -4579,7 +4603,8 @@ class OledStudioManager {
 
     // Hardware State Mirror
     this.state = {
-      mode: 0,        // 0: Music HUD, 1: Clock & Telemetry, 2: Spectrum 128px, 3: Ambient Mirror, 4: Banner
+      mode: 1,        // Default: 1 = Clock & Modern Watch Face (0: Music HUD, 2: Spectrum, 3: Ambient, 4: Banner)
+      face: 0,        // 0: Studio Minimalist, 1: Chronos Duo, 2: Bauhaus Typography, 3: Cyber Orbit HUD
       artPos: 0,      // 0: Left, 1: Right, 2: Hidden
       vis: 1,         // 0: Bars, 1: Wave (Default: Oscilloscope Sine Wave), 2: Peak Dots, 3: Off
       icon: true,
@@ -4589,9 +4614,11 @@ class OledStudioManager {
       inv: false,
       flip: false,
       pwr: true,
-      auto: false,
+      auto: true,     // Default: Smart Auto-Switching ENABLED (auto-shows Album Art & Music HUD when playing)
       text: "LumiOS Smart Desk"
     };
+
+    this.uploadedArtCanvas = null;
 
     // Live Media Cache from ESP32 /status or media sync daemon
     this.media = {
@@ -4725,6 +4752,117 @@ class OledStudioManager {
     document.getElementById('oledSaveSettingsBtn')?.addEventListener('click', () => {
       this.pushFullSettings();
     });
+
+    // Modern Watch Face Selector Cards
+    document.querySelectorAll('#oledWatchFaceGrid .watchface-card').forEach(card => {
+      card.addEventListener('click', () => {
+        this.setWatchFace(card.dataset.face);
+      });
+    });
+
+    // Album Art File Uploader & Dither Converter
+    const artFileInput = document.getElementById('oledArtFileInput');
+    document.getElementById('oledUploadArtBtn')?.addEventListener('click', () => {
+      artFileInput?.click();
+    });
+    artFileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) this.handleArtUpload(file);
+    });
+    document.getElementById('oledResetArtBtn')?.addEventListener('click', () => {
+      this.resetArtToDefault();
+    });
+  }
+
+  setWatchFace(face) {
+    this.state.face = parseInt(face, 10);
+    this.state.mode = 1; // Ensure clock mode is active
+    this.syncUI();
+    const faceNames = ["Studio Minimalist", "Chronos Duo Horology", "Bauhaus Typography", "Cyber Orbit HUD"];
+    showToast(`Watch Face: ${faceNames[this.state.face] || face}`);
+    this.sendUpdate({ mode: 1, face: this.state.face });
+  }
+
+  handleArtUpload(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      showToast('Please select a valid image file');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = 64;
+        c.height = 64;
+        const ctx = c.getContext('2d');
+        const minDim = Math.min(img.width, img.height);
+        const sx = (img.width - minDim) / 2;
+        const sy = (img.height - minDim) / 2;
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 64, 64);
+
+        const imgData = ctx.getImageData(0, 0, 64, 64);
+        const d = imgData.data;
+        const gray = new Float32Array(64 * 64);
+        for (let i = 0; i < 64 * 64; i++) {
+          const idx = i * 4;
+          gray[i] = 0.299 * d[idx] + 0.587 * d[idx + 1] + 0.114 * d[idx + 2];
+        }
+
+        const bytes = new Uint8Array(512);
+        for (let y = 0; y < 64; y++) {
+          for (let x = 0; x < 64; x++) {
+            const idx = y * 64 + x;
+            const oldVal = gray[idx];
+            const newVal = oldVal < 128 ? 0 : 255;
+            const err = oldVal - newVal;
+
+            if (x + 1 < 64) gray[idx + 1] += err * (7 / 16);
+            if (y + 1 < 64) {
+              if (x > 0) gray[(y + 1) * 64 + (x - 1)] += err * (3 / 16);
+              gray[(y + 1) * 64 + x] += err * (5 / 16);
+              if (x + 1 < 64) gray[(y + 1) * 64 + (x + 1)] += err * (1 / 16);
+            }
+
+            if (newVal > 128) {
+              const byteIdx = y * 8 + Math.floor(x / 8);
+              bytes[byteIdx] |= (1 << (x % 8));
+            }
+          }
+        }
+
+        let hex = '';
+        for (let b = 0; b < 512; b++) {
+          hex += bytes[b].toString(16).padStart(2, '0');
+        }
+
+        this.uploadedArtCanvas = c;
+        this.media.hasArt = true;
+        this.syncUI();
+
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        showToast('Uploading 64×64 Album Art to ESP32...');
+        fetch(`http://${targetIp}/art`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: hex
+        }).then(res => {
+          if (res.ok) showToast('64×64 Album Art Uploaded Successfully!');
+          else showToast('Art applied to display preview');
+        }).catch(() => {
+          showToast('Art cached in Web Studio');
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  resetArtToDefault() {
+    this.uploadedArtCanvas = null;
+    this.media.hasArt = false;
+    this.syncUI();
+    showToast('Album Artwork reset to Default Vinyl Record');
   }
 
   setMode(mode) {
@@ -4817,9 +4955,17 @@ class OledStudioManager {
 
     // Sub-customizer visibility
     const musicCust = document.getElementById('oledMusicCustomizer');
+    const clockCust = document.getElementById('oledClockCustomizer');
     const bannerCust = document.getElementById('oledBannerCustomizer');
     if (musicCust) musicCust.classList.toggle('hide', this.state.mode !== 0);
+    if (clockCust) clockCust.classList.toggle('hide', this.state.mode !== 1);
     if (bannerCust) bannerCust.classList.toggle('hide', this.state.mode !== 4);
+
+    // Watch Face Cards
+    document.querySelectorAll('#oledWatchFaceGrid .watchface-card').forEach(card => {
+      const f = parseInt(card.dataset.face, 10);
+      card.classList.toggle('active', f === (this.state.face || 0));
+    });
 
     // Art position chips
     document.querySelectorAll('#oledArtPosChips .chip-sub-btn').forEach(btn => {
@@ -4946,6 +5092,10 @@ class OledStudioManager {
             this.state.mode = data.oled_mode;
             this.syncUI();
           }
+          if (data.oled_face !== undefined && this.state.face !== data.oled_face) {
+            this.state.face = data.oled_face;
+            this.syncUI();
+          }
           if (data.oled_bri !== undefined && Math.abs(this.state.bri - data.oled_bri) > 2) {
             this.state.bri = data.oled_bri;
             this.syncUI();
@@ -5018,7 +5168,7 @@ class OledStudioManager {
 
     let activeMode = this.state.mode;
     if (this.state.auto) {
-      activeMode = this.media.playing ? 0 : 1;
+      activeMode = this.media.playing ? 0 : this.state.mode;
     }
 
     ctx.fillStyle = '#00f2fe';
@@ -5053,7 +5203,11 @@ class OledStudioManager {
 
     // CASE A: Album Art Left (Maximized 64x64)
     if (artPos === 0) {
-      this.drawVinylDisc(ctx, 32, 32, 28, this.vinylAngle);
+      if (this.uploadedArtCanvas && this.media.hasArt) {
+        ctx.drawImage(this.uploadedArtCanvas, 0, 0, 64, 64);
+      } else {
+        this.drawVinylDisc(ctx, 32, 32, 28, this.vinylAngle);
+      }
       if (showDiv) {
         this.drawDottedVLine(ctx, 64, 0, 64);
       }
@@ -5065,7 +5219,11 @@ class OledStudioManager {
       if (showDiv) {
         this.drawDottedVLine(ctx, 63, 0, 64);
       }
-      this.drawVinylDisc(ctx, 96, 32, 28, this.vinylAngle);
+      if (this.uploadedArtCanvas && this.media.hasArt) {
+        ctx.drawImage(this.uploadedArtCanvas, 64, 0, 64, 64);
+      } else {
+        this.drawVinylDisc(ctx, 96, 32, 28, this.vinylAngle);
+      }
     }
     // CASE C: Album Art Hidden (Full Width 128px)
     else {
@@ -5320,45 +5478,249 @@ class OledStudioManager {
   }
 
   renderClockTelemetryHUD(ctx) {
+    switch (this.state.face) {
+      case 1:
+        this.renderWatchFaceChronos(ctx);
+        break;
+      case 2:
+        this.renderWatchFaceBauhaus(ctx);
+        break;
+      case 3:
+        this.renderWatchFaceCyberHUD(ctx);
+        break;
+      case 0:
+      default:
+        this.renderWatchFaceStudio(ctx);
+        break;
+    }
+  }
+
+  getClockTimeComponents() {
+    const now = new Date();
+    const hr = now.getHours();
+    const mn = now.getMinutes();
+    const sc = now.getSeconds();
+    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const dayStr = days[now.getDay()];
+    const monStr = months[now.getMonth()];
+    const dateNum = String(now.getDate()).padStart(2, '0');
+    const hrStr = String(hr).padStart(2, '0');
+    const mnStr = String(mn).padStart(2, '0');
+    const scStr = String(sc).padStart(2, '0');
+    return {
+      hr, mn, sc,
+      timeStr: `${hrStr}:${mnStr}`,
+      secStr: scStr,
+      fullTimeStr: `${hrStr}:${mnStr}:${scStr}`,
+      dateStr: `${dayStr}, ${dateNum} ${monStr}`,
+      dayStr,
+      monStr,
+      fullDateStr: `${dateNum}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`
+    };
+  }
+
+  renderWatchFaceStudio(ctx) {
+    const t = this.getClockTimeComponents();
     ctx.textAlign = 'left';
     ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
 
-    // Top Header: Wi-Fi & RSSI
+    // Top status bar
     ctx.font = '6px monospace';
-    ctx.fillText("WIFI: " + (this.telemetry.ssid || "ichaos"), 2, 7);
+    ctx.fillText("WIFI 94%", 2, 7);
     ctx.textAlign = 'right';
-    const rssiVal = this.telemetry.rssi || -55;
-    ctx.fillText(`${rssiVal}dBm [${Math.min(100, Math.max(0, Math.round((rssiVal + 90) * 2)))}%]`, 126, 7);
-    ctx.textAlign = 'left';
-    ctx.fillRect(0, 9, 128, 1);
+    ctx.fillText(`DESK: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 126, 7);
+    ctx.fillRect(0, 8, 128, 1);
 
-    // Big Minimalist 24h Clock in center (HH:MM:SS) with live ticking seconds
-    const now = new Date();
-    const hr = String(now.getHours()).padStart(2, '0');
-    const mn = String(now.getMinutes()).padStart(2, '0');
-    const sc = String(now.getSeconds()).padStart(2, '0');
-    const timeStr = `${hr}:${mn}:${sc}`;
-
-    ctx.font = 'bold 15px monospace';
+    // Large Condensed Modern Numerals
+    ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(timeStr, 64, 28);
+    ctx.fillText(t.timeStr, 54, 34);
+
+    // Superscript seconds
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.secStr, 92, 23);
+    ctx.beginPath();
+    ctx.arc(98, 30, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 60-Second Timeline Track
+    ctx.fillRect(16, 42, 96, 1);
+    const secFill = (t.sc * 96) / 60;
+    if (secFill > 0) ctx.fillRect(16, 41, secFill, 3);
+    ctx.beginPath();
+    ctx.arc(16 + secFill, 42, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Date
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(t.dateStr, 64, 55);
+
+    // Telemetry footer
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${this.telemetry.temp}°C`, 2, 63);
+    ctx.textAlign = 'right';
+    ctx.fillText(this.telemetry.uptime, 126, 63);
+  }
+
+  renderWatchFaceChronos(ctx) {
+    const t = this.getClockTimeComponents();
+    const cx = 31, cy = 31, r = 28;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Dial ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 12 ticks
+    ctx.fillRect(cx - 0.5, cy - r + 2, 1, 3);
+    ctx.fillRect(cx - 0.5, cy + r - 5, 1, 3);
+    ctx.fillRect(cx + r - 5, cy - 0.5, 3, 1);
+    ctx.fillRect(cx - r + 2, cy - 0.5, 3, 1);
+
+    // Hour hand
+    const hAngle = (t.hr % 12 + t.mn / 60) * 30 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(hAngle) * 14, cy + Math.sin(hAngle) * 14);
+    ctx.stroke();
+
+    // Minute hand
+    const mAngle = (t.mn + t.sc / 60) * 6 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(mAngle) * 22, cy + Math.sin(mAngle) * 22);
+    ctx.stroke();
+
+    // Second pip
+    const sAngle = t.sc * 6 * (Math.PI / 180) - Math.PI / 2;
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(sAngle) * 23, cy + Math.sin(sAngle) * 23, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Center pivot
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dashed divider
+    for (let y = 2; y < 62; y += 3) ctx.fillRect(64, y, 1, 1);
+
+    // Right digital stack
+    ctx.fillRect(68, 4, 56, 12);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${t.dayStr} ${t.secStr}`, 96, 13);
+
+    ctx.fillStyle = '#00f2fe';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.timeStr, 69, 32);
+
+    ctx.font = '8px monospace';
+    ctx.fillText(`:${t.secStr} ${t.monStr}`, 69, 44);
+    ctx.fillRect(68, 48, 56, 1);
 
     ctx.font = '6px monospace';
-    ctx.fillText("DESK TELEMETRY", 64, 38);
+    ctx.fillText(`TMP ${this.telemetry.temp}°C`, 69, 56);
+    ctx.fillText(`DESK ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 69, 63);
+  }
 
-    // Mid Row: Uptime & Temperature
+  renderWatchFaceBauhaus(ctx) {
+    const t = this.getClockTimeComponents();
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Left giant numerals
+    ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText("UPTIME: " + this.telemetry.uptime, 4, 46);
-    ctx.textAlign = 'right';
-    ctx.fillText(`TEMP: ${this.telemetry.temp}°C`, 124, 46);
+    const hrStr = String(t.hr).padStart(2, '0');
+    const mnStr = String(t.mn).padStart(2, '0');
+    ctx.fillText(hrStr, 4, 26);
+    ctx.fillText(mnStr, 4, 56);
 
-    ctx.fillRect(0, 49, 128, 1);
+    // Vertical rule
+    ctx.fillRect(48, 3, 2, 58);
 
-    // Bottom Row: Free Heap & Light
+    // Inverted day badge
+    ctx.fillRect(54, 4, 70, 13);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`• ${t.dayStr} •`, 89, 14);
+
+    ctx.fillStyle = '#00f2fe';
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText(t.fullDateStr, 89, 29);
+
+    // Seconds bar
+    ctx.strokeRect(54, 35, 70, 7);
+    const sW = (t.sc * 66) / 60;
+    if (sW > 0) ctx.fillRect(56, 37, sW, 3);
+
+    ctx.font = '6px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`HEAP: ${this.telemetry.heap}KB`, 4, 59);
+    ctx.fillText(`SECOND ${t.secStr}/60`, 54, 51);
+    ctx.fillText(`LIGHT ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 54, 61);
     ctx.textAlign = 'right';
-    ctx.fillText(`LIGHT: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 124, 59);
+    ctx.fillText(`${this.telemetry.temp}°C`, 124, 61);
+  }
+
+  renderWatchFaceCyberHUD(ctx) {
+    const t = this.getClockTimeComponents();
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // 4 tactical brackets
+    ctx.fillRect(0, 0, 8, 1);
+    ctx.fillRect(0, 0, 1, 8);
+    ctx.fillRect(120, 0, 8, 1);
+    ctx.fillRect(127, 0, 1, 8);
+    ctx.fillRect(0, 63, 8, 1);
+    ctx.fillRect(0, 56, 1, 8);
+    ctx.fillRect(120, 63, 8, 1);
+    ctx.fillRect(127, 56, 1, 8);
+
+    // Header
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText("SYS:ONLINE", 12, 6);
+    ctx.textAlign = 'right';
+    ctx.fillText("WIFI:94%", 116, 6);
+
+    // Center framed viewport
+    ctx.strokeRect(10, 10, 108, 28);
+    ctx.strokeRect(12, 12, 104, 24);
+
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(t.fullTimeStr, 64, 28);
+
+    // Dual meters
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText("RAM", 10, 45);
+    ctx.strokeRect(28, 41, 40, 5);
+    ctx.fillRect(29, 42, 28, 3);
+
+    ctx.fillText("TMP", 72, 45);
+    ctx.strokeRect(90, 41, 28, 5);
+    ctx.fillRect(91, 42, 18, 3);
+
+    ctx.fillRect(10, 50, 108, 1);
+    ctx.fillText(t.dateStr, 12, 59);
+    ctx.textAlign = 'right';
+    ctx.fillText(`LED: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 116, 59);
   }
 
   renderFullSpectrumHUD(ctx) {
@@ -5518,11 +5880,148 @@ class OledStudioManager {
 
 const oledStudio = new OledStudioManager();
 
+// ====================================================================
+// Hardware LED Calibration & Color Order Studio
+// ====================================================================
+const colorCalibrationStudio = {
+  currentOrder: 'GRB',
+  calibG: 195,
+
+  init() {
+    this.bindEvents();
+    this.fetchSettings();
+  },
+
+  async fetchSettings() {
+    try {
+      const res = await fetch(`http://${APP_STATE.ip}/status`, { signal: AbortSignal.timeout(2500) });
+      const data = await res.json();
+      if (data.order) {
+        this.currentOrder = data.order.toUpperCase();
+        this.updateOrderUI(this.currentOrder);
+      }
+      if (data.calib_g !== undefined) {
+        this.calibG = data.calib_g;
+        this.updateCalibGUI(this.calibG);
+      }
+    } catch (e) {
+      console.warn('Could not fetch hardware calibration status:', e);
+    }
+  },
+
+  updateOrderUI(order) {
+    this.currentOrder = order;
+    document.querySelectorAll('#colorOrderSelector .order-pill-btn').forEach(btn => {
+      if (btn.dataset.order === order) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  },
+
+  updateCalibGUI(val) {
+    this.calibG = val;
+    const slider = document.getElementById('sliderCalibG');
+    const label = document.getElementById('calibGValueText');
+    if (slider) slider.value = val;
+    if (label) {
+      const pct = Math.round((val / 255) * 100);
+      if (val >= 250) {
+        label.textContent = `${pct}% (Raw 1:1 Unfiltered)`;
+      } else if (val <= 165) {
+        label.textContent = `${pct}% (Warm Candle 3200K)`;
+      } else {
+        label.textContent = `${pct}% (Anti-Green SMD5050)`;
+      }
+    }
+
+    document.querySelectorAll('.wb-presets-row button').forEach(btn => {
+      const s = parseInt(btn.dataset.scale, 10);
+      if (Math.abs(s - val) <= 5) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  },
+
+  bindEvents() {
+    // 1. Color Order Buttons
+    document.querySelectorAll('#colorOrderSelector .order-pill-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ord = btn.dataset.order;
+        this.updateOrderUI(ord);
+        try {
+          await fetch(`http://${APP_STATE.ip}/set?order=${ord}`);
+          showToast(`Color Order set to ${ord}`);
+        } catch (e) {
+          showToast(`Failed to set color order: ${e.message}`, 2500);
+        }
+      });
+    });
+
+    // 2. Hardware Test Buttons
+    const testButtons = [
+      { id: 'btnTestRed', r: 255, g: 0, b: 0, name: 'Red' },
+      { id: 'btnTestGreen', r: 0, g: 255, b: 0, name: 'Green' },
+      { id: 'btnTestBlue', r: 0, g: 0, b: 255, name: 'Blue' },
+      { id: 'btnTestWhite', r: 255, g: 255, b: 255, name: 'White' }
+    ];
+
+    testButtons.forEach(t => {
+      document.getElementById(t.id)?.addEventListener('click', async () => {
+        try {
+          await fetch(`http://${APP_STATE.ip}/set?r=${t.r}&g=${t.g}&b=${t.b}&fx=0`);
+          APP_STATE.power = true;
+          updatePowerUI(true);
+          showToast(`Testing ${t.name}: LED strip should be ${t.name}!`);
+        } catch (e) {
+          showToast(`Test error: ${e.message}`);
+        }
+      });
+    });
+
+    // 3. Green Balance Slider
+    const sliderG = document.getElementById('sliderCalibG');
+    if (sliderG) {
+      sliderG.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        this.updateCalibGUI(val);
+      });
+      sliderG.addEventListener('change', async (e) => {
+        const val = parseInt(e.target.value, 10);
+        try {
+          await fetch(`http://${APP_STATE.ip}/set?calib_g=${val}`);
+          showToast(`Green Balance: ${Math.round((val / 255) * 100)}%`);
+        } catch (e) {
+          showToast(`Calibration error: ${e.message}`);
+        }
+      });
+    }
+
+    // 4. White Balance Presets
+    document.querySelectorAll('.wb-presets-row button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const scale = parseInt(btn.dataset.scale, 10);
+        this.updateCalibGUI(scale);
+        try {
+          await fetch(`http://${APP_STATE.ip}/set?calib_g=${scale}`);
+          showToast(`Anti-Green Filter: ${btn.textContent.trim()}`);
+        } catch (e) {
+          showToast(`Preset error: ${e.message}`);
+        }
+      });
+    });
+  }
+};
+
 // Window globals for debugging & synchronization
 window._wled = wled;
 window._movieSync = movieSync;
 window._musicSync = musicSync;
 window._oledStudio = oledStudio;
+window._colorCalib = colorCalibrationStudio;
 window.setAmbilightMode = (m) => movieSync.setMode(m);
 
 function bootApp() {
@@ -5539,8 +6038,42 @@ function bootApp() {
   try { initPinnedScenes(); } catch (e) { console.error('initPinnedScenes error:', e); }
   try { initPortalTheme(); } catch (e) { console.error('initPortalTheme error:', e); }
   try { oledStudio.init(); } catch (e) { console.error('oledStudio init error:', e); }
+  try { colorCalibrationStudio.init(); } catch (e) { console.error('colorCalibrationStudio init error:', e); }
   try { wled.connect(); } catch (e) { console.error('wled connect error:', e); }
   try { wled.fetchInitialData(); } catch (e) { console.error('wled fetchInitialData error:', e); }
+
+  // Localhost Secure Context check for Screen Capture & Audio
+  try {
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const isSecure = typeof window !== 'undefined' && (window.isSecureContext || isLocal);
+    const alertEl = document.getElementById('screencapLocalhostAlert');
+    if (alertEl) {
+      if (!isSecure) {
+        alertEl.classList.remove('hide');
+        const link = document.getElementById('btnOpenLocalhostStudio');
+        if (link) link.href = `http://localhost:8080/?ip=${APP_STATE.ip}&autostart=movie`;
+      } else {
+        alertEl.classList.add('hide');
+      }
+    }
+  } catch (e) {}
+
+  // Handle URL query autostart parameter (?autostart=movie or ?autostart=music)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const autostart = urlParams.get('autostart');
+    if (autostart === 'movie') {
+      setTimeout(() => {
+        document.getElementById('tabBtnMovie')?.click();
+        movieSync.start();
+      }, 700);
+    } else if (autostart === 'music') {
+      setTimeout(() => {
+        document.getElementById('tabBtnMusic')?.click();
+        musicSync.start();
+      }, 700);
+    }
+  } catch (e) {}
 }
 
 if (document.readyState === 'loading') {
