@@ -94,13 +94,25 @@ This guide provides exhaustive schematics, electrical calculations, logic level 
 | Peripheral | ESP32-S3 Pin | Hardware Signal | Electrical Characteristic |
 | :--- | :--- | :--- | :--- |
 | **WS2812B Data** | **GPIO 1** | Single-wire NRZ | 800 kHz, 40mA push-pull (`GPIO_DRIVE_CAP_3`) |
-| **Rotary CLK** | **GPIO 4** | Quadrature Phase A | Falling edge interrupt, 8ms refractory debounce |
-| **Rotary DT** | **GPIO 5** | Quadrature Phase B | Sampled on CLK edge for direction |
-| **Rotary SW** | **GPIO 7** | Tactile Push Switch | Active LOW (`INPUT_PULLUP`), Single/Double/Long-press |
+| **Single Multi-Function Button** | **GPIO 7** (or GPIO 4 / GPIO 0 BOOT) | Tactile Push Switch | Active LOW (`INPUT_PULLUP`), Single/Double/Triple/Quad/Hold |
 | **OLED SCL** | **GPIO 6** | I2C Clock | 400 kHz Fast-Mode Hardware I2C |
 | **OLED SDA** | **GPIO 8** | I2C Data | 400 kHz Fast-Mode Hardware I2C |
 | **System Power** | **5V / VIN & 3V3** | DC Power Rails | 5.0V for high current, 3.3V for logic pullups |
-| **Ground** | **GND** | 0V Reference | Common Ground across ESP32, LEDs, OLED, and HW-040 |
+| **Ground** | **GND** | 0V Reference | Common Ground across ESP32, LEDs, OLED, and Button |
+
+---
+
+### Single Button Operation Gestures
+
+| Gesture | Action | OSD Feedback | Notes |
+| :--- | :--- | :--- | :--- |
+| **1 Click** | **Power ON / OFF** | `LIGHT: ON` / `LIGHT: OFF` | Toggles desk light strip power. (Or BLE Play/Pause in Bluetooth mode) |
+| **2 Clicks** | **Next Lighting Effect** | `FX: <Effect Name>` | Cycles through all 10 presets (Rainbow, Matrix, Comet, Fire, etc.) |
+| **3 Clicks** | **Next Watch Face** | `FACE: <Face Name>` | Cycles through all 7 watch faces (Studio, Chronos, Bauhaus, CyberHUD, etc.) |
+| **4 Clicks** | **Next OLED Mode** | `OLED: <Mode Name>` | Cycles display modes (Music HUD, Clock, 128px Spectrum, Ambient Bar, Banner) |
+| **Hold (> 500ms)** | **Smooth Brightness Ramp** | `BRI: XX%` | Smoothly dims or brightens every 130ms. Reverses direction on next hold. |
+| **Hold (> 3.0s)** | **Toggle Dial Mode** | `MODE: BLUETOOTH` / `LIGHTS` | Toggles between Bluetooth Media Dial and Desk Lights control. |
+| **5+ Clicks** | **Quick Reset** | `FX: RAINBOW RESET` | Restores default Rainbow Wave animation at 100% brightness. |
 
 ---
 
