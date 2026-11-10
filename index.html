@@ -1354,6 +1354,30 @@
                     </div>
                     <p class="watchface-desc">Sci-Fi workstation terminal: tactical corner brackets, framed digital readout, dual RAM/Temp meters, and telemetry.</p>
                   </div>
+                  <div class="watchface-card" data-face="4">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">🌅</span>
+                      <span class="watchface-name">Neo Horizon</span>
+                      <span class="watchface-badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4);">New</span>
+                    </div>
+                    <p class="watchface-desc">Modern high-contrast typography, 24-hr diurnal day progression horizon track, day badge, and live telemetry.</p>
+                  </div>
+                  <div class="watchface-card" data-face="5">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">🛩️</span>
+                      <span class="watchface-name">Aviator Pilot</span>
+                      <span class="watchface-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">New</span>
+                    </div>
+                    <p class="watchface-desc">Flieger cockpit dial: dual chapter rings, aviator 12 o'clock triangle, sweeping second hand, and avionics telemetry HUD.</p>
+                  </div>
+                  <div class="watchface-card" data-face="6">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">⚡</span>
+                      <span class="watchface-name">Neo-Tokyo</span>
+                      <span class="watchface-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">New</span>
+                    </div>
+                    <p class="watchface-desc">Tactical Japanese cyber wristwatch: chamfered bezel, 10-tick decade second pulse meter, and data matrix.</p>
+                  </div>
                 </div>
               </div>
 
@@ -1766,6 +1790,136 @@
                   <a href="http://10.142.252.233/settings/wifi" target="_blank" class="glass-btn btn-small" id="btnNativeWifiSettings">Firmware Wi-Fi Page</a>
                 </div>
                 <p class="setting-hint" id="wifiSaveFeedback">Default credentials set to pk / 00000000.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           TAB: QR CONNECT & SMARTPHONE PORTAL
+           ======================================================== -->
+      <section class="tab-panel" id="tabQr">
+        <div class="qr-container">
+          
+          <!-- Top Hero Card -->
+          <div class="glass-card qr-hero-card">
+            <div class="card-header">
+              <div class="title-with-badge">
+                <h2>📱 Smartphone Studio & QR Connect</h2>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Touch Optimized</span>
+              </div>
+              <p class="card-subtitle">Scan directly from this screen or mirror the QR code onto your 1.3" OLED display for one-tap mobile control and instant Wi-Fi joining.</p>
+            </div>
+          </div>
+
+          <div class="qr-cards-grid">
+            
+            <!-- Card 1: Web Portal QR -->
+            <div class="glass-card qr-card">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h3>🌐 Open Web Studio on Mobile</h3>
+                  <span class="badge" id="qrWebIpBadge">10.142.252.233</span>
+                </div>
+                <span class="card-subtitle">Scan with iOS Camera or Android Chrome/Lens</span>
+              </div>
+
+              <div class="qr-visual-wrapper">
+                <div class="qr-code-frame" id="qrWebCanvasContainer"></div>
+                <div class="qr-url-box">
+                  <span class="qr-url-label">DIRECT PORTAL URL</span>
+                  <a href="#" class="qr-url-link" id="qrWebDirectLink" target="_blank">http://10.142.252.233/</a>
+                  <button class="glass-btn btn-small copy-btn" id="btnCopyWebUrl">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>Copy URL</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="qr-action-footer">
+                <button class="glass-btn btn-prominent oled-push-btn" id="btnPushWebQrToOled">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <span>📺 Show Web QR on OLED</span>
+                </button>
+                <p class="setting-hint">Pushes the Web Portal QR code to your desk OLED screen so you can connect your phone anytime without opening the laptop.</p>
+              </div>
+            </div>
+
+            <!-- Card 2: Wi-Fi Setup QR -->
+            <div class="glass-card qr-card">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h3>📶 Instant Wi-Fi Quick-Join</h3>
+                  <span class="badge" id="qrWifiSsidBadge">SSID: v20p</span>
+                </div>
+                <span class="card-subtitle">Connect phone to Wi-Fi with 0 typing</span>
+              </div>
+
+              <div class="qr-visual-wrapper">
+                <div class="qr-code-frame" id="qrWifiCanvasContainer"></div>
+                <div class="qr-url-box">
+                  <span class="qr-url-label">NETWORK CREDENTIALS</span>
+                  <div class="qr-cred-row">
+                    <span class="cred-label">SSID:</span>
+                    <strong class="cred-val" id="qrWifiSsidText">v20p</strong>
+                  </div>
+                  <div class="qr-cred-row">
+                    <span class="cred-label">Password:</span>
+                    <strong class="cred-val" id="qrWifiPassText">honululu</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="qr-action-footer">
+                <button class="glass-btn btn-prominent oled-push-btn" id="btnPushWifiQrToOled">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <span>📺 Show Wi-Fi QR on OLED</span>
+                </button>
+                <p class="setting-hint">Displays Wi-Fi pairing QR code on the OLED. Guests or friends can scan the OLED to join your network in 1 second.</p>
+              </div>
+            </div>
+
+            <!-- Card 3: Mobile Experience & Smartphone Tips -->
+            <div class="glass-card mobile-features-card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h3>✨ Smartphone Progressive Web App (PWA) Features</h3>
+                  <span class="badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">Mobile Native</span>
+                </div>
+                <span class="card-subtitle">How to get the ultimate full-screen app experience on your iPhone or Android</span>
+              </div>
+
+              <div class="mobile-tips-grid">
+                <div class="tip-card">
+                  <div class="tip-icon">🍏</div>
+                  <div class="tip-content">
+                    <strong>iPhone Safari: Add to Home Screen</strong>
+                    <p>Tap the <strong>Share</strong> button (box with upward arrow) in Safari, then tap <strong>"Add to Home Screen"</strong>. It launches in standalone full-screen mode without browser bars!</p>
+                  </div>
+                </div>
+                <div class="tip-card">
+                  <div class="tip-icon">🤖</div>
+                  <div class="tip-content">
+                    <strong>Android Chrome: Install App</strong>
+                    <p>Tap the <strong>⋮ (three dots)</strong> menu in Chrome, then select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong> for instant home-screen launch with haptic touch.</p>
+                  </div>
+                </div>
+                <div class="tip-card">
+                  <div class="tip-icon">🖐️</div>
+                  <div class="tip-content">
+                    <strong>Thumb-Friendly Touch Navigation</strong>
+                    <p>Use the floating bottom navigation bar to switch between Lighting, Music, Movie, and OLED HUD with one hand.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick return button -->
+              <div style="margin-top: 14px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="glass-btn btn-small" id="btnReturnToWatchFace">
+                  <span>⌚ Return OLED to Watch Face</span>
+                </button>
               </div>
             </div>
 

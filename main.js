@@ -191,6 +191,7 @@ function samplePalette(paletteName, pos) {
   ];
 }
 
+
 // ====================================================================
 // WLED Communication Layer (WebSocket + REST fallback)
 // ====================================================================
@@ -597,6 +598,7 @@ class WLEDClient {
 
 const wled = new WLEDClient(APP_STATE.ip);
 
+
 // ====================================================================
 // Interactive Canvas Color Wheel
 // ====================================================================
@@ -715,6 +717,7 @@ class CanvasColorWheel {
 
 const colorWheel = new CanvasColorWheel('colorWheelCanvas');
 
+
 // ====================================================================
 // Virtual LED Strip Visualizer Canvas
 // ====================================================================
@@ -789,6 +792,7 @@ class VirtualStripVisualizer {
 }
 
 const virtualStrip = new VirtualStripVisualizer('virtualStripCanvas', APP_STATE.ledCount);
+
 
 // ====================================================================
 // Movie / Screen Sync Engine (Next-Gen Multi-Zone Ambilight)
@@ -2380,6 +2384,7 @@ class MovieSyncEngine {
 
 const movieSync = new MovieSyncEngine();
 
+
 // ====================================================================
 // Advanced Music Reactive Sync Engine (FFT & Spectrum Color Mapping)
 // ====================================================================
@@ -3128,6 +3133,7 @@ class MusicSyncEngine {
 }
 
 const musicSync = new MusicSyncEngine();
+
 
 // ====================================================================
 // UI Helpers & Event Listeners
@@ -4580,6 +4586,7 @@ function initPortalTheme() {
   });
 }
 
+
 // ====================================================================
 // TAB: OLED HARDWARE HUD & DISPLAY STUDIO CONTROLLER
 // ====================================================================
@@ -4778,7 +4785,15 @@ class OledStudioManager {
     this.state.face = parseInt(face, 10);
     this.state.mode = 1; // Ensure clock mode is active
     this.syncUI();
-    const faceNames = ["Studio Minimalist", "Chronos Duo Horology", "Bauhaus Typography", "Cyber Orbit HUD"];
+    const faceNames = [
+      "Studio Minimalist",
+      "Chronos Duo Horology",
+      "Bauhaus Swiss Typography",
+      "Cyber Orbit HUD",
+      "Neo Horizon Diurnal",
+      "Aviator Flieger Pilot",
+      "Neo-Tokyo Cyber Matrix"
+    ];
     showToast(`Watch Face: ${faceNames[this.state.face] || face}`);
     this.sendUpdate({ mode: 1, face: this.state.face });
   }
@@ -4868,7 +4883,15 @@ class OledStudioManager {
   setMode(mode) {
     this.state.mode = mode;
     this.syncUI();
-    const modeNames = ["Now Playing Music HUD", "Digital Clock & Telemetry", "128px Audio Spectrum", "Ambient Lightbar Mirror", "Cyberpunk Banner Ticker"];
+    const modeNames = [
+      "Now Playing Music HUD",
+      "Digital Clock & Telemetry",
+      "128px Audio Spectrum",
+      "Ambient Lightbar Mirror",
+      "Cyberpunk Banner Ticker",
+      "Web Studio Mobile QR Code",
+      "Wi-Fi Quick-Connect QR Code"
+    ];
     showToast(`OLED Mode: ${modeNames[mode] || mode}`);
     this.sendUpdate({ mode: this.state.mode });
   }
@@ -4949,7 +4972,7 @@ class OledStudioManager {
     // Navigation tab badge
     const badge = document.getElementById('oledModeBadge');
     if (badge) {
-      const labels = ["HUD", "CLOCK", "SPECTRUM", "AMBIENT", "BANNER"];
+      const labels = ["HUD", "CLOCK", "SPECTRUM", "AMBIENT", "BANNER", "QR WEB", "QR WIFI"];
       badge.textContent = labels[this.state.mode] || "OLED";
     }
 
@@ -5167,7 +5190,7 @@ class OledStudioManager {
     }
 
     let activeMode = this.state.mode;
-    if (this.state.auto) {
+    if (this.state.auto && this.state.mode !== 5 && this.state.mode !== 6) {
       activeMode = this.media.playing ? 0 : this.state.mode;
     }
 
@@ -5187,11 +5210,90 @@ class OledStudioManager {
       case 4:
         this.renderCustomBannerHUD(ctx);
         break;
+      case 5:
+        this.renderQRCodeScreenSim(ctx, false);
+        break;
+      case 6:
+        this.renderQRCodeScreenSim(ctx, true);
+        break;
       case 0:
       default:
         this.renderMusicPlayerHUD(ctx);
         break;
     }
+  }
+
+  renderQRCodeScreenSim(ctx, isWifi) {
+    // Clear display buffer with OLED deep black
+    ctx.fillStyle = '#010409';
+    ctx.fillRect(0, 0, 128, 64);
+
+    // Draw crisp white backing box for QR code on left (x=3..57, y=5..59)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(3, 5, 54, 54);
+
+    // Render simulated QR modules inside the box
+    ctx.fillStyle = '#000000';
+    // Position detection patterns (top-left, top-right, bottom-left)
+    const drawFinder = (fx, fy) => {
+      ctx.fillRect(fx, fy, 14, 14);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(fx + 2, fy + 2, 10, 10);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(fx + 4, fy + 4, 6, 6);
+    };
+    drawFinder(6, 8);
+    drawFinder(39, 8);
+    drawFinder(6, 41);
+
+    // Deterministic pseudo-QR pattern
+    const seed = isWifi ? 0xbeef : 0xcafe;
+    for (let qy = 0; qy < 23; qy++) {
+      for (let qx = 0; qx < 23; qx++) {
+        // Skip finder zones
+        if ((qx < 8 && qy < 8) || (qx > 14 && qy < 8) || (qx < 8 && qy > 14)) continue;
+        const v = ((qx * 37 + qy * 19 + seed) ^ (qx * qy)) % 7;
+        if (v < 3) {
+          ctx.fillRect(6 + qx * 2, 8 + qy * 2, 2, 2);
+        }
+      }
+    }
+
+    // Right Side HUD (x=64..127)
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Header Pill
+    ctx.strokeRect(64, 4, 60, 12);
+    ctx.font = 'bold 7px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(isWifi ? "WIFI JOIN" : "WEB LINK", 94, 13);
+
+    // Content details
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    if (isWifi) {
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText("SSID: v20p", 64, 26);
+      ctx.fillText("PASS: honululu", 64, 36);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText("WPA2 AUTO", 64, 46);
+    } else {
+      const ipStr = APP_STATE.ip || "10.142.252.233";
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText("IP ADDR:", 64, 25);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 7px monospace';
+      ctx.fillText(ipStr, 64, 35);
+      ctx.font = '6px monospace';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText("PORT: 80 / HTTP", 64, 45);
+    }
+
+    // Exit prompt footer
+    ctx.fillStyle = '#64748b';
+    ctx.font = '6px monospace';
+    ctx.fillText("TAP BTN: EXIT", 64, 57);
   }
 
   renderMusicPlayerHUD(ctx) {
@@ -5488,6 +5590,15 @@ class OledStudioManager {
       case 3:
         this.renderWatchFaceCyberHUD(ctx);
         break;
+      case 4:
+        this.renderWatchFaceNeoHorizon(ctx);
+        break;
+      case 5:
+        this.renderWatchFaceAviator(ctx);
+        break;
+      case 6:
+        this.renderWatchFaceNeoTokyo(ctx);
+        break;
       case 0:
       default:
         this.renderWatchFaceStudio(ctx);
@@ -5723,6 +5834,225 @@ class OledStudioManager {
     ctx.fillText(`LED: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 116, 59);
   }
 
+  renderWatchFaceNeoHorizon(ctx) {
+    const t = this.getClockTimeComponents();
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Top Status Bar: Day Badge + Full Date + Lighting
+    ctx.fillRect(2, 1, 30, 9);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 7px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(t.dayStr, 17, 8);
+    ctx.fillStyle = '#00f2fe';
+
+    ctx.font = '7px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.fullDateStr, 36, 8);
+
+    ctx.textAlign = 'right';
+    ctx.fillText(`LED ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 126, 8);
+
+    // Horizon line
+    ctx.fillRect(2, 11, 124, 1);
+
+    // Center Big Numerals
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.timeStr, 4, 34);
+
+    // Stacked Seconds & 24H Indicator
+    const rightX = 82;
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(t.secStr, rightX, 24);
+    ctx.beginPath();
+    ctx.arc(rightX + 18, 21, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeRect(rightX, 27, 26, 9);
+    ctx.font = '6px monospace';
+    ctx.fillText("24HR", rightX + 4, 34);
+
+    // 24-Hour Diurnal Progress Horizon
+    const dayProgress = (t.hr * 3600 + t.mn * 60 + t.sc) / 86400;
+    const barW = 120;
+    const progFill = Math.min(barW, Math.max(0, Math.round(dayProgress * barW)));
+
+    ctx.strokeRect(4, 42, barW, 6);
+    if (progFill > 0) ctx.fillRect(4, 42, progFill, 6);
+    ctx.beginPath();
+    ctx.arc(4 + progFill, 45, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Milestones (Dawn, Noon, Dusk)
+    ctx.fillRect(4 + Math.round((barW * 6) / 24), 48, 1, 2);
+    ctx.fillRect(4 + Math.round((barW * 12) / 24), 48, 1, 3);
+    ctx.fillRect(4 + Math.round((barW * 18) / 24), 48, 1, 2);
+
+    // Bottom Telemetry
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`CHIP ${this.telemetry.temp}°C`, 4, 60);
+    ctx.textAlign = 'center';
+    ctx.fillText(`DAY ${Math.round(dayProgress * 100)}%`, 64, 60);
+    ctx.textAlign = 'right';
+    ctx.fillText(`WIFI 94%`, 126, 60);
+  }
+
+  renderWatchFaceAviator(ctx) {
+    const t = this.getClockTimeComponents();
+    const cx = 31, cy = 31, r = 28;
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Outer & Inner dial rings
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 12 o'clock Aviator Triangle
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r + 2);
+    ctx.lineTo(cx - 3, cy - r + 7);
+    ctx.lineTo(cx + 3, cy - r + 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillRect(cx - 5, cy - r + 4, 1, 1);
+    ctx.fillRect(cx + 4, cy - r + 4, 1, 1);
+
+    // Cardinal ticks at 3, 6, 9
+    ctx.fillRect(cx + r - 5, cy - 0.5, 4, 1);
+    ctx.fillRect(cx - r + 1, cy - 0.5, 4, 1);
+    ctx.fillRect(cx - 0.5, cy + r - 5, 1, 4);
+
+    // Hour hand
+    const hAngle = (t.hr % 12 + t.mn / 60) * 30 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(hAngle) * 13, cy + Math.sin(hAngle) * 13);
+    ctx.stroke();
+
+    // Minute hand
+    const mAngle = (t.mn + t.sc / 60) * 6 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(mAngle) * 22, cy + Math.sin(mAngle) * 22);
+    ctx.stroke();
+
+    // Sweeping second hand with tail
+    const sAngle = t.sc * 6 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx - Math.cos(sAngle) * 6, cy - Math.sin(sAngle) * 6);
+    ctx.lineTo(cx + Math.cos(sAngle) * 24, cy + Math.sin(sAngle) * 24);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(sAngle) * 24, cy + Math.sin(sAngle) * 24, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Crosshair border line at x = 63
+    for (let y = 0; y < 64; y += 4) {
+      ctx.fillRect(63, y, 1, 2);
+    }
+
+    // Right Side HUD Stack (x = 66..127)
+    ctx.fillRect(66, 2, 60, 11);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${t.dayStr} ${t.secStr}`, 96, 10);
+    ctx.fillStyle = '#00f2fe';
+
+    // Big Chrono Digits "HH:MM:SS"
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.fullTimeStr, 67, 25);
+
+    ctx.fillRect(66, 29, 60, 1);
+
+    ctx.font = '6px monospace';
+    ctx.fillText(`CHIP-ALT ${this.telemetry.temp}°C`, 67, 38);
+    ctx.fillText(`LUX ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : '0%'}`, 67, 47);
+
+    // 3-Bar Signal Staircase
+    ctx.fillRect(116, 45, 2, 2);
+    ctx.fillRect(120, 43, 2, 4);
+    ctx.fillRect(124, 41, 2, 6);
+
+    ctx.fillRect(66, 51, 60, 1);
+    ctx.fillText(`UP ${this.telemetry.uptime}`, 67, 60);
+  }
+
+  renderWatchFaceNeoTokyo(ctx) {
+    const t = this.getClockTimeComponents();
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Chamfered Bezel
+    ctx.beginPath();
+    ctx.moveTo(3, 0); ctx.lineTo(124, 0); ctx.lineTo(127, 3);
+    ctx.lineTo(127, 60); ctx.lineTo(124, 63); ctx.lineTo(3, 63);
+    ctx.lineTo(0, 60); ctx.lineTo(0, 3); ctx.closePath();
+    ctx.stroke();
+
+    // Top Bar: TOKYO // 01 + 10-Tick Decade Seconds
+    ctx.fillRect(5, 3, 44, 8);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText("TOKYO // 01", 8, 9);
+    ctx.fillStyle = '#00f2fe';
+
+    const pulse = t.sc % 10;
+    for (let b = 0; b < 10; b++) {
+      const bx = 56 + b * 6;
+      if (b <= pulse) {
+        ctx.fillRect(bx, 4, 4, 6);
+      } else {
+        ctx.strokeRect(bx, 4, 4, 6);
+      }
+    }
+
+    ctx.fillRect(4, 13, 120, 1);
+
+    // Main Digital Numerals
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.timeStr, 6, 38);
+
+    // Micro Seconds Box & Calendar Matrix
+    const secBoxX = 86;
+    ctx.strokeRect(secBoxX, 16, 36, 17);
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(t.secStr, secBoxX + 5, 29);
+    ctx.beginPath();
+    ctx.arc(secBoxX + 26, 24, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = '7px monospace';
+    ctx.fillText(`${t.dayStr} ${t.secStr}`, secBoxX, 42);
+
+    // Bottom Status Ribbon
+    ctx.fillRect(4, 46, 120, 1);
+    ctx.font = '6px monospace';
+    ctx.fillText("SYS.OK", 6, 54);
+    ctx.fillText("HEAP 94K", 44, 54);
+    ctx.fillText(`TMP ${this.telemetry.temp}°C`, 86, 54);
+
+    ctx.fillText(`DESK: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 6, 61);
+    ctx.textAlign = 'right';
+    ctx.fillText(t.fullDateStr, 122, 61);
+  }
+
   renderFullSpectrumHUD(ctx) {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#00f2fe';
@@ -5880,6 +6210,7 @@ class OledStudioManager {
 
 const oledStudio = new OledStudioManager();
 
+
 // ====================================================================
 // Hardware LED Calibration & Color Order Studio
 // ====================================================================
@@ -6016,12 +6347,150 @@ const colorCalibrationStudio = {
   }
 };
 
+
+// ====================================================================
+// QR Connect & Mobile Web Studio Controller
+// ====================================================================
+const qrStudio = {
+  webQr: null,
+  wifiQr: null,
+
+  init() {
+    this.renderQRCodes();
+    this.bindEvents();
+  },
+
+  renderQRCodes() {
+    const currentIp = APP_STATE.ip || (typeof window !== 'undefined' ? window.location.hostname : '10.142.252.233') || '10.142.252.233';
+    const webUrl = `http://${currentIp}/`;
+    const wifiPayload = 'WIFI:T:WPA;S:v20p;P:honululu;;';
+
+    // Update UI Badges & Links
+    const ipBadge = document.getElementById('qrWebIpBadge');
+    if (ipBadge) ipBadge.textContent = currentIp;
+
+    const directLink = document.getElementById('qrWebDirectLink');
+    if (directLink) {
+      directLink.href = webUrl;
+      directLink.textContent = webUrl;
+    }
+
+    // Render Web Studio QR
+    const webContainer = document.getElementById('qrWebCanvasContainer');
+    if (webContainer && typeof QRCode !== 'undefined') {
+      webContainer.innerHTML = '';
+      try {
+        this.webQr = new QRCode(webContainer, {
+          text: webUrl,
+          width: 180,
+          height: 180,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (e) {
+        console.error('Failed to generate Web QR:', e);
+      }
+    }
+
+    // Render Wi-Fi Quick-Join QR
+    const wifiContainer = document.getElementById('qrWifiCanvasContainer');
+    if (wifiContainer && typeof QRCode !== 'undefined') {
+      wifiContainer.innerHTML = '';
+      try {
+        this.wifiQr = new QRCode(wifiContainer, {
+          text: wifiPayload,
+          width: 180,
+          height: 180,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (e) {
+        console.error('Failed to generate Wi-Fi QR:', e);
+      }
+    }
+  },
+
+  bindEvents() {
+    // Push Web QR to Physical OLED Display (Mode 5)
+    document.getElementById('btnPushWebQrToOled')?.addEventListener('click', async () => {
+      try {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        showToast('Pushing Web Studio QR to OLED...');
+        await fetch(`http://${targetIp}/set?oledmode=5`);
+        if (typeof oledStudio !== 'undefined') {
+          oledStudio.state.mode = 5;
+          oledStudio.syncUI();
+        }
+        showToast('📱 Web Studio QR displayed on OLED screen!');
+      } catch (e) {
+        showToast(`Error: ${e.message}`);
+      }
+    });
+
+    // Push Wi-Fi Quick-Join QR to Physical OLED Display (Mode 6)
+    document.getElementById('btnPushWifiQrToOled')?.addEventListener('click', async () => {
+      try {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        showToast('Pushing Wi-Fi Join QR to OLED...');
+        await fetch(`http://${targetIp}/set?oledmode=6`);
+        if (typeof oledStudio !== 'undefined') {
+          oledStudio.state.mode = 6;
+          oledStudio.syncUI();
+        }
+        showToast('📶 Wi-Fi Quick-Join QR displayed on OLED screen!');
+      } catch (e) {
+        showToast(`Error: ${e.message}`);
+      }
+    });
+
+    // Return to Watch Face (Mode 1)
+    document.getElementById('btnReturnToWatchFace')?.addEventListener('click', async () => {
+      try {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        await fetch(`http://${targetIp}/set?oledmode=1`);
+        if (typeof oledStudio !== 'undefined') {
+          oledStudio.state.mode = 1;
+          oledStudio.syncUI();
+        }
+        showToast('⌚ OLED returned to Watch Face');
+      } catch (e) {
+        showToast(`Error: ${e.message}`);
+      }
+    });
+
+    // Copy Web Studio URL Button
+    document.getElementById('btnCopyWebUrl')?.addEventListener('click', async () => {
+      const currentIp = APP_STATE.ip || '10.142.252.233';
+      const url = `http://${currentIp}/`;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const input = document.createElement('input');
+          input.value = url;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+        }
+        showToast('📋 Copied URL to clipboard: ' + url);
+      } catch (e) {
+        showToast('URL: ' + url);
+      }
+    });
+  }
+};
+
+
 // Window globals for debugging & synchronization
 window._wled = wled;
 window._movieSync = movieSync;
 window._musicSync = musicSync;
 window._oledStudio = oledStudio;
 window._colorCalib = colorCalibrationStudio;
+window._qrStudio = qrStudio;
 window.setAmbilightMode = (m) => movieSync.setMode(m);
 
 function bootApp() {
@@ -6039,6 +6508,7 @@ function bootApp() {
   try { initPortalTheme(); } catch (e) { console.error('initPortalTheme error:', e); }
   try { oledStudio.init(); } catch (e) { console.error('oledStudio init error:', e); }
   try { colorCalibrationStudio.init(); } catch (e) { console.error('colorCalibrationStudio init error:', e); }
+  try { qrStudio.init(); } catch (e) { console.error('qrStudio init error:', e); }
   try { wled.connect(); } catch (e) { console.error('wled connect error:', e); }
   try { wled.fetchInitialData(); } catch (e) { console.error('wled fetchInitialData error:', e); }
 

@@ -4380,6 +4380,267 @@ select option, .wiring-select option, .glass-select option {
   margin-top: 8px;
 }
 
+/* ====================================================================
+   TAB: QR CONNECT & SMARTPHONE PORTAL STYLES
+   ==================================================================== */
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.qr-hero-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+}
+
+.qr-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.qr-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: 18px;
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.qr-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.qr-visual-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.qr-code-frame {
+  width: 200px;
+  height: 200px;
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.qr-code-frame canvas,
+.qr-code-frame img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  display: block;
+}
+
+.qr-url-box {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+}
+
+.qr-url-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.qr-url-link {
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  text-decoration: none;
+  word-break: break-all;
+  transition: color 0.2s;
+}
+
+.qr-url-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.qr-cred-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.qr-cred-row:last-child {
+  border-bottom: none;
+}
+
+.cred-label {
+  color: var(--text-muted);
+}
+
+.cred-val {
+  font-family: var(--font-mono, monospace);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.qr-action-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.oled-push-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.35));
+  border: 1px solid rgba(168, 85, 247, 0.5);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.oled-push-btn:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.55), rgba(168, 85, 247, 0.55));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.oled-push-btn:active {
+  transform: translateY(0);
+}
+
+.mobile-features-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.7));
+  border: 1px solid var(--border-glass);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.mobile-tips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.tip-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.tip-icon {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tip-content strong {
+  display: block;
+  font-size: 13px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.tip-content p {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* ====================================================================
+   RESPONSIVE ENHANCEMENTS FOR SMARTPHONES (< 768px)
+   ==================================================================== */
+@media (max-width: 768px) {
+  .qr-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-tips-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app-container {
+    padding-bottom: calc(95px + var(--safe-bottom)) !important;
+  }
+
+  .glass-nav-tabs {
+    position: fixed;
+    bottom: max(10px, var(--safe-bottom));
+    left: 10px;
+    right: 10px;
+    z-index: 999;
+    background: rgba(10, 15, 29, 0.92) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.3);
+    border-radius: 20px !important;
+    padding: 6px !important;
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .glass-nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tab-btn {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 8px 14px;
+  }
+
+  #colorWheelCanvas {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
 
 
 
@@ -4559,6 +4820,11 @@ select option, .wiring-select option, .glass-select option {
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         <span>Multi-Device Hub</span>
         <span class="nodes-count-pill" id="nodesCountBadge">1 DEV</span>
+      </button>
+
+      <button class="nav-tab-btn" id="tabBtnQr" data-tab="tabQr">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M7 17h.01M17 7h.01M7 7h.01M17 17h.01"/></svg>
+        <span>QR Connect</span>
       </button>
 
       <button class="nav-tab-btn" id="tabBtnSettings" data-tab="tabSettings">
@@ -5606,6 +5872,24 @@ select option, .wiring-select option, .glass-select option {
                   </div>
                 </div>
 
+                <div class="oled-mode-card" data-mode="5">
+                  <div class="mode-card-radio"></div>
+                  <div class="mode-card-icon">📱</div>
+                  <div class="mode-card-body">
+                    <strong>Web Studio Mobile QR Code</strong>
+                    <p>Live QR code for instant smartphone camera scanning to open Web Portal</p>
+                  </div>
+                </div>
+
+                <div class="oled-mode-card" data-mode="6">
+                  <div class="mode-card-radio"></div>
+                  <div class="mode-card-icon">📶</div>
+                  <div class="mode-card-body">
+                    <strong>Wi-Fi Quick-Connect QR Code</strong>
+                    <p>Scan with phone to join Wi-Fi without typing passwords</p>
+                  </div>
+                </div>
+
               </div>
 
               <!-- Mode-Specific Layout Customizations -->
@@ -5703,6 +5987,30 @@ select option, .wiring-select option, .glass-select option {
                       <span class="watchface-name">Cyber Orbit HUD</span>
                     </div>
                     <p class="watchface-desc">Sci-Fi workstation terminal: tactical corner brackets, framed digital readout, dual RAM/Temp meters, and telemetry.</p>
+                  </div>
+                  <div class="watchface-card" data-face="4">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">🌅</span>
+                      <span class="watchface-name">Neo Horizon</span>
+                      <span class="watchface-badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4);">New</span>
+                    </div>
+                    <p class="watchface-desc">Modern high-contrast typography, 24-hr diurnal day progression horizon track, day badge, and live telemetry.</p>
+                  </div>
+                  <div class="watchface-card" data-face="5">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">🛩️</span>
+                      <span class="watchface-name">Aviator Pilot</span>
+                      <span class="watchface-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">New</span>
+                    </div>
+                    <p class="watchface-desc">Flieger cockpit dial: dual chapter rings, aviator 12 o'clock triangle, sweeping second hand, and avionics telemetry HUD.</p>
+                  </div>
+                  <div class="watchface-card" data-face="6">
+                    <div class="watchface-card-header">
+                      <span class="watchface-icon">⚡</span>
+                      <span class="watchface-name">Neo-Tokyo</span>
+                      <span class="watchface-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">New</span>
+                    </div>
+                    <p class="watchface-desc">Tactical Japanese cyber wristwatch: chamfered bezel, 10-tick decade second pulse meter, and data matrix.</p>
                   </div>
                 </div>
               </div>
@@ -6124,6 +6432,136 @@ select option, .wiring-select option, .glass-select option {
       </section>
 
       <!-- ========================================================
+           TAB: QR CONNECT & SMARTPHONE PORTAL
+           ======================================================== -->
+      <section class="tab-panel" id="tabQr">
+        <div class="qr-container">
+          
+          <!-- Top Hero Card -->
+          <div class="glass-card qr-hero-card">
+            <div class="card-header">
+              <div class="title-with-badge">
+                <h2>📱 Smartphone Studio & QR Connect</h2>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Touch Optimized</span>
+              </div>
+              <p class="card-subtitle">Scan directly from this screen or mirror the QR code onto your 1.3" OLED display for one-tap mobile control and instant Wi-Fi joining.</p>
+            </div>
+          </div>
+
+          <div class="qr-cards-grid">
+            
+            <!-- Card 1: Web Portal QR -->
+            <div class="glass-card qr-card">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h3>🌐 Open Web Studio on Mobile</h3>
+                  <span class="badge" id="qrWebIpBadge">10.142.252.233</span>
+                </div>
+                <span class="card-subtitle">Scan with iOS Camera or Android Chrome/Lens</span>
+              </div>
+
+              <div class="qr-visual-wrapper">
+                <div class="qr-code-frame" id="qrWebCanvasContainer"></div>
+                <div class="qr-url-box">
+                  <span class="qr-url-label">DIRECT PORTAL URL</span>
+                  <a href="#" class="qr-url-link" id="qrWebDirectLink" target="_blank">http://10.142.252.233/</a>
+                  <button class="glass-btn btn-small copy-btn" id="btnCopyWebUrl">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>Copy URL</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="qr-action-footer">
+                <button class="glass-btn btn-prominent oled-push-btn" id="btnPushWebQrToOled">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <span>📺 Show Web QR on OLED</span>
+                </button>
+                <p class="setting-hint">Pushes the Web Portal QR code to your desk OLED screen so you can connect your phone anytime without opening the laptop.</p>
+              </div>
+            </div>
+
+            <!-- Card 2: Wi-Fi Setup QR -->
+            <div class="glass-card qr-card">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h3>📶 Instant Wi-Fi Quick-Join</h3>
+                  <span class="badge" id="qrWifiSsidBadge">SSID: v20p</span>
+                </div>
+                <span class="card-subtitle">Connect phone to Wi-Fi with 0 typing</span>
+              </div>
+
+              <div class="qr-visual-wrapper">
+                <div class="qr-code-frame" id="qrWifiCanvasContainer"></div>
+                <div class="qr-url-box">
+                  <span class="qr-url-label">NETWORK CREDENTIALS</span>
+                  <div class="qr-cred-row">
+                    <span class="cred-label">SSID:</span>
+                    <strong class="cred-val" id="qrWifiSsidText">v20p</strong>
+                  </div>
+                  <div class="qr-cred-row">
+                    <span class="cred-label">Password:</span>
+                    <strong class="cred-val" id="qrWifiPassText">honululu</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="qr-action-footer">
+                <button class="glass-btn btn-prominent oled-push-btn" id="btnPushWifiQrToOled">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <span>📺 Show Wi-Fi QR on OLED</span>
+                </button>
+                <p class="setting-hint">Displays Wi-Fi pairing QR code on the OLED. Guests or friends can scan the OLED to join your network in 1 second.</p>
+              </div>
+            </div>
+
+            <!-- Card 3: Mobile Experience & Smartphone Tips -->
+            <div class="glass-card mobile-features-card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <div class="title-with-badge">
+                  <h3>✨ Smartphone Progressive Web App (PWA) Features</h3>
+                  <span class="badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">Mobile Native</span>
+                </div>
+                <span class="card-subtitle">How to get the ultimate full-screen app experience on your iPhone or Android</span>
+              </div>
+
+              <div class="mobile-tips-grid">
+                <div class="tip-card">
+                  <div class="tip-icon">🍏</div>
+                  <div class="tip-content">
+                    <strong>iPhone Safari: Add to Home Screen</strong>
+                    <p>Tap the <strong>Share</strong> button (box with upward arrow) in Safari, then tap <strong>"Add to Home Screen"</strong>. It launches in standalone full-screen mode without browser bars!</p>
+                  </div>
+                </div>
+                <div class="tip-card">
+                  <div class="tip-icon">🤖</div>
+                  <div class="tip-content">
+                    <strong>Android Chrome: Install App</strong>
+                    <p>Tap the <strong>⋮ (three dots)</strong> menu in Chrome, then select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong> for instant home-screen launch with haptic touch.</p>
+                  </div>
+                </div>
+                <div class="tip-card">
+                  <div class="tip-icon">🖐️</div>
+                  <div class="tip-content">
+                    <strong>Thumb-Friendly Touch Navigation</strong>
+                    <p>Use the floating bottom navigation bar to switch between Lighting, Music, Movie, and OLED HUD with one hand.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick return button -->
+              <div style="margin-top: 14px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="glass-btn btn-small" id="btnReturnToWatchFace">
+                  <span>⌚ Return OLED to Watch Face</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
            TAB 6: SETTINGS & DEVICE STATS
            ======================================================== -->
       <section class="tab-panel" id="tabSettings">
@@ -6394,6 +6832,9 @@ select option, .wiring-select option, .glass-select option {
   </div>
 
   <script>
+var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this.parsedData=[];for(var b=[],d=0,e=this.data.length;e>d;d++){var f=this.data.charCodeAt(d);f>65536?(b[0]=240|(1835008&f)>>>18,b[1]=128|(258048&f)>>>12,b[2]=128|(4032&f)>>>6,b[3]=128|63&f):f>2048?(b[0]=224|(61440&f)>>>12,b[1]=128|(4032&f)>>>6,b[2]=128|63&f):f>128?(b[0]=192|(1984&f)>>>6,b[1]=128|63&f):b[0]=f,this.parsedData=this.parsedData.concat(b)}this.parsedData.length!=this.data.length&&(this.parsedData.unshift(191),this.parsedData.unshift(187),this.parsedData.unshift(239))}function b(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}function i(a,b){if(void 0==a.length)throw new Error(a.length+"/"+b);for(var c=0;c<a.length&&0==a[c];)c++;this.num=new Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}function j(a,b){this.totalCount=a,this.dataCount=b}function k(){this.buffer=[],this.length=0}function m(){return"undefined"!=typeof CanvasRenderingContext2D}function n(){var a=!1,b=navigator.userAgent;return/android/i.test(b)&&(a=!0,aMat=b.toString().match(/android ([0-9]\.[0-9])/i),aMat&&aMat[1]&&(a=parseFloat(aMat[1]))),a}function r(a,b){for(var c=1,e=s(a),f=0,g=l.length;g>=f;f++){var h=0;switch(b){case d.L:h=l[f][0];break;case d.M:h=l[f][1];break;case d.Q:h=l[f][2];break;case d.H:h=l[f][3]}if(h>=e)break;c++}if(c>l.length)throw new Error("Too long data");return c}function s(a){var b=encodeURI(a).toString().replace(/\%[0-9a-fA-F]{2}/g,"a");return b.length+(b.length!=a?3:0)}a.prototype={getLength:function(){return this.parsedData.length},write:function(a){for(var b=0,c=this.parsedData.length;c>b;b++)a.put(this.parsedData[b],8)}},b.prototype={addData:function(b){var c=new a(b);this.dataList.push(c),this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw new Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,c){this.moduleCount=4*this.typeNumber+17,this.modules=new Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++){this.modules[d]=new Array(this.moduleCount);for(var e=0;e<this.moduleCount;e++)this.modules[d][e]=null}this.setupPositionProbePattern(0,0),this.setupPositionProbePattern(this.moduleCount-7,0),this.setupPositionProbePattern(0,this.moduleCount-7),this.setupPositionAdjustPattern(),this.setupTimingPattern(),this.setupTypeInfo(a,c),this.typeNumber>=7&&this.setupTypeNumber(a),null==this.dataCache&&(this.dataCache=b.createData(this.typeNumber,this.errorCorrectLevel,this.dataList)),this.mapData(this.dataCache,c)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>=a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>=b+d||this.moduleCount<=b+d||(this.modules[a+c][b+d]=c>=0&&6>=c&&(0==d||6==d)||d>=0&&6>=d&&(0==c||6==c)||c>=2&&4>=c&&d>=2&&4>=d?!0:!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8>c;c++){this.makeImpl(!0,c);var d=f.getLostPoint(this);(0==c||a>d)&&(a=d,b=c)}return b},createMovieClip:function(a,b,c){var d=a.createEmptyMovieClip(b,c),e=1;this.make();for(var f=0;f<this.modules.length;f++)for(var g=f*e,h=0;h<this.modules[f].length;h++){var i=h*e,j=this.modules[f][h];j&&(d.beginFill(0,100),d.moveTo(i,g),d.lineTo(i+e,g),d.lineTo(i+e,g+e),d.lineTo(i,g+e),d.endFill())}return d},setupTimingPattern:function(){for(var a=8;a<this.moduleCount-8;a++)null==this.modules[a][6]&&(this.modules[a][6]=0==a%2);for(var b=8;b<this.moduleCount-8;b++)null==this.modules[6][b]&&(this.modules[6][b]=0==b%2)},setupPositionAdjustPattern:function(){for(var a=f.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var h=-2;2>=h;h++)this.modules[d+g][e+h]=-2==g||2==g||-2==h||2==h||0==g&&0==h?!0:!1}},setupTypeNumber:function(a){for(var b=f.getBCHTypeNumber(this.typeNumber),c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(var c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d}},setupTypeInfo:function(a,b){for(var c=this.errorCorrectLevel<<3|b,d=f.getBCHTypeInfo(c),e=0;15>e;e++){var g=!a&&1==(1&d>>e);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}for(var e=0;15>e;e++){var g=!a&&1==(1&d>>e);8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g}this.modules[this.moduleCount-8][8]=!a},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,h=this.moduleCount-1;h>0;h-=2)for(6==h&&h--;;){for(var i=0;2>i;i++)if(null==this.modules[d][h-i]){var j=!1;g<a.length&&(j=1==(1&a[g]>>>e));var k=f.getMask(b,d,h-i);k&&(j=!j),this.modules[d][h-i]=j,e--,-1==e&&(g++,e=7)}if(d+=c,0>d||this.moduleCount<=d){d-=c,c=-c;break}}}},b.PAD0=236,b.PAD1=17,b.createData=function(a,c,d){for(var e=j.getRSBlocks(a,c),g=new k,h=0;h<d.length;h++){var i=d[h];g.put(i.mode,4),g.put(i.getLength(),f.getLengthInBits(i.mode,a)),i.write(g)}for(var l=0,h=0;h<e.length;h++)l+=e[h].dataCount;if(g.getLengthInBits()>8*l)throw new Error("code length overflow. ("+g.getLengthInBits()+">"+8*l+")");for(g.getLengthInBits()+4<=8*l&&g.put(0,4);0!=g.getLengthInBits()%8;)g.putBit(!1);for(;;){if(g.getLengthInBits()>=8*l)break;if(g.put(b.PAD0,8),g.getLengthInBits()>=8*l)break;g.put(b.PAD1,8)}return b.createBytes(g,e)},b.createBytes=function(a,b){for(var c=0,d=0,e=0,g=new Array(b.length),h=new Array(b.length),j=0;j<b.length;j++){var k=b[j].dataCount,l=b[j].totalCount-k;d=Math.max(d,k),e=Math.max(e,l),g[j]=new Array(k);for(var m=0;m<g[j].length;m++)g[j][m]=255&a.buffer[m+c];c+=k;var n=f.getErrorCorrectPolynomial(l),o=new i(g[j],n.getLength()-1),p=o.mod(n);h[j]=new Array(n.getLength()-1);for(var m=0;m<h[j].length;m++){var q=m+p.getLength()-h[j].length;h[j][m]=q>=0?p.get(q):0}}for(var r=0,m=0;m<b.length;m++)r+=b[m].totalCount;for(var s=new Array(r),t=0,m=0;d>m;m++)for(var j=0;j<b.length;j++)m<g[j].length&&(s[t++]=g[j][m]);for(var m=0;e>m;m++)for(var j=0;j<b.length;j++)m<h[j].length&&(s[t++]=h[j][m]);return s};for(var c={MODE_NUMBER:1,MODE_ALPHA_NUM:2,MODE_8BIT_BYTE:4,MODE_KANJI:8},d={L:1,M:0,Q:3,H:2},e={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7},f={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:1335,G18:7973,G15_MASK:21522,getBCHTypeInfo:function(a){for(var b=a<<10;f.getBCHDigit(b)-f.getBCHDigit(f.G15)>=0;)b^=f.G15<<f.getBCHDigit(b)-f.getBCHDigit(f.G15);return(a<<10|b)^f.G15_MASK},getBCHTypeNumber:function(a){for(var b=a<<12;f.getBCHDigit(b)-f.getBCHDigit(f.G18)>=0;)b^=f.G18<<f.getBCHDigit(b)-f.getBCHDigit(f.G18);return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return f.PATTERN_POSITION_TABLE[a-1]},getMask:function(a,b,c){switch(a){case e.PATTERN000:return 0==(b+c)%2;case e.PATTERN001:return 0==b%2;case e.PATTERN010:return 0==c%3;case e.PATTERN011:return 0==(b+c)%3;case e.PATTERN100:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case e.PATTERN101:return 0==b*c%2+b*c%3;case e.PATTERN110:return 0==(b*c%2+b*c%3)%2;case e.PATTERN111:return 0==(b*c%3+(b+c)%2)%2;default:throw new Error("bad maskPattern:"+a)}},getErrorCorrectPolynomial:function(a){for(var b=new i([1],0),c=0;a>c;c++)b=b.multiply(new i([1,g.gexp(c)],0));return b},getLengthInBits:function(a,b){if(b>=1&&10>b)switch(a){case c.MODE_NUMBER:return 10;case c.MODE_ALPHA_NUM:return 9;case c.MODE_8BIT_BYTE:return 8;case c.MODE_KANJI:return 8;default:throw new Error("mode:"+a)}else if(27>b)switch(a){case c.MODE_NUMBER:return 12;case c.MODE_ALPHA_NUM:return 11;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 10;default:throw new Error("mode:"+a)}else{if(!(41>b))throw new Error("type:"+b);switch(a){case c.MODE_NUMBER:return 14;case c.MODE_ALPHA_NUM:return 13;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 12;default:throw new Error("mode:"+a)}}},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;b>d;d++)for(var e=0;b>e;e++){for(var f=0,g=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||d+h>=b))for(var i=-1;1>=i;i++)0>e+i||e+i>=b||(0!=h||0!=i)&&g==a.isDark(d+h,e+i)&&f++;f>5&&(c+=3+f-5)}for(var d=0;b-1>d;d++)for(var e=0;b-1>e;e++){var j=0;a.isDark(d,e)&&j++,a.isDark(d+1,e)&&j++,a.isDark(d,e+1)&&j++,a.isDark(d+1,e+1)&&j++,(0==j||4==j)&&(c+=3)}for(var d=0;b>d;d++)for(var e=0;b-6>e;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(var e=0;b>e;e++)for(var d=0;b-6>d;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(var k=0,e=0;b>e;e++)for(var d=0;b>d;d++)a.isDark(d,e)&&k++;var l=Math.abs(100*k/b/b-50)/5;return c+=10*l}},g={glog:function(a){if(1>a)throw new Error("glog("+a+")");return g.LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;a>=256;)a-=255;return g.EXP_TABLE[a]},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)},h=0;8>h;h++)g.EXP_TABLE[h]=1<<h;for(var h=8;256>h;h++)g.EXP_TABLE[h]=g.EXP_TABLE[h-4]^g.EXP_TABLE[h-5]^g.EXP_TABLE[h-6]^g.EXP_TABLE[h-8];for(var h=0;255>h;h++)g.LOG_TABLE[g.EXP_TABLE[h]]=h;i.prototype={get:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=new Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=g.gexp(g.glog(this.get(c))+g.glog(a.get(d)));return new i(b,0)},mod:function(a){if(this.getLength()-a.getLength()<0)return this;for(var b=g.glog(this.get(0))-g.glog(a.get(0)),c=new Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.get(d);for(var d=0;d<a.getLength();d++)c[d]^=g.gexp(g.glog(a.get(d))+b);return new i(c,0).mod(a)}},j.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],j.getRSBlocks=function(a,b){var c=j.getRsBlockTable(a,b);if(void 0==c)throw new Error("bad rs block @ typeNumber:"+a+"/errorCorrectLevel:"+b);for(var d=c.length/3,e=[],f=0;d>f;f++)for(var g=c[3*f+0],h=c[3*f+1],i=c[3*f+2],k=0;g>k;k++)e.push(new j(h,i));return e},j.getRsBlockTable=function(a,b){switch(b){case d.L:return j.RS_BLOCK_TABLE[4*(a-1)+0];case d.M:return j.RS_BLOCK_TABLE[4*(a-1)+1];case d.Q:return j.RS_BLOCK_TABLE[4*(a-1)+2];case d.H:return j.RS_BLOCK_TABLE[4*(a-1)+3];default:return void 0}},k.prototype={get:function(a){var b=Math.floor(a/8);return 1==(1&this.buffer[b]>>>7-a%8)},put:function(a,b){for(var c=0;b>c;c++)this.putBit(1==(1&a>>>b-c-1))},getLengthInBits:function(){return this.length},putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0),a&&(this.buffer[b]|=128>>>this.length%8),this.length++}};var l=[[17,14,11,7],[32,26,20,14],[53,42,32,24],[78,62,46,34],[106,84,60,44],[134,106,74,58],[154,122,86,64],[192,152,108,84],[230,180,130,98],[271,213,151,119],[321,251,177,137],[367,287,203,155],[425,331,241,177],[458,362,258,194],[520,412,292,220],[586,450,322,250],[644,504,364,280],[718,560,394,310],[792,624,442,338],[858,666,482,382],[929,711,509,403],[1003,779,565,439],[1091,857,611,461],[1171,911,661,511],[1273,997,715,535],[1367,1059,751,593],[1465,1125,805,625],[1528,1190,868,658],[1628,1264,908,698],[1732,1370,982,742],[1840,1452,1030,790],[1952,1538,1112,842],[2068,1628,1168,898],[2188,1722,1228,958],[2303,1809,1283,983],[2431,1911,1351,1051],[2563,1989,1423,1093],[2699,2099,1499,1139],[2809,2213,1579,1219],[2953,2331,1663,1273]],o=function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){function g(a,b){var c=document.createElementNS("http://www.w3.org/2000/svg",a);for(var d in b)b.hasOwnProperty(d)&&c.setAttribute(d,b[d]);return c}var b=this._htOption,c=this._el,d=a.getModuleCount();Math.floor(b.width/d),Math.floor(b.height/d),this.clear();var h=g("svg",{viewBox:"0 0 "+String(d)+" "+String(d),width:"100%",height:"100%",fill:b.colorLight});h.setAttributeNS("http://www.w3.org/2000/xmlns/","xmlns:xlink","http://www.w3.org/1999/xlink"),c.appendChild(h),h.appendChild(g("rect",{fill:b.colorDark,width:"1",height:"1",id:"template"}));for(var i=0;d>i;i++)for(var j=0;d>j;j++)if(a.isDark(i,j)){var k=g("use",{x:String(i),y:String(j)});k.setAttributeNS("http://www.w3.org/1999/xlink","href","#template"),h.appendChild(k)}},a.prototype.clear=function(){for(;this._el.hasChildNodes();)this._el.removeChild(this._el.lastChild)},a}(),p="svg"===document.documentElement.tagName.toLowerCase(),q=p?o:m()?function(){function a(){this._elImage.src=this._elCanvas.toDataURL("image/png"),this._elImage.style.display="block",this._elCanvas.style.display="none"}function d(a,b){var c=this;if(c._fFail=b,c._fSuccess=a,null===c._bSupportDataURI){var d=document.createElement("img"),e=function(){c._bSupportDataURI=!1,c._fFail&&_fFail.call(c)},f=function(){c._bSupportDataURI=!0,c._fSuccess&&c._fSuccess.call(c)};return d.onabort=e,d.onerror=e,d.onload=f,d.src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",void 0}c._bSupportDataURI===!0&&c._fSuccess?c._fSuccess.call(c):c._bSupportDataURI===!1&&c._fFail&&c._fFail.call(c)}if(this._android&&this._android<=2.1){var b=1/window.devicePixelRatio,c=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(a,d,e,f,g,h,i,j){if("nodeName"in a&&/img/i.test(a.nodeName))for(var l=arguments.length-1;l>=1;l--)arguments[l]=arguments[l]*b;else"undefined"==typeof j&&(arguments[1]*=b,arguments[2]*=b,arguments[3]*=b,arguments[4]*=b);c.apply(this,arguments)}}var e=function(a,b){this._bIsPainted=!1,this._android=n(),this._htOption=b,this._elCanvas=document.createElement("canvas"),this._elCanvas.width=b.width,this._elCanvas.height=b.height,a.appendChild(this._elCanvas),this._el=a,this._oContext=this._elCanvas.getContext("2d"),this._bIsPainted=!1,this._elImage=document.createElement("img"),this._elImage.style.display="none",this._el.appendChild(this._elImage),this._bSupportDataURI=null};return e.prototype.draw=function(a){var b=this._elImage,c=this._oContext,d=this._htOption,e=a.getModuleCount(),f=d.width/e,g=d.height/e,h=Math.round(f),i=Math.round(g);b.style.display="none",this.clear();for(var j=0;e>j;j++)for(var k=0;e>k;k++){var l=a.isDark(j,k),m=k*f,n=j*g;c.strokeStyle=l?d.colorDark:d.colorLight,c.lineWidth=1,c.fillStyle=l?d.colorDark:d.colorLight,c.fillRect(m,n,f,g),c.strokeRect(Math.floor(m)+.5,Math.floor(n)+.5,h,i),c.strokeRect(Math.ceil(m)-.5,Math.ceil(n)-.5,h,i)}this._bIsPainted=!0},e.prototype.makeImage=function(){this._bIsPainted&&d.call(this,a)},e.prototype.isPainted=function(){return this._bIsPainted},e.prototype.clear=function(){this._oContext.clearRect(0,0,this._elCanvas.width,this._elCanvas.height),this._bIsPainted=!1},e.prototype.round=function(a){return a?Math.floor(1e3*a)/1e3:a},e}():function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){for(var b=this._htOption,c=this._el,d=a.getModuleCount(),e=Math.floor(b.width/d),f=Math.floor(b.height/d),g=['<table style="border:0;border-collapse:collapse;">'],h=0;d>h;h++){g.push("<tr>");for(var i=0;d>i;i++)g.push('<td style="border:0;border-collapse:collapse;padding:0;margin:0;width:'+e+"px;height:"+f+"px;background-color:"+(a.isDark(h,i)?b.colorDark:b.colorLight)+';"></td>');g.push("</tr>")}g.push("</table>"),c.innerHTML=g.join("");var j=c.childNodes[0],k=(b.width-j.offsetWidth)/2,l=(b.height-j.offsetHeight)/2;k>0&&l>0&&(j.style.margin=l+"px "+k+"px")},a.prototype.clear=function(){this._el.innerHTML=""},a}();QRCode=function(a,b){if(this._htOption={width:256,height:256,typeNumber:4,colorDark:"#000000",colorLight:"#ffffff",correctLevel:d.H},"string"==typeof b&&(b={text:b}),b)for(var c in b)this._htOption[c]=b[c];"string"==typeof a&&(a=document.getElementById(a)),this._android=n(),this._el=a,this._oQRCode=null,this._oDrawing=new q(this._el,this._htOption),this._htOption.text&&this.makeCode(this._htOption.text)},QRCode.prototype.makeCode=function(a){this._oQRCode=new b(r(a,this._htOption.correctLevel),this._htOption.correctLevel),this._oQRCode.addData(a),this._oQRCode.make(),this._el.title=a,this._oDrawing.draw(this._oQRCode),this.makeImage()},QRCode.prototype.makeImage=function(){"function"==typeof this._oDrawing.makeImage&&(!this._android||this._android>=3)&&this._oDrawing.makeImage()},QRCode.prototype.clear=function(){this._oDrawing.clear()},QRCode.CorrectLevel=d}();
+</script>
+<script>
 /* ====================================================================
    Chaos ESP32 Light — Smart Cinema & Music Reactive Studio
    Powered by WLED (Christian Schwinne / Aircoookie)
@@ -6586,6 +7027,7 @@ function samplePalette(paletteName, pos) {
     Math.round(c1[2] + (c2[2] - c1[2]) * frac)
   ];
 }
+
 
 // ====================================================================
 // WLED Communication Layer (WebSocket + REST fallback)
@@ -6993,6 +7435,7 @@ class WLEDClient {
 
 const wled = new WLEDClient(APP_STATE.ip);
 
+
 // ====================================================================
 // Interactive Canvas Color Wheel
 // ====================================================================
@@ -7111,6 +7554,7 @@ class CanvasColorWheel {
 
 const colorWheel = new CanvasColorWheel('colorWheelCanvas');
 
+
 // ====================================================================
 // Virtual LED Strip Visualizer Canvas
 // ====================================================================
@@ -7185,6 +7629,7 @@ class VirtualStripVisualizer {
 }
 
 const virtualStrip = new VirtualStripVisualizer('virtualStripCanvas', APP_STATE.ledCount);
+
 
 // ====================================================================
 // Movie / Screen Sync Engine (Next-Gen Multi-Zone Ambilight)
@@ -8776,6 +9221,7 @@ class MovieSyncEngine {
 
 const movieSync = new MovieSyncEngine();
 
+
 // ====================================================================
 // Advanced Music Reactive Sync Engine (FFT & Spectrum Color Mapping)
 // ====================================================================
@@ -9524,6 +9970,7 @@ class MusicSyncEngine {
 }
 
 const musicSync = new MusicSyncEngine();
+
 
 // ====================================================================
 // UI Helpers & Event Listeners
@@ -10976,6 +11423,7 @@ function initPortalTheme() {
   });
 }
 
+
 // ====================================================================
 // TAB: OLED HARDWARE HUD & DISPLAY STUDIO CONTROLLER
 // ====================================================================
@@ -11174,7 +11622,15 @@ class OledStudioManager {
     this.state.face = parseInt(face, 10);
     this.state.mode = 1; // Ensure clock mode is active
     this.syncUI();
-    const faceNames = ["Studio Minimalist", "Chronos Duo Horology", "Bauhaus Typography", "Cyber Orbit HUD"];
+    const faceNames = [
+      "Studio Minimalist",
+      "Chronos Duo Horology",
+      "Bauhaus Swiss Typography",
+      "Cyber Orbit HUD",
+      "Neo Horizon Diurnal",
+      "Aviator Flieger Pilot",
+      "Neo-Tokyo Cyber Matrix"
+    ];
     showToast(`Watch Face: ${faceNames[this.state.face] || face}`);
     this.sendUpdate({ mode: 1, face: this.state.face });
   }
@@ -11264,7 +11720,15 @@ class OledStudioManager {
   setMode(mode) {
     this.state.mode = mode;
     this.syncUI();
-    const modeNames = ["Now Playing Music HUD", "Digital Clock & Telemetry", "128px Audio Spectrum", "Ambient Lightbar Mirror", "Cyberpunk Banner Ticker"];
+    const modeNames = [
+      "Now Playing Music HUD",
+      "Digital Clock & Telemetry",
+      "128px Audio Spectrum",
+      "Ambient Lightbar Mirror",
+      "Cyberpunk Banner Ticker",
+      "Web Studio Mobile QR Code",
+      "Wi-Fi Quick-Connect QR Code"
+    ];
     showToast(`OLED Mode: ${modeNames[mode] || mode}`);
     this.sendUpdate({ mode: this.state.mode });
   }
@@ -11345,7 +11809,7 @@ class OledStudioManager {
     // Navigation tab badge
     const badge = document.getElementById('oledModeBadge');
     if (badge) {
-      const labels = ["HUD", "CLOCK", "SPECTRUM", "AMBIENT", "BANNER"];
+      const labels = ["HUD", "CLOCK", "SPECTRUM", "AMBIENT", "BANNER", "QR WEB", "QR WIFI"];
       badge.textContent = labels[this.state.mode] || "OLED";
     }
 
@@ -11563,7 +12027,7 @@ class OledStudioManager {
     }
 
     let activeMode = this.state.mode;
-    if (this.state.auto) {
+    if (this.state.auto && this.state.mode !== 5 && this.state.mode !== 6) {
       activeMode = this.media.playing ? 0 : this.state.mode;
     }
 
@@ -11583,11 +12047,90 @@ class OledStudioManager {
       case 4:
         this.renderCustomBannerHUD(ctx);
         break;
+      case 5:
+        this.renderQRCodeScreenSim(ctx, false);
+        break;
+      case 6:
+        this.renderQRCodeScreenSim(ctx, true);
+        break;
       case 0:
       default:
         this.renderMusicPlayerHUD(ctx);
         break;
     }
+  }
+
+  renderQRCodeScreenSim(ctx, isWifi) {
+    // Clear display buffer with OLED deep black
+    ctx.fillStyle = '#010409';
+    ctx.fillRect(0, 0, 128, 64);
+
+    // Draw crisp white backing box for QR code on left (x=3..57, y=5..59)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(3, 5, 54, 54);
+
+    // Render simulated QR modules inside the box
+    ctx.fillStyle = '#000000';
+    // Position detection patterns (top-left, top-right, bottom-left)
+    const drawFinder = (fx, fy) => {
+      ctx.fillRect(fx, fy, 14, 14);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(fx + 2, fy + 2, 10, 10);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(fx + 4, fy + 4, 6, 6);
+    };
+    drawFinder(6, 8);
+    drawFinder(39, 8);
+    drawFinder(6, 41);
+
+    // Deterministic pseudo-QR pattern
+    const seed = isWifi ? 0xbeef : 0xcafe;
+    for (let qy = 0; qy < 23; qy++) {
+      for (let qx = 0; qx < 23; qx++) {
+        // Skip finder zones
+        if ((qx < 8 && qy < 8) || (qx > 14 && qy < 8) || (qx < 8 && qy > 14)) continue;
+        const v = ((qx * 37 + qy * 19 + seed) ^ (qx * qy)) % 7;
+        if (v < 3) {
+          ctx.fillRect(6 + qx * 2, 8 + qy * 2, 2, 2);
+        }
+      }
+    }
+
+    // Right Side HUD (x=64..127)
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Header Pill
+    ctx.strokeRect(64, 4, 60, 12);
+    ctx.font = 'bold 7px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(isWifi ? "WIFI JOIN" : "WEB LINK", 94, 13);
+
+    // Content details
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    if (isWifi) {
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText("SSID: v20p", 64, 26);
+      ctx.fillText("PASS: honululu", 64, 36);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText("WPA2 AUTO", 64, 46);
+    } else {
+      const ipStr = APP_STATE.ip || "10.142.252.233";
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText("IP ADDR:", 64, 25);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 7px monospace';
+      ctx.fillText(ipStr, 64, 35);
+      ctx.font = '6px monospace';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText("PORT: 80 / HTTP", 64, 45);
+    }
+
+    // Exit prompt footer
+    ctx.fillStyle = '#64748b';
+    ctx.font = '6px monospace';
+    ctx.fillText("TAP BTN: EXIT", 64, 57);
   }
 
   renderMusicPlayerHUD(ctx) {
@@ -11884,6 +12427,15 @@ class OledStudioManager {
       case 3:
         this.renderWatchFaceCyberHUD(ctx);
         break;
+      case 4:
+        this.renderWatchFaceNeoHorizon(ctx);
+        break;
+      case 5:
+        this.renderWatchFaceAviator(ctx);
+        break;
+      case 6:
+        this.renderWatchFaceNeoTokyo(ctx);
+        break;
       case 0:
       default:
         this.renderWatchFaceStudio(ctx);
@@ -12119,6 +12671,225 @@ class OledStudioManager {
     ctx.fillText(`LED: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 116, 59);
   }
 
+  renderWatchFaceNeoHorizon(ctx) {
+    const t = this.getClockTimeComponents();
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Top Status Bar: Day Badge + Full Date + Lighting
+    ctx.fillRect(2, 1, 30, 9);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 7px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(t.dayStr, 17, 8);
+    ctx.fillStyle = '#00f2fe';
+
+    ctx.font = '7px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.fullDateStr, 36, 8);
+
+    ctx.textAlign = 'right';
+    ctx.fillText(`LED ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 126, 8);
+
+    // Horizon line
+    ctx.fillRect(2, 11, 124, 1);
+
+    // Center Big Numerals
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.timeStr, 4, 34);
+
+    // Stacked Seconds & 24H Indicator
+    const rightX = 82;
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(t.secStr, rightX, 24);
+    ctx.beginPath();
+    ctx.arc(rightX + 18, 21, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeRect(rightX, 27, 26, 9);
+    ctx.font = '6px monospace';
+    ctx.fillText("24HR", rightX + 4, 34);
+
+    // 24-Hour Diurnal Progress Horizon
+    const dayProgress = (t.hr * 3600 + t.mn * 60 + t.sc) / 86400;
+    const barW = 120;
+    const progFill = Math.min(barW, Math.max(0, Math.round(dayProgress * barW)));
+
+    ctx.strokeRect(4, 42, barW, 6);
+    if (progFill > 0) ctx.fillRect(4, 42, progFill, 6);
+    ctx.beginPath();
+    ctx.arc(4 + progFill, 45, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Milestones (Dawn, Noon, Dusk)
+    ctx.fillRect(4 + Math.round((barW * 6) / 24), 48, 1, 2);
+    ctx.fillRect(4 + Math.round((barW * 12) / 24), 48, 1, 3);
+    ctx.fillRect(4 + Math.round((barW * 18) / 24), 48, 1, 2);
+
+    // Bottom Telemetry
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`CHIP ${this.telemetry.temp}°C`, 4, 60);
+    ctx.textAlign = 'center';
+    ctx.fillText(`DAY ${Math.round(dayProgress * 100)}%`, 64, 60);
+    ctx.textAlign = 'right';
+    ctx.fillText(`WIFI 94%`, 126, 60);
+  }
+
+  renderWatchFaceAviator(ctx) {
+    const t = this.getClockTimeComponents();
+    const cx = 31, cy = 31, r = 28;
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Outer & Inner dial rings
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 12 o'clock Aviator Triangle
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r + 2);
+    ctx.lineTo(cx - 3, cy - r + 7);
+    ctx.lineTo(cx + 3, cy - r + 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillRect(cx - 5, cy - r + 4, 1, 1);
+    ctx.fillRect(cx + 4, cy - r + 4, 1, 1);
+
+    // Cardinal ticks at 3, 6, 9
+    ctx.fillRect(cx + r - 5, cy - 0.5, 4, 1);
+    ctx.fillRect(cx - r + 1, cy - 0.5, 4, 1);
+    ctx.fillRect(cx - 0.5, cy + r - 5, 1, 4);
+
+    // Hour hand
+    const hAngle = (t.hr % 12 + t.mn / 60) * 30 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(hAngle) * 13, cy + Math.sin(hAngle) * 13);
+    ctx.stroke();
+
+    // Minute hand
+    const mAngle = (t.mn + t.sc / 60) * 6 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(mAngle) * 22, cy + Math.sin(mAngle) * 22);
+    ctx.stroke();
+
+    // Sweeping second hand with tail
+    const sAngle = t.sc * 6 * (Math.PI / 180) - Math.PI / 2;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx - Math.cos(sAngle) * 6, cy - Math.sin(sAngle) * 6);
+    ctx.lineTo(cx + Math.cos(sAngle) * 24, cy + Math.sin(sAngle) * 24);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(sAngle) * 24, cy + Math.sin(sAngle) * 24, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Crosshair border line at x = 63
+    for (let y = 0; y < 64; y += 4) {
+      ctx.fillRect(63, y, 1, 2);
+    }
+
+    // Right Side HUD Stack (x = 66..127)
+    ctx.fillRect(66, 2, 60, 11);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${t.dayStr} ${t.secStr}`, 96, 10);
+    ctx.fillStyle = '#00f2fe';
+
+    // Big Chrono Digits "HH:MM:SS"
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.fullTimeStr, 67, 25);
+
+    ctx.fillRect(66, 29, 60, 1);
+
+    ctx.font = '6px monospace';
+    ctx.fillText(`CHIP-ALT ${this.telemetry.temp}°C`, 67, 38);
+    ctx.fillText(`LUX ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : '0%'}`, 67, 47);
+
+    // 3-Bar Signal Staircase
+    ctx.fillRect(116, 45, 2, 2);
+    ctx.fillRect(120, 43, 2, 4);
+    ctx.fillRect(124, 41, 2, 6);
+
+    ctx.fillRect(66, 51, 60, 1);
+    ctx.fillText(`UP ${this.telemetry.uptime}`, 67, 60);
+  }
+
+  renderWatchFaceNeoTokyo(ctx) {
+    const t = this.getClockTimeComponents();
+    ctx.fillStyle = '#00f2fe';
+    ctx.strokeStyle = '#00f2fe';
+
+    // Chamfered Bezel
+    ctx.beginPath();
+    ctx.moveTo(3, 0); ctx.lineTo(124, 0); ctx.lineTo(127, 3);
+    ctx.lineTo(127, 60); ctx.lineTo(124, 63); ctx.lineTo(3, 63);
+    ctx.lineTo(0, 60); ctx.lineTo(0, 3); ctx.closePath();
+    ctx.stroke();
+
+    // Top Bar: TOKYO // 01 + 10-Tick Decade Seconds
+    ctx.fillRect(5, 3, 44, 8);
+    ctx.fillStyle = '#010409';
+    ctx.font = 'bold 6px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText("TOKYO // 01", 8, 9);
+    ctx.fillStyle = '#00f2fe';
+
+    const pulse = t.sc % 10;
+    for (let b = 0; b < 10; b++) {
+      const bx = 56 + b * 6;
+      if (b <= pulse) {
+        ctx.fillRect(bx, 4, 4, 6);
+      } else {
+        ctx.strokeRect(bx, 4, 4, 6);
+      }
+    }
+
+    ctx.fillRect(4, 13, 120, 1);
+
+    // Main Digital Numerals
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(t.timeStr, 6, 38);
+
+    // Micro Seconds Box & Calendar Matrix
+    const secBoxX = 86;
+    ctx.strokeRect(secBoxX, 16, 36, 17);
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(t.secStr, secBoxX + 5, 29);
+    ctx.beginPath();
+    ctx.arc(secBoxX + 26, 24, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = '7px monospace';
+    ctx.fillText(`${t.dayStr} ${t.secStr}`, secBoxX, 42);
+
+    // Bottom Status Ribbon
+    ctx.fillRect(4, 46, 120, 1);
+    ctx.font = '6px monospace';
+    ctx.fillText("SYS.OK", 6, 54);
+    ctx.fillText("HEAP 94K", 44, 54);
+    ctx.fillText(`TMP ${this.telemetry.temp}°C`, 86, 54);
+
+    ctx.fillText(`DESK: ${APP_STATE.power ? Math.round(APP_STATE.brightness / 2.55) + '%' : 'OFF'}`, 6, 61);
+    ctx.textAlign = 'right';
+    ctx.fillText(t.fullDateStr, 122, 61);
+  }
+
   renderFullSpectrumHUD(ctx) {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#00f2fe';
@@ -12276,6 +13047,7 @@ class OledStudioManager {
 
 const oledStudio = new OledStudioManager();
 
+
 // ====================================================================
 // Hardware LED Calibration & Color Order Studio
 // ====================================================================
@@ -12412,12 +13184,150 @@ const colorCalibrationStudio = {
   }
 };
 
+
+// ====================================================================
+// QR Connect & Mobile Web Studio Controller
+// ====================================================================
+const qrStudio = {
+  webQr: null,
+  wifiQr: null,
+
+  init() {
+    this.renderQRCodes();
+    this.bindEvents();
+  },
+
+  renderQRCodes() {
+    const currentIp = APP_STATE.ip || (typeof window !== 'undefined' ? window.location.hostname : '10.142.252.233') || '10.142.252.233';
+    const webUrl = `http://${currentIp}/`;
+    const wifiPayload = 'WIFI:T:WPA;S:v20p;P:honululu;;';
+
+    // Update UI Badges & Links
+    const ipBadge = document.getElementById('qrWebIpBadge');
+    if (ipBadge) ipBadge.textContent = currentIp;
+
+    const directLink = document.getElementById('qrWebDirectLink');
+    if (directLink) {
+      directLink.href = webUrl;
+      directLink.textContent = webUrl;
+    }
+
+    // Render Web Studio QR
+    const webContainer = document.getElementById('qrWebCanvasContainer');
+    if (webContainer && typeof QRCode !== 'undefined') {
+      webContainer.innerHTML = '';
+      try {
+        this.webQr = new QRCode(webContainer, {
+          text: webUrl,
+          width: 180,
+          height: 180,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (e) {
+        console.error('Failed to generate Web QR:', e);
+      }
+    }
+
+    // Render Wi-Fi Quick-Join QR
+    const wifiContainer = document.getElementById('qrWifiCanvasContainer');
+    if (wifiContainer && typeof QRCode !== 'undefined') {
+      wifiContainer.innerHTML = '';
+      try {
+        this.wifiQr = new QRCode(wifiContainer, {
+          text: wifiPayload,
+          width: 180,
+          height: 180,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (e) {
+        console.error('Failed to generate Wi-Fi QR:', e);
+      }
+    }
+  },
+
+  bindEvents() {
+    // Push Web QR to Physical OLED Display (Mode 5)
+    document.getElementById('btnPushWebQrToOled')?.addEventListener('click', async () => {
+      try {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        showToast('Pushing Web Studio QR to OLED...');
+        await fetch(`http://${targetIp}/set?oledmode=5`);
+        if (typeof oledStudio !== 'undefined') {
+          oledStudio.state.mode = 5;
+          oledStudio.syncUI();
+        }
+        showToast('📱 Web Studio QR displayed on OLED screen!');
+      } catch (e) {
+        showToast(`Error: ${e.message}`);
+      }
+    });
+
+    // Push Wi-Fi Quick-Join QR to Physical OLED Display (Mode 6)
+    document.getElementById('btnPushWifiQrToOled')?.addEventListener('click', async () => {
+      try {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        showToast('Pushing Wi-Fi Join QR to OLED...');
+        await fetch(`http://${targetIp}/set?oledmode=6`);
+        if (typeof oledStudio !== 'undefined') {
+          oledStudio.state.mode = 6;
+          oledStudio.syncUI();
+        }
+        showToast('📶 Wi-Fi Quick-Join QR displayed on OLED screen!');
+      } catch (e) {
+        showToast(`Error: ${e.message}`);
+      }
+    });
+
+    // Return to Watch Face (Mode 1)
+    document.getElementById('btnReturnToWatchFace')?.addEventListener('click', async () => {
+      try {
+        const targetIp = APP_STATE.ip || defaultTargetIp;
+        await fetch(`http://${targetIp}/set?oledmode=1`);
+        if (typeof oledStudio !== 'undefined') {
+          oledStudio.state.mode = 1;
+          oledStudio.syncUI();
+        }
+        showToast('⌚ OLED returned to Watch Face');
+      } catch (e) {
+        showToast(`Error: ${e.message}`);
+      }
+    });
+
+    // Copy Web Studio URL Button
+    document.getElementById('btnCopyWebUrl')?.addEventListener('click', async () => {
+      const currentIp = APP_STATE.ip || '10.142.252.233';
+      const url = `http://${currentIp}/`;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const input = document.createElement('input');
+          input.value = url;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+        }
+        showToast('📋 Copied URL to clipboard: ' + url);
+      } catch (e) {
+        showToast('URL: ' + url);
+      }
+    });
+  }
+};
+
+
 // Window globals for debugging & synchronization
 window._wled = wled;
 window._movieSync = movieSync;
 window._musicSync = musicSync;
 window._oledStudio = oledStudio;
 window._colorCalib = colorCalibrationStudio;
+window._qrStudio = qrStudio;
 window.setAmbilightMode = (m) => movieSync.setMode(m);
 
 function bootApp() {
@@ -12435,6 +13345,7 @@ function bootApp() {
   try { initPortalTheme(); } catch (e) { console.error('initPortalTheme error:', e); }
   try { oledStudio.init(); } catch (e) { console.error('oledStudio init error:', e); }
   try { colorCalibrationStudio.init(); } catch (e) { console.error('colorCalibrationStudio init error:', e); }
+  try { qrStudio.init(); } catch (e) { console.error('qrStudio init error:', e); }
   try { wled.connect(); } catch (e) { console.error('wled connect error:', e); }
   try { wled.fetchInitialData(); } catch (e) { console.error('wled fetchInitialData error:', e); }
 

@@ -3,14 +3,47 @@ import os
 import gzip
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(root_dir, "src")
+
+# Modular JS files to concatenate into main.js
+MODULE_FILES = [
+    "state.js",
+    "wled_api.js",
+    "color_wheel.js",
+    "virtual_strip.js",
+    "movie_sync.js",
+    "music_sync.js",
+    "ui.js",
+    "oled_studio.js",
+    "calibration.js",
+    "qr_studio.js",
+    "boot.js"
+]
+
+# Concatenate modular src files if src directory exists
+if os.path.exists(src_dir):
+    js_parts = []
+    for mod in MODULE_FILES:
+        mod_path = os.path.join(src_dir, mod)
+        if os.path.exists(mod_path):
+            with open(mod_path, "r", encoding="utf-8") as f:
+                js_parts.append(f.read())
+        else:
+            print(f"Warning: Module {mod} not found in src/")
+    js = "\n".join(js_parts)
+    with open(os.path.join(root_dir, "main.js"), "w", encoding="utf-8") as f:
+        f.write(js)
+    print(f"Concatenated {len(MODULE_FILES)} modular files from src/ -> main.js")
+else:
+    with open(os.path.join(root_dir, "main.js"), "r", encoding="utf-8") as f:
+        js = f.read()
+
 with open(os.path.join(root_dir, "index.html"), "r", encoding="utf-8") as f:
     html = f.read()
 with open(os.path.join(root_dir, "style.css"), "r", encoding="utf-8") as f:
     css = f.read()
 with open(os.path.join(root_dir, "qrcode.min.js"), "r", encoding="utf-8") as f:
     qrcode_js = f.read()
-with open(os.path.join(root_dir, "main.js"), "r", encoding="utf-8") as f:
-    js = f.read()
 
 # Replace css link with inline style
 html = html.replace("<link rel=\"stylesheet\" href=\"style.css\" />", f"<style>\n{css}\n</style>")

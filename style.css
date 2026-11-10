@@ -4363,6 +4363,267 @@ select option, .wiring-select option, .glass-select option {
   margin-top: 8px;
 }
 
+/* ====================================================================
+   TAB: QR CONNECT & SMARTPHONE PORTAL STYLES
+   ==================================================================== */
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.qr-hero-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+}
+
+.qr-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.qr-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: 18px;
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.qr-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.qr-visual-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.qr-code-frame {
+  width: 200px;
+  height: 200px;
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.qr-code-frame canvas,
+.qr-code-frame img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  display: block;
+}
+
+.qr-url-box {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+}
+
+.qr-url-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.qr-url-link {
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  text-decoration: none;
+  word-break: break-all;
+  transition: color 0.2s;
+}
+
+.qr-url-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.qr-cred-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.qr-cred-row:last-child {
+  border-bottom: none;
+}
+
+.cred-label {
+  color: var(--text-muted);
+}
+
+.cred-val {
+  font-family: var(--font-mono, monospace);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.qr-action-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.oled-push-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.35));
+  border: 1px solid rgba(168, 85, 247, 0.5);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.oled-push-btn:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.55), rgba(168, 85, 247, 0.55));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.oled-push-btn:active {
+  transform: translateY(0);
+}
+
+.mobile-features-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.7));
+  border: 1px solid var(--border-glass);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.mobile-tips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.tip-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.tip-icon {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tip-content strong {
+  display: block;
+  font-size: 13px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.tip-content p {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* ====================================================================
+   RESPONSIVE ENHANCEMENTS FOR SMARTPHONES (< 768px)
+   ==================================================================== */
+@media (max-width: 768px) {
+  .qr-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-tips-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app-container {
+    padding-bottom: calc(95px + var(--safe-bottom)) !important;
+  }
+
+  .glass-nav-tabs {
+    position: fixed;
+    bottom: max(10px, var(--safe-bottom));
+    left: 10px;
+    right: 10px;
+    z-index: 999;
+    background: rgba(10, 15, 29, 0.92) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.3);
+    border-radius: 20px !important;
+    padding: 6px !important;
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .glass-nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tab-btn {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 8px 14px;
+  }
+
+  #colorWheelCanvas {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
 
 
 
